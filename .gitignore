@@ -1,0 +1,9 @@
+﻿node_modules/
+miniprogram_npm/
+.DS_Store
+*.log
+.env
+weights/
+__pycache__/
+*.pyc
+target/
