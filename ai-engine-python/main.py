@@ -1,0 +1,198 @@
+"""
+智慧景区 AI 导览系统 - AI 引擎主入口
+FastAPI 异步服务,负责：
+  1. 数字人模式 HTTP 流式接口 (NDJSON)
+  2. 音频静态文件服务
+  3. 健康检查 & 服务状态
+"""
+import os
+import uuid
+import time
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+
+from core.llm_client import LLMStreamClient
+from core.tts_generator import TTSGenerator
+from core.rag_processor import RAGProcessor
+
+# ─── 环境变量加载 ─────────────────────────────────────────
+load_dotenv()
+
+# ─── 日志 ──────────────────────────────────────────────────
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("ai-engine")
+
+# ─── 配置常量（全部从 .env 读取，严禁硬编码） ──────────────
+LLM_API_KEY     = os.getenv("LLM_API_KEY", "")
+LLM_BASE_URL    = os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1")
+LLM_MODEL       = os.getenv("LLM_MODEL", "deepseek-chat")
+LLM_MAX_TOKENS  = int(os.getenv("LLM_MAX_TOKENS", "2048"))
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+TTS_OUTPUT_DIR  = os.getenv("TTS_OUTPUT_DIR", "./static/audio")
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:9000")
+
+# ─── 全局组件（懒初始化在 lifespan 中完成） ─────────────────
+llm_client: LLMStreamClient | None = None
+tts_gen: TTSGenerator | None = None
+rag_processor: RAGProcessor | None = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期：启动时初始化组件，关闭时清理资源"""
+    global llm_client, tts_gen, rag_processor
+
+    # 确保音频输出目录存在
+    Path(TTS_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+
+    # 初始化核心组件
+    llm_client = LLMStreamClient(
+        api_key=LLM_API_KEY,
+        base_url=LLM_BASE_URL,
+        model=LLM_MODEL,
+        max_tokens=LLM_MAX_TOKENS,
+        temperature=LLM_TEMPERATURE,
+    )
+    tts_gen = TTSGenerator(output_dir=TTS_OUTPUT_DIR)
+    rag_processor = RAGProcessor(backend_base_url=BACKEND_BASE_URL)
+
+    logger.info("✅ AI 引擎全部组件初始化完成")
+    yield
+    logger.info("🛑 AI 引擎关闭")
+
+
+# ─── FastAPI 应用实例 ─────────────────────────────────────
+app = FastAPI(
+    title="智慧景区 AI 导览引擎",
+    version="2.0.0",
+    lifespan=lifespan,
+)
+
+# CORS 允许小程序 / 管理后台跨域
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 挂载静态文件目录（音频文件通过 URL 对外暴露）
+Path(TTS_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory="./static"), name="static")
+
+
+# ─── 请求/响应模型 ────────────────────────────────────────
+
+class DigitalHumanRequest(BaseModel):
+    """数字人模式请求体（对齐 API 文档 v2.0 §3.1）"""
+    session_id: str = Field(default_factory=lambda: uuid.uuid4().hex, description="会话唯一标识")
+    content: str = Field(..., min_length=1, max_length=2000, description="游客输入文本")
+    timestamp: int = Field(default_factory=lambda: int(time.time() * 1000), description="毫秒时间戳")
+
+
+# ─── 核心接口 ─────────────────────────────────────────────
+
+@app.post("/api/v1/digitalhuman/chat")
+async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
+    """
+    数字人模式 HTTP 流式接口（NDJSON）
+    对齐 API 文档 v2.0 §3 — 音视解耦核心链路
+
+    处理流程:
+      tenant_id → RAG 检索 + 错峰 Prompt 注入
+               → LLM 异步流式调用
+               → 句级切片
+               → edge-tts 生成 MP3
+               → NDJSON 流式返回 {seq, text_chunk, audio_url}
+    """
+    tenant_id = request.headers.get("X-Tenant-Id", "default")
+    logger.info(f"[{tenant_id}][{req.session_id}] 收到数字人请求: {req.content[:50]}...")
+
+    async def generate_ndjson():
+        seq = 0
+        try:
+            # ─── Step 1: RAG 检索 + Prompt 注入 ────────────
+            if rag_processor:
+                system_prompt = await rag_processor.build_system_prompt(
+                    tenant_id=tenant_id,
+                    user_query=req.content,
+                )
+            else:
+                system_prompt = "你是一个专业的智慧景区AI导览助手,请用自然口语化的中文回答游客问题。"
+
+            # ─── Step 2: LLM 流式调用 + 句级切片 ────────────
+            async for sentence in llm_client.stream_with_sentence_splitting(
+                system_prompt=system_prompt,
+                user_message=req.content,
+            ):
+                trimmed = sentence.strip()
+                if not trimmed:
+                    continue
+                seq += 1
+
+                # ─── Step 3: TTS 异步生成 MP3 ──────────────
+                audio_url = ""
+                if tts_gen:
+                    try:
+                        audio_url = await tts_gen.generate_audio(
+                            text=trimmed,
+                            tenant_id=tenant_id,
+                            session_id=req.session_id,
+                            seq=seq,
+                        )
+                    except Exception as e:
+                        logger.warning(f"TTS 生成失败(降级纯文本): {e}")
+
+                # ─── Step 4: NDJSON 行输出 ──────────────────
+                await yield f'{{"seq":{seq},"text_chunk":{__json_escape(trimmed)},"audio_url":"{audio_url}"}}\n'
+
+            # ─── Step 5: 结束标记 ──────────────────────────
+            await yield f'{{"seq":{seq+1},"type":"end","reason":"complete"}}\n'
+
+        except Exception as e:
+            logger.error(f"流式处理异常: {e}", exc_info=True)
+            await yield f'{{"type":"error","code":500,"message":"{str(e)}"}}\n'
+
+    return StreamingResponse(
+        generate_ndjson(),
+        media_type="application/x-ndjson",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",   # 禁用 Nginx 缓冲
+        },
+    )
+
+
+@app.get("/api/v1/health")
+async def health_check():
+    """健康检查接口"""
+    return {
+        "status": "ok",
+        "model": LLM_MODEL,
+        "tts_dir": TTS_OUTPUT_DIR,
+        "timestamp": int(time.time() * 1000),
+    }
+
+
+# ─── 工具函数 ─────────────────────────────────────────────
+
+def __json_escape(s: str) -> str:
+    """安全地将字符串嵌入 JSON 值（简易版,适用于中文为主的 NDJSON 输出）"""
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "")
+
+
+# ─── 入口 ─────────────────────────────────────────────────
+if __name__ == "__main__":
+    import uvicorn
+    host = os.getenv("SERVER_HOST", "0.0.0.0")
+    port = int(os.getenv("SERVER_PORT", "8000"))
+    uvicorn.run("main:app", host=host, port=port, reload=True, log_level="info")

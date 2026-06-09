@@ -7,3 +7,20 @@ weights/
 __pycache__/
 *.pyc
 target/
+
+# AI 引擎：临时音频文件 + uv 虚拟环境
+ai-engine-python/static/audio/
+ai-engine-python/.venv/
+ai-engine-python/venv/
+
+# 数字人模块：Wav2Lip 源码 + 模型权重（数百 MB）
+digital-human/wav2lip-src/
+digital-human/checkpoints/
+digital-human/temp/
+
+# IDE
+.vscode/
+.idea/
+# ��������  
+data/  
+digital-human/.venv/ 
