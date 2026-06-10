@@ -91,7 +91,6 @@ class LLMStreamClient:
                 max_tokens=self.max_tokens,
                 temperature=self.temperature,
                 stream=True,
-                stream_options={"include_usage": True},
             )
 
             async for chunk in stream:

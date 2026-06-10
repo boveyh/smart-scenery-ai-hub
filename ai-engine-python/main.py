@@ -153,14 +153,14 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                         logger.warning(f"TTS 生成失败(降级纯文本): {e}")
 
                 # ─── Step 4: NDJSON 行输出 ──────────────────
-                await yield f'{{"seq":{seq},"text_chunk":{__json_escape(trimmed)},"audio_url":"{audio_url}"}}\n'
+                yield f'{{"seq":{seq},"text_chunk":{__json_escape(trimmed)},"audio_url":"{audio_url}"}}\n'
 
             # ─── Step 5: 结束标记 ──────────────────────────
-            await yield f'{{"seq":{seq+1},"type":"end","reason":"complete"}}\n'
+            yield f'{{"seq":{seq+1},"type":"end","reason":"complete"}}\n'
 
         except Exception as e:
             logger.error(f"流式处理异常: {e}", exc_info=True)
-            await yield f'{{"type":"error","code":500,"message":"{str(e)}"}}\n'
+            yield f'{{"type":"error","code":500,"message":"{str(e)}"}}\n'
 
     return StreamingResponse(
         generate_ndjson(),
