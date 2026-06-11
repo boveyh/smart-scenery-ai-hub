@@ -46,11 +46,11 @@ public class DataInitializer implements CommandLineRunner {
         List<Poi> pois = Arrays.asList(
                 Poi.builder().tenantId(tenantId).poiId("poi_001").name("断桥残雪")
                         .category("自然风光").lat(30.261).lng(120.150)
-                        .description("断桥位于杭州西湖白堤的东端，背靠宝石山，面向杭州城。传说《白蛇传》中许仙与白娘子在此相遇。冬雪初晴，桥阳面冰消雪化，桥阴面依旧白雪皑皑，远望桥身似断非断，"断桥残雪"因此得名。")
+                        .description("断桥位于杭州西湖白堤的东端，背靠宝石山，面向杭州城。传说《白蛇传》中许仙与白娘子在此相遇。冬雪初晴，桥阳面冰消雪化，桥阴面依旧白雪皑皑，远望桥身似断非断，'断桥残雪'因此得名。")
                         .avgStayMin(20).crowdedness(3).openingHours("全天开放").sortOrder(1).build(),
                 Poi.builder().tenantId(tenantId).poiId("poi_002").name("苏堤春晓")
                         .category("自然风光").lat(30.256).lng(120.138)
-                        .description("苏堤是北宋大诗人苏轼任杭州知州时，疏浚西湖，利用挖出的淤泥构筑而成。苏堤全长约3公里，堤上建有六桥，由北向南依次为跨虹、东浦、压堤、望山、锁澜、映波，被誉为"西湖十景"之首。")
+                        .description("苏堤是北宋大诗人苏轼任杭州知州时，疏浚西湖，利用挖出的淤泥构筑而成。苏堤全长约3公里，堤上建有六桥，由北向南依次为跨虹、东浦、压堤、望山、锁澜、映波，被誉为'西湖十景'之首。")
                         .avgStayMin(40).crowdedness(2).openingHours("全天开放").sortOrder(2).build(),
                 Poi.builder().tenantId(tenantId).poiId("poi_003").name("雷峰塔")
                         .category("历史文化").lat(30.232).lng(120.146)
@@ -74,7 +74,7 @@ public class DataInitializer implements CommandLineRunner {
                         .avgStayMin(60).crowdedness(3).openingHours("07:00-18:00").sortOrder(7).build(),
                 Poi.builder().tenantId(tenantId).poiId("poi_008").name("西湖游船")
                         .category("休闲娱乐").lat(30.258).lng(120.142)
-                        .description("西湖游船是体验西湖美景的最佳方式之一。游船分为画舫、手划船、自划船等类型，可容纳不同人数的游客。乘船游览西湖，可欣赏湖光山色，感受"欲把西湖比西子，淡妆浓抹总相宜"的诗意。")
+                        .description("西湖游船是体验西湖美景的最佳方式之一。游船分为画舫、手划船、自划船等类型，可容纳不同人数的游客。乘船游览西湖，可欣赏湖光山色，感受'欲把西湖比西子，淡妆浓抹总相宜'的诗意。")
                         .avgStayMin(50).crowdedness(2).openingHours("08:00-17:00").sortOrder(8).build(),
                 Poi.builder().tenantId(tenantId).poiId("entrance_01").name("西湖景区北入口")
                         .category("入口").lat(30.270).lng(120.155)

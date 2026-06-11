@@ -33,7 +33,7 @@ public class VisionController {
         data.put("confidence", 0.96);
         data.put("description",
                 "荷花是中国传统名花，出淤泥而不染，濯清涟而不妖。" +
-                "荷花在景区内主要分布在西湖十景之一的"曲院风荷"，" +
+                "荷花在景区内主要分布在西湖十景之一的「曲院风荷」，" +
                 "夏季 6-8 月为最佳观赏期。");
 
         return ApiResult.success(data);
