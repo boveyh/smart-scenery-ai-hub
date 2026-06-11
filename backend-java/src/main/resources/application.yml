@@ -1,0 +1,98 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: smart-scenery-backend
+  profiles:
+    active: dev
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+---
+# ─── 开发环境配置 ───────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_scenery?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# Elasticsearch 配置
+elasticsearch:
+  hosts: localhost:9200
+
+# AI 引擎 Python 服务地址
+ai-engine:
+  base-url: http://localhost:8000
+  timeout: 30000
+
+logging:
+  level:
+    com.smartscenery: DEBUG
+
+---
+# ─── 生产环境配置 ───────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://mysql:3306/smart_scenery?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+
+elasticsearch:
+  hosts: elasticsearch:9200
+
+ai-engine:
+  base-url: http://ai-engine:8000
+  timeout: 30000
+
+logging:
+  level:
+    com.smartscenery: INFO

@@ -23,8 +23,8 @@ dependencies = [
     "pydantic>=2.0.0",
 ]
 
-[tool.uv]
-required-python = "3.11"
+
+
 
 [tool.uv.sources]
 torch = { index = "pytorch-cuda" }
@@ -34,3 +34,4 @@ torchaudio = { index = "pytorch-cuda" }
 [[tool.uv.index]]
 name = "pytorch-cuda"
 url = "https://download.pytorch.org/whl/cu121"
+
