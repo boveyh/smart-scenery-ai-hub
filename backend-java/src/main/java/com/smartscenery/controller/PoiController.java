@@ -12,7 +12,7 @@ import java.util.List;
  * POI 景点接口 — 对应 API 文档 §4.1
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping({"/api/v1", "/api"})
 public class PoiController {
 
     @Autowired
