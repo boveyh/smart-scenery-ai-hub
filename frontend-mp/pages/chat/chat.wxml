@@ -1,0 +1,31 @@
+<!--pages/chat/chat.wxml-->
+<view class="container">
+  <!-- 模式切换开关 -->
+  <view class="mode-switch">
+    <button class="{{mode === 'text' ? 'active' : ''}}" bindtap="switchMode" data-mode="text">📝 极速文本</button>
+    <button class="{{mode === 'digital_human' ? 'active' : ''}}" bindtap="switchMode" data-mode="digital_human">🎭 数字人</button>
+  </view>
+
+  <!-- 极速文本模式界面 -->
+  <block wx:if="{{mode === 'text'}}">
+    <scroll-view class="msg-list" scroll-y scroll-into-view="{{lastMsgId}}">
+      <view wx:for="{{messages}}" wx:key="index" class="msg {{item.role}}">
+        <text>{{item.content}}</text>
+      </view>
+    </scroll-view>
+    <view class="input-bar">
+      <input placeholder="说句话或打字..." bindinput="onInput" value="{{inputText}}"/>
+      <button size="mini" bindtap="sendText">发送</button>
+      <button size="mini" bindtap="startVoice">🎤</button>
+    </view>
+  </block>
+
+  <!-- 数字人模式界面 -->
+  <block wx:if="{{mode === 'digital_human'}}">
+    <video id="avatarVideo" class="avatar-video" src="{{videoSrc}}" autoplay loop muted object-fit="cover" />
+    <scroll-view class="subtitle-area" scroll-y>
+      <text>{{currentSubtitle}}</text>
+    </scroll-view>
+    <view class="voice-btn" bindtap="startVoiceDigital">按住说话</view>
+  </block>
+</view>

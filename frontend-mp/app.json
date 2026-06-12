@@ -1,12 +1,13 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/chat-text/chat-text",
-    "pages/chat-avatar/chat-avatar"
+    "pages/chat/chat"
   ],
   "window": {
     "navigationBarTitleText": "智慧景区导览",
     "navigationBarBackgroundColor": "#3B82F6",
     "navigationBarTextStyle": "white"
-  }
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
 }

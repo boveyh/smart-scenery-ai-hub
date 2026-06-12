@@ -1,4 +1,4 @@
-// pages/chat-avatar/chat-avatar.js
+// pages/accessibility/accessibility.js
 Page({
 
   /**

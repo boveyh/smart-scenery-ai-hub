@@ -1,3 +1,6 @@
 {
-  "usingComponents": {}
+  "usingComponents": {},
+  "navigationBarTitleText": "智慧景区导览",
+  "navigationBarBackgroundColor": "#764ba2",
+  "navigationBarTextStyle": "white"
 }
