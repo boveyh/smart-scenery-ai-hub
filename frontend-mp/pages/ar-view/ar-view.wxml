@@ -1,3 +1,0 @@
-<!-- ar-view.wxml -->
-<canvas type="webgl" id="webgl" style="width:100%; height:80vh;"></canvas>
-<text>对准苏堤区域，可看到3D古建筑复原（演示版）</text>
