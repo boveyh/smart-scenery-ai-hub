@@ -1,0 +1,8 @@
+<view>
+  <xr-start
+    id="main-frame"
+    width="{{renderWidth}}"
+    height="{{renderHeight}}"
+    style="width:{{width}}px;height:{{height}}px;"
+  />
+</view>

@@ -1,0 +1,13 @@
+/* pages/ar-view/ar-view.wxss */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+}
+.tip {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+}

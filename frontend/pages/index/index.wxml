@@ -1,0 +1,11 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <text class="title">智慧景区导览</text>
+  <text class="desc">选择您的游览模式</text>
+
+  <button class="btn primary" bindtap="gotoChat" data-mode="text">📝 极速文本模式</button>
+  <button class="btn primary" bindtap="gotoChat" data-mode="digital_human">🎭 面对面数字人</button>
+  <button class="btn secondary" bindtap="switchTenant">🏞️ 切换景区</button>
+
+  <text class="tenant-info">当前景区：{{tenantName}}</text>
+</view>
