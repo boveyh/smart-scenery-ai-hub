@@ -1,18 +1,21 @@
 package com.smartscenery.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.smartscenery.dto.PoiDTO;
 import com.smartscenery.entity.Poi;
 import com.smartscenery.exception.BusinessException;
 import com.smartscenery.filter.TenantContext;
 import com.smartscenery.repository.PoiRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * POI 景点服务
@@ -36,7 +39,9 @@ public class PoiService {
 
         if (lat != null && lng != null) {
             // 按距离排序
-            List<Object[]> rawResults = poiRepository.findNearbyPois(tenantId, lat, lng);
+            BigDecimal bdLat = BigDecimal.valueOf(lat);
+            BigDecimal bdLng = BigDecimal.valueOf(lng);
+            List<Object[]> rawResults = poiRepository.findNearbyPois(tenantId, bdLat, bdLng);
             List<PoiDTO> result = new ArrayList<>();
             for (Object[] row : rawResults) {
                 Poi poi = (Poi) row[0];

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * POI 景点响应 DTO — 对齐 API 文档 §4.1
  */
@@ -18,13 +20,16 @@ public class PoiDTO {
     private String poiId;
     private String name;
     private String category;
-    private Double lat;
-    private Double lng;
+    private String subCategory;
+    private BigDecimal lat;
+    private BigDecimal lng;
+    private String address;
     private String description;
     private Integer avgStayMin;
-    private Integer crowdedness;
     private String openingHours;
+    private BigDecimal ticketPrice;
     private String imageUrl;
+    private Integer crowdedness;
     /** 距离（米），仅按距离排序时返回 */
     private Double distance;
 
@@ -33,13 +38,16 @@ public class PoiDTO {
                 .poiId(poi.getPoiId())
                 .name(poi.getName())
                 .category(poi.getCategory())
+                .subCategory(poi.getSubCategory())
                 .lat(poi.getLat())
                 .lng(poi.getLng())
+                .address(poi.getAddress())
                 .description(poi.getDescription())
                 .avgStayMin(poi.getAvgStayMin())
-                .crowdedness(poi.getCrowdedness())
                 .openingHours(poi.getOpeningHours())
+                .ticketPrice(poi.getTicketPrice())
                 .imageUrl(poi.getImageUrl())
+                .crowdedness(poi.getCrowdedness())
                 .build();
     }
 

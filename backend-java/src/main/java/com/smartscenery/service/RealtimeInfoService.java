@@ -29,9 +29,8 @@ public class RealtimeInfoService {
             // 返回默认数据
             return RealtimeInfoDTO.builder()
                     .weather("晴")
-                    .temperature(26)
+                    .temperature(java.math.BigDecimal.valueOf(26))
                     .crowdednessLevel(1)
-                    .peakPois(java.util.Collections.emptyList())
                     .announcements(java.util.Collections.emptyList())
                     .build();
         }

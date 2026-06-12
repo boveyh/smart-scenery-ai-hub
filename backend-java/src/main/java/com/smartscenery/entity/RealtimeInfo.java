@@ -1,15 +1,24 @@
 package com.smartscenery.entity;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 /**
- * 景区实时资讯 — 对应 API 文档 §4.4
+ * 景区实时资讯 — 对应 t_realtime_info 表
  * 每个租户只有一条最新记录
  */
 @Entity
@@ -34,23 +43,39 @@ public class RealtimeInfo {
     @Column(length = 32)
     private String weather;
 
-    /** 温度 */
-    private Integer temperature;
+    /** 温度（摄氏度） */
+    @Column(precision = 4, scale = 1)
+    private BigDecimal temperature;
+
+    /** 湿度百分比 */
+    private Integer humidity;
+
+    /** 风速(m/s) */
+    @Column(precision = 4, scale = 1)
+    private BigDecimal windSpeed;
 
     /** 整体拥挤等级 1-5 */
     @Column(nullable = false)
     @Builder.Default
     private Integer crowdednessLevel = 1;
 
-    /** 拥挤的POI列表（JSON数组字符串，如 ["poi_001","poi_002"]） */
-    @Column(columnDefinition = "TEXT")
-    private String peakPois;
-
-    /** 公告内容（JSON数组字符串） */
+    /** 公告内容（JSON数组字符串，如 ["今日索道检修","..."]） */
     @Column(columnDefinition = "TEXT")
     private String announcements;
 
     /** 更新时间 */
     @Column(nullable = false)
     private LocalDateTime updateTime;
+
+    @PrePersist
+    protected void onCreate() {
+        if (updateTime == null) {
+            updateTime = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateTime = LocalDateTime.now();
+    }
 }

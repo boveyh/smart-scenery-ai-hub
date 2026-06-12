@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * POI 景点接口 — 对应 API 文档 §4.1
@@ -25,14 +26,18 @@ public class PoiController {
     @GetMapping("/pois")
     public ApiResult<List<PoiDTO>> getPois(
             @RequestParam(required = false) Double lat,
-            @RequestParam(required = false) Double lng) {
+            @RequestParam(required = false) Double lng,
+            @RequestParam(required = false) String category) {
+        if (category != null && !category.isBlank()) {
+            return ApiResult.success(poiService.getPoisByCategory(category));
+        }
         List<PoiDTO> pois = poiService.getPoiList(lat, lng);
         return ApiResult.success(pois);
     }
 
     /**
      * 根据分类查询景点
-     * GET /api/v1/pois?category=历史文化
+     * GET /api/v1/pois/category/{category}
      */
     @GetMapping("/pois/category/{category}")
     public ApiResult<List<PoiDTO>> getPoisByCategory(@PathVariable String category) {
@@ -48,5 +53,14 @@ public class PoiController {
     public ApiResult<PoiDTO> getPoiById(@PathVariable String poiId) {
         PoiDTO poi = poiService.getPoiById(poiId);
         return ApiResult.success(poi);
+    }
+
+    /**
+     * 批量获取景点详情
+     * POST /api/v1/pois/batch
+     */
+    @PostMapping("/pois/batch")
+    public ApiResult<Map<String, PoiDTO>> getPoisBatch(@RequestBody List<String> poiIds) {
+        return ApiResult.success(poiService.getPoiMapByIds(poiIds));
     }
 }

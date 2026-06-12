@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,20 +21,16 @@ import java.util.List;
 public class RealtimeInfoDTO {
 
     private String weather;
-    private Integer temperature;
+    private BigDecimal temperature;
+    private Integer humidity;
+    private BigDecimal windSpeed;
     private Integer crowdednessLevel;
-    private List<String> peakPois;
     private List<String> announcements;
 
     public static RealtimeInfoDTO fromEntity(RealtimeInfo entity) {
-        List<String> peakPoisList = Collections.emptyList();
         List<String> announcementsList = Collections.emptyList();
 
         try {
-            if (entity.getPeakPois() != null && !entity.getPeakPois().isBlank()) {
-                peakPoisList = JsonUtils.fromJson(entity.getPeakPois(),
-                        new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
-            }
             if (entity.getAnnouncements() != null && !entity.getAnnouncements().isBlank()) {
                 announcementsList = JsonUtils.fromJson(entity.getAnnouncements(),
                         new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
@@ -43,8 +40,9 @@ public class RealtimeInfoDTO {
         return RealtimeInfoDTO.builder()
                 .weather(entity.getWeather())
                 .temperature(entity.getTemperature())
+                .humidity(entity.getHumidity())
+                .windSpeed(entity.getWindSpeed())
                 .crowdednessLevel(entity.getCrowdednessLevel())
-                .peakPois(peakPoisList)
                 .announcements(announcementsList)
                 .build();
     }

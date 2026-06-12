@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,6 @@ public interface PoiRepository extends JpaRepository<Poi, Long> {
 
     /**
      * 按地理距离排序查询（近似计算，适用于小范围）
-     * 使用简化公式：distance ≈ sqrt((lat1-lat2)^2 + (lng1-lng2)^2 * cos(avg_lat)^2) * 111320
      */
     @Query(value = """
             SELECT p.*, (
@@ -36,8 +36,11 @@ public interface PoiRepository extends JpaRepository<Poi, Long> {
             ORDER BY distance
             """, nativeQuery = true)
     List<Object[]> findNearbyPois(@Param("tenantId") String tenantId,
-                                  @Param("lat") Double lat,
-                                  @Param("lng") Double lng);
+                                  @Param("lat") BigDecimal lat,
+                                  @Param("lng") BigDecimal lng);
 
     List<Poi> findByTenantIdAndCrowdednessGreaterThanEqual(String tenantId, Integer crowdedness);
+
+    /** 根据名称模糊查询POI（用于游客行为关联） */
+    List<Poi> findByTenantIdAndNameContaining(String tenantId, String name);
 }
