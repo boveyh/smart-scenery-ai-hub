@@ -2,16 +2,22 @@
 # -*- coding: utf-8 -*-
 """
 一键生成 .env 配置文件
+
 运行: python setup_env.py
+
+注意：请先设置环境变量 LLM_API_KEY，或运行后手动编辑 .env 文件补全 Key。
 """
+
 import os
 import sys
 
-# 设置 stdout 编码为 utf-8
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
-env_content = """# ============================================================
+# 从环境变量读取（如果没有则留空占位）
+llm_api_key = os.environ.get("LLM_API_KEY", "YOUR_DEEPSEEK_API_KEY_HERE")
+
+env_content = f"""# ============================================================
 # 智慧景区 AI 导览系统 - AI 引擎配置文件
 # ============================================================
 
@@ -20,18 +26,13 @@ SERVER_HOST=0.0.0.0
 SERVER_PORT=8000
 
 # --- 大语言模型 (DeepSeek) ---
-LLM_API_KEY=YOUR_DEEPSEEK_API_KEY_HERE
+LLM_API_KEY={llm_api_key}
 LLM_BASE_URL=https://api.deepseek.com/v1
 LLM_MODEL=deepseek-chat
 LLM_MAX_TOKENS=2048
 LLM_TEMPERATURE=0.7
 
-# --- 语音合成 (阿里云 CosyVoice TTS) ---
-TTS_API_KEY=YOUR_TTS_API_KEY_HERE
-TTS_MODEL=cosyvoice-v3.5-plus
-TTS_VOICE=loopy
-
-# --- TTS 音频输出目录 ---
+# --- TTS 音频输出目录 (edge-tts，无需 API Key) ---
 TTS_OUTPUT_DIR=./static/audio
 
 # --- Java 后端地址 ---
@@ -44,11 +45,7 @@ with open(env_path, "w", encoding="utf-8") as f:
 
 print("[OK] 配置文件已生成: " + env_path)
 print()
-print("配置概览:")
-print("  LLM API Key:     YOUR_DEEPSEEK_API_KEY_HERE (DeepSeek)")
-print("  TTS API Key:     YOUR_TTS_API_KEY_HERE (阿里云 CosyVoice)")
-print("  TTS 模型:        cosyvoice-v3.5-plus")
-print("  TTS 音色:        loopy")
-print("  Java 后端地址:   http://localhost:9000")
+print("请检查 .env 文件，补全 LLM_API_KEY（如果尚未设置）")
+print("  - 已通过环境变量读取 Key: 是" if llm_api_key != "YOUR_DEEPSEEK_API_KEY_HERE" else "  - 请在 .env 中填入你的 DeepSeek API Key")
 print()
-print("现在运行: uvicorn main:app --reload --port 8000")
+print("启动服务: uvicorn main:app --reload --port 8000")
