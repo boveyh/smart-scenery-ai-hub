@@ -15,8 +15,6 @@ TTS 语音合成引擎 — 基于 edge-tts 的异步轻量化文本转语音
 
 import asyncio
 import logging
-import os
-import uuid
 from pathlib import Path
 
 import edge_tts
@@ -41,7 +39,7 @@ class TTSGenerator:
             session_id="abc123",
             seq=1,
         )
-        # → "/static/audio/west_lake/abc123/1.mp3"
+        # → "/static/audio/west_lake/abc123/0001.mp3"
     """
 
     def __init__(
@@ -50,7 +48,7 @@ class TTSGenerator:
         voice: str = DEFAULT_VOICE,
         rate: str = "+10%",       # 语速微调，使输出更轻快
         pitch: str = "+0Hz",      # 音高不变
-        cleanup_after_seconds: int = 1800,  # 30分钟后清理（后续可加定时任务）
+        cleanup_after_seconds: int = 1800,  # 30分钟后清理
     ):
         self.output_dir = Path(output_dir)
         self.voice = voice
@@ -83,7 +81,6 @@ class TTSGenerator:
             return ""
 
         # 构建安全文件名和路径
-        safe_text = text[:30].replace("/", "_").replace("\\", "_")
         tenant_dir = self.output_dir / tenant_id
         session_dir = tenant_dir / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
@@ -178,8 +175,10 @@ async def _test():
         session_id="demo_session",
         seq=1,
     )
-    print(f"✅ 生成音频: {url}")
-    print(f"   文件路径: static/audio/test/demo_session/0001.mp3")
+    if url:
+        print(f"TTS 测试通过! 音频文件: ./static/audio/test/demo_session/0001.mp3")
+    else:
+        print("TTS 测试失败")
 
 
 if __name__ == "__main__":
