@@ -23,6 +23,12 @@ from core.llm_client import LLMStreamClient
 from core.tts_generator import TTSGenerator
 from core.rag_processor import RAGProcessor
 
+# ─── 数字人配置 ──────────────────────────────────────────
+import sys
+DIGITAL_HUMAN_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "digital-human")
+sys.path.insert(0, DIGITAL_HUMAN_DIR)
+from config.profile_loader import ProfileLoader
+
 # ─── 环境变量加载 ─────────────────────────────────────────
 load_dotenv()
 
@@ -38,6 +44,9 @@ LLM_MAX_TOKENS  = int(os.getenv("LLM_MAX_TOKENS", "2048"))
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 TTS_OUTPUT_DIR  = os.getenv("TTS_OUTPUT_DIR", "./static/audio")
 BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:9000")
+
+# 数字人多租户配置加载器
+profile_loader = ProfileLoader()
 
 # ─── 全局组件（懒初始化在 lifespan 中完成） ─────────────────
 llm_client: LLMStreamClient | None = None
@@ -117,6 +126,14 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
     tenant_id = request.headers.get("X-Tenant-Id", "default")
     logger.info(f"[{tenant_id}][{req.session_id}] 收到数字人请求: {req.content[:50]}...")
 
+    # ─── 加载租户数字人配置 ────────────────────────────────
+    profile = profile_loader.get(tenant_id)
+    persona_prompt = profile.get("persona_prompt")
+    tts_voice = profile.get("tts_voice", "zh-CN-XiaoxiaoNeural")
+    tts_rate = profile.get("tts_rate", "+10%")
+    tts_pitch = profile.get("tts_pitch", "+0Hz")
+    persona_name = profile.get("persona_name", "AI导览")
+
     async def generate_ndjson():
         seq = 0
         try:
@@ -125,9 +142,10 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                 system_prompt = await rag_processor.build_system_prompt(
                     tenant_id=tenant_id,
                     user_query=req.content,
+                    persona_prompt=persona_prompt,
                 )
             else:
-                system_prompt = "你是一个专业的智慧景区AI导览助手,请用自然口语化的中文回答游客问题。"
+                system_prompt = persona_prompt or "你是一个专业的智慧景区AI导览助手,请用自然口语化的中文回答游客问题。"
 
             # ─── Step 2: LLM 流式调用 + 句级切片 ────────────
             async for sentence in llm_client.stream_with_sentence_splitting(
@@ -148,6 +166,9 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                             tenant_id=tenant_id,
                             session_id=req.session_id,
                             seq=seq,
+                            voice=tts_voice,
+                            rate=tts_rate,
+                            pitch=tts_pitch,
                         )
                     except Exception as e:
                         logger.warning(f"TTS 生成失败(降级纯文本): {e}")
