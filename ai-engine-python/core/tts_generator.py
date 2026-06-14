@@ -64,6 +64,9 @@ class TTSGenerator:
         tenant_id: str,
         session_id: str,
         seq: int,
+        voice: str | None = None,
+        rate: str | None = None,
+        pitch: str | None = None,
     ) -> str:
         """
         异步生成单句 MP3 音频
@@ -95,9 +98,9 @@ class TTSGenerator:
         try:
             communicate = edge_tts.Communicate(
                 text=text,
-                voice=self.voice,
-                rate=self.rate,
-                pitch=self.pitch,
+                voice=voice or self.voice,
+                rate=rate or self.rate,
+                pitch=pitch or self.pitch,
             )
             await communicate.save(str(mp3_path))
 
@@ -112,8 +115,8 @@ class TTSGenerator:
                 communicate = edge_tts.Communicate(
                     text=text,
                     voice=FALLBACK_VOICE,
-                    rate=self.rate,
-                    pitch=self.pitch,
+                    rate=rate or self.rate,
+                    pitch=pitch or self.pitch,
                 )
                 await communicate.save(str(mp3_path))
                 logger.info(f"TTS 备选语音成功: {mp3_path.name}")

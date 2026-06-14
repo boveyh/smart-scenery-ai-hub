@@ -28,24 +28,12 @@ logger = logging.getLogger("ai-engine.rag")
 CROWD_THRESHOLD_HIGH = 4      # 拥挤度 >= 4 触发强错峰
 CROWD_THRESHOLD_MEDIUM = 3    # 拥挤度 >= 3 触发温和提示
 
-# ─── 默认景区知识（兜底知识库，各租户通用基础信息） ─────────
-DEFAULT_KNOWLEDGE: dict[str, list[str]] = {
-    "west_lake": [
-        "西湖位于浙江省杭州市，是中国首批国家重点风景名胜区。",
-        "西湖十景包括：苏堤春晓、断桥残雪、平湖秋月、花港观鱼、柳浪闻莺、三潭印月、双峰插云、雷峰夕照、南屏晚钟、曲院风荷。",
-        "雷峰塔始建于北宋太平兴国二年（977年），传说《白蛇传》中白娘子被镇压于此。",
-        "断桥是西湖最著名的桥，传说白娘子与许仙在此相遇。",
-        "西湖游船开放时间为每天8:00-17:00，票价根据船型不同在35-80元之间。",
-        "游览西湖推荐路线：从断桥出发→白堤→孤山→苏堤→花港观鱼→雷峰塔。",
-        "景区内禁止无人机飞行，请游客遵守规定。",
-        "西湖周边有众多美食，推荐西湖醋鱼、龙井虾仁、叫花鸡。",
-    ],
-    "default": [
-        "欢迎来到智慧景区！我是您的AI导览助手，请随时向我提问。",
-        "景区开放时间为每天8:00-18:00，节假日可能延长。",
-        "请爱护景区环境，不随手丢弃垃圾。",
-    ],
-}
+# ─── 知识库降级提示（仅用于后端完全不可用时的兜底） ─────────
+FALLBACK_KNOWLEDGE: list[str] = [
+    "欢迎来到智慧景区！我是您的AI导览助手，请随时向我提问。",
+    "景区开放时间为每天8:00-18:00，节假日可能延长。",
+    "请爱护景区环境，不随手丢弃垃圾。",
+]
 
 
 class RAGProcessor:
@@ -74,13 +62,15 @@ class RAGProcessor:
         self,
         tenant_id: str,
         user_query: str,
+        persona_prompt: str | None = None,
     ) -> str:
         """
-        构建包含 RAG 知识 + 错峰指令的完整 System Prompt
+        构建包含 RAG 知识 + 错峰指令 + 人设的完整 System Prompt
 
         Args:
             tenant_id: 租户ID（如 "west_lake"）
             user_query: 游客原始提问
+            persona_prompt: 景区人设 Prompt（覆盖默认导览角色）
 
         Returns:
             完整的系统提示词字符串
@@ -90,12 +80,15 @@ class RAGProcessor:
         crowd_data = await self._fetch_crowd_data(tenant_id)
 
         # ─── 组装 System Prompt ────────────────────────────
-        prompt_parts = [
-            "你是一个专业的智慧景区AI导览助手。",
-            "请用自然、口语化、热情的中文回答游客问题。",
-            "每句话保持简洁，不超过40个字，方便语音播报。",
-            "",
-        ]
+        if persona_prompt:
+            prompt_parts = [persona_prompt, ""]
+        else:
+            prompt_parts = [
+                "你是一个专业的智慧景区AI导览助手。",
+                "请用自然、口语化、热情的中文回答游客问题。",
+                "每句话保持简洁，不超过40个字，方便语音播报。",
+                "",
+            ]
 
         # 注入租户知识
         if knowledge:
@@ -130,9 +123,9 @@ class RAGProcessor:
         检索租户知识库
 
         策略（三层降级）：
-          1. 尝试从 Java 后端的 ES 检索接口获取知识块
+          1. 尝试从 Java 后端 MySQL 全文检索获取知识块
           2. 失败 → 读取本地 import_knowledge.py 生成的 JSON 文件
-          3. 再失败 → 使用代码内嵌的 DEFAULT_KNOWLEDGE 兜底
+          3. 再失败 → 使用通用兜底知识（无租户定制信息）
         """
         # ─── Layer 1: Java 后端 ES 检索 ───────────────────
         try:
@@ -160,10 +153,9 @@ class RAGProcessor:
             logger.info(f"本地 JSON 知识库命中: {len(local_chunks)} 条")
             return local_chunks
 
-        # ─── Layer 3: 代码内嵌兜底知识 ────────────────────
-        fallback = DEFAULT_KNOWLEDGE.get(tenant_id, DEFAULT_KNOWLEDGE["default"])
-        logger.info(f"使用兜底知识库: {len(fallback)} 条")
-        return fallback
+        # ─── Layer 3: 通用兜底知识（无租户定制信息） ───────
+        logger.info(f"使用通用兜底知识库: {len(FALLBACK_KNOWLEDGE)} 条")
+        return list(FALLBACK_KNOWLEDGE)
 
     @staticmethod
     def _load_local_knowledge_json(tenant_id: str, query: str, top_k: int = 5) -> list[str]:
