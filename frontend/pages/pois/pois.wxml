@@ -45,7 +45,7 @@
   </view>
 
   <!-- POI 列表 -->
-  <scroll-view class="poi-list" scroll-y enhanced show-scrollbar="{{false}}" wx:if="{{!loading && pois.length > 0}}">
+  <scroll-view class="poi-list" scroll-y wx:if="{{!loading && pois.length > 0}}">
     <view
       class="poi-card"
       wx:for="{{pois}}"

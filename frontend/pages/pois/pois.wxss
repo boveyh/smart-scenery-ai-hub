@@ -67,6 +67,7 @@
   flex: 1;
   padding: 20rpx;
   overflow-y: auto;
+  height: 0; /* 配合 flex:1 正确撑满 */
 }
 
 .poi-card {

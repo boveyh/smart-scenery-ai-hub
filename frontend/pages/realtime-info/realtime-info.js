@@ -28,7 +28,7 @@ Page({
     const app = getApp();
     api.initApi(app.getSessionId(), app.getTenantId());
 
-    this.setData({ loading: true });
+    this.setData({ loading: true, refreshing: false });
 
     api.getRealTimeInfo().then(res => {
       if (res && res.code === 200 && res.data) {
@@ -94,6 +94,7 @@ Page({
     this.setData({
       info,
       loading: false,
+      refreshing: false,
       weatherIcon: weatherIcons[info.weather] || '☀️',
       crowdStatusText: crowd.status,
       crowdDescText: crowd.desc,
@@ -128,11 +129,8 @@ Page({
   /** 刷新信息 */
   refreshInfo() {
     this.setData({ refreshing: true });
+    // loadInfo 完成后自动设置 refreshing = false
     this.loadInfo();
-    setTimeout(() => {
-      this.setData({ refreshing: false });
-      wx.showToast({ title: '已刷新', icon: 'success' });
-    }, 1000);
   },
 
   /** 跳转景点列表 */

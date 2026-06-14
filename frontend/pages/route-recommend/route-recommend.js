@@ -57,11 +57,6 @@ Page({
   /** 提交路线推荐请求 */
   submitRoute() {
     const { form, startPoiId } = this.data;
-    if (!startPoiId) {
-      // 如果没有起始景点，选第一个景点作为起点
-      wx.showToast({ title: '请从景点详情进入', icon: 'none' });
-      return;
-    }
 
     const app = getApp();
     api.initApi(app.getSessionId(), app.getTenantId());
@@ -75,10 +70,17 @@ Page({
         companions: form.companions,
         duration_min: form.durationMin
       },
-      start_poi_id: startPoiId
+      start_poi_id: startPoiId || 'entrance_01'
     };
 
+    let timeoutHandle = setTimeout(() => {
+      // 接口超时（10秒）直接使用 Mock 数据
+      console.warn('[Route] 请求超时，使用Mock数据');
+      this.loadMockResult(startPoiId);
+    }, 10000);
+
     api.recommendRoute(requestData).then(res => {
+      clearTimeout(timeoutHandle);
       if (res && res.code === 200 && res.data) {
         const data = res.data;
         const result = {
@@ -103,6 +105,7 @@ Page({
         this.loadMockResult(startPoiId);
       }
     }).catch(err => {
+      clearTimeout(timeoutHandle);
       console.error('[Route] 推荐失败:', err);
       this.loadMockResult(startPoiId);
     });

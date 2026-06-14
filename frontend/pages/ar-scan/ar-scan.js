@@ -14,55 +14,69 @@ Page({
     api.initApi(app.getSessionId(), app.getTenantId());
   },
 
-  /** 拍照 */
-  takePhoto() {
+  /** 获取图片（通用方法：优先 chooseMedia，降级 chooseImage） */
+  getImage(sourceType) {
     const app = getApp();
     api.initApi(app.getSessionId(), app.getTenantId());
 
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['camera'],
-      camera: 'back',
-      success: (res) => {
-        const tempPath = res.tempFiles[0].tempFilePath;
-        this.setData({
-          imagePath: tempPath,
-          result: null,
-          question: ''
+    const onSuccess = (tempPath) => {
+      this.setData({
+        imagePath: tempPath,
+        result: null,
+        question: ''
+      });
+    };
+    const onFail = (err) => {
+      const msg = err.errMsg || '';
+      // 用户取消不提示
+      if (msg.includes('cancel') || msg.includes('fail cancel')) return;
+      // 降级到 wx.chooseImage（兼容低版本）
+      if (msg.includes('chooseMedia:fail')) {
+        console.warn('[AR] chooseMedia 失败，降级到 chooseImage');
+        wx.chooseImage({
+          count: 1,
+          sourceType: [sourceType],
+          success: (res) => onSuccess(res.tempFilePaths[0]),
+          fail: (err2) => {
+            if (!(err2.errMsg || '').includes('cancel')) {
+              wx.showToast({ title: sourceType === 'camera' ? '拍照失败' : '选择失败', icon: 'none' });
+            }
+          }
         });
-      },
-      fail: (err) => {
-        if (err.errNo !== undefined || err.errMsg !== 'chooseMedia:fail cancel') {
-          wx.showToast({ title: '拍照失败', icon: 'none' });
-        }
+        return;
       }
-    });
+      // 其他错误
+      wx.showToast({ title: '获取图片失败', icon: 'none' });
+    };
+
+    try {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sourceType: [sourceType],
+        camera: 'back',
+        success: (res) => onSuccess(res.tempFiles[0].tempFilePath),
+        fail: onFail
+      });
+    } catch (e) {
+      // chooseMedia 方法不存在（极低版本），使用 chooseImage
+      wx.chooseImage({
+        count: 1,
+        sourceType: [sourceType],
+        success: (res) => onSuccess(res.tempFilePaths[0]),
+        fail: () => {}
+      });
+    }
+  },
+
+  /** 拍照 */
+  takePhoto() {
+    this.getImage('camera');
   },
 
   /** 从相册选择 */
   chooseImage() {
-    const app = getApp();
-    api.initApi(app.getSessionId(), app.getTenantId());
-
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album'],
-      success: (res) => {
-        const tempPath = res.tempFiles[0].tempFilePath;
-        this.setData({
-          imagePath: tempPath,
-          result: null,
-          question: ''
-        });
-      },
-      fail: (err) => {
-        if (err.errNo !== undefined || err.errMsg !== 'chooseMedia:fail cancel') {
-          wx.showToast({ title: '选择失败', icon: 'none' });
-        }
-      }
-    });
+    this.getImage('album');
   },
 
   /** 开始识别 */

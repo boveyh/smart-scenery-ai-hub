@@ -17,10 +17,50 @@ Page({
   },
 
   onShow() {
-    // 回到页面时刷新数据
-    if (!this.data.loading) {
-      this.loadPOIs();
-    }
+    // 从详情页返回时静默刷新（不显示 loading 动画）
+    this.refreshSilently();
+  },
+
+  /** 静默刷新（不打断用户体验） */
+  refreshSilently() {
+    const app = getApp();
+    api.initApi(app.getSessionId(), app.getTenantId());
+    const { currentCategory, sortBy } = this.data;
+
+    const fetchPromise = currentCategory
+      ? api.getPOIsByCategory(currentCategory)
+      : api.getPOIs();
+
+    fetchPromise.then(res => {
+      if (res && res.code === 200 && res.data) {
+        let list = res.data.map(item => ({
+          poiId: item.poiId || item.poi_id,
+          name: item.name,
+          category: item.category,
+          subCategory: item.subCategory || item.sub_category,
+          lat: item.lat,
+          lng: item.lng,
+          address: item.address,
+          description: item.description,
+          avgStayMin: item.avgStayMin || item.avg_stay_min,
+          openingHours: item.openingHours || item.opening_hours,
+          ticketPrice: item.ticketPrice || item.ticket_price || 0,
+          imageUrl: item.imageUrl || item.image_url,
+          crowdedness: item.crowdedness || 1,
+          distance: item.distance
+        }));
+
+        if (sortBy === 'crowdedness') {
+          list.sort((a, b) => b.crowdedness - a.crowdedness);
+        } else if (sortBy === 'distance') {
+          list.sort((a, b) => (a.distance || 99999) - (b.distance || 99999));
+        }
+
+        this.setData({ pois: list });
+      }
+    }).catch(() => {
+      // 静默刷新失败不影响当前展示
+    });
   },
 
   /** 加载 POI 列表 */
