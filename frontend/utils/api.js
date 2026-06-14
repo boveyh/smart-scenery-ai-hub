@@ -262,6 +262,30 @@ function getPOIs(lat, lng) {
 }
 
 /**
+ * 根据分类查询景点
+ * @param {string} category 分类名称
+ */
+function getPOIsByCategory(category) {
+  return get(`/pois/category/${encodeURIComponent(category)}`);
+}
+
+/**
+ * 获取单个景点详情
+ * @param {string} poiId 景点ID
+ */
+function getPOIDetail(poiId) {
+  return get(`/pois/${encodeURIComponent(poiId)}`);
+}
+
+/**
+ * 批量获取景点详情
+ * @param {string[]} poiIds 景点ID数组
+ */
+function getPOIsBatch(poiIds) {
+  return post('/pois/batch', poiIds);
+}
+
+/**
  * 个性化路线推荐
  * @param {object} params 推荐参数
  */
@@ -435,10 +459,15 @@ module.exports = {
   post,
   digitalHumanChat,
   getPOIs,
+  getPOIsByCategory,
+  getPOIDetail,
+  getPOIsBatch,
   recommendRoute,
   recognizeVision,
   getRealTimeInfo,
   getOfflineKnowledge,
+  getCrowdednessHistory,
+  getLatestCrowdedness,
   parseNDJSONLines,
   parseWSMessage,
   handleErrorCode

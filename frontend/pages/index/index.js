@@ -35,6 +35,30 @@ Page({
     });
   },
 
+  /** 跳转景点列表 */
+  gotoPOIs() {
+    wx.navigateTo({
+      url: '/pages/pois/pois',
+      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
+    });
+  },
+
+  /** 跳转实时资讯 */
+  gotoRealtimeInfo() {
+    wx.navigateTo({
+      url: '/pages/realtime-info/realtime-info',
+      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
+    });
+  },
+
+  /** 跳转拍照识物 */
+  gotoARScan() {
+    wx.navigateTo({
+      url: '/pages/ar-scan/ar-scan',
+      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
+    });
+  },
+
   switchTenant() {
     const tenantKeys = Object.keys(config.tenants);
     const tenantNames = tenantKeys.map(k => `${config.tenants[k].name} (${k})`);
@@ -51,3 +75,4 @@ Page({
     });
   }
 });
+

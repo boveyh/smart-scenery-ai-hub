@@ -2,7 +2,12 @@
   "pages": [
     "pages/index/index",
     "pages/chat/chat",
-    "pages/ar-view/ar-view"
+    "pages/ar-view/ar-view",
+    "pages/pois/pois",
+    "pages/poi-detail/poi-detail",
+    "pages/route-recommend/route-recommend",
+    "pages/realtime-info/realtime-info",
+    "pages/ar-scan/ar-scan"
   ],
   "window": {
     "navigationBarTitleText": "智慧景区导览",

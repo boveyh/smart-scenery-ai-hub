@@ -1,11 +1,24 @@
 <!--pages/index/index.wxml-->
 <view class="container">
   <text class="title">智慧景区导览</text>
-  <text class="desc">选择您的游览模式</text>
+  <text class="subtitle">{{tenantName}}</text>
 
-  <button class="btn primary" bindtap="gotoChat" data-mode="text">📝 极速文本模式</button>
-  <button class="btn primary" bindtap="gotoChat" data-mode="digital_human">🎭 面对面数字人</button>
-  <button class="btn secondary" bindtap="switchTenant">🏞️ 切换景区</button>
+  <!-- AI 对话区 -->
+  <view class="section-title">AI 智能导览</view>
+  <button class="btn primary" bindtap="gotoChat" data-mode="text">💬 极速文本模式</button>
+  <button class="btn primary" bindtap="gotoChat" data-mode="digital_human">🎭 数字人模式</button>
 
-  <text class="tenant-info">当前景区：{{tenantName}}</text>
+  <!-- 景区服务区 -->
+  <view class="section-title">景区服务</view>
+  <view class="grid-row">
+    <button class="btn grid-btn" bindtap="gotoPOIs">🗺️ 景点列表</button>
+    <button class="btn grid-btn" bindtap="gotoRealtimeInfo">🌤️ 实时资讯</button>
+  </view>
+  <view class="grid-row">
+    <button class="btn grid-btn" bindtap="gotoARScan">📸 拍照识物</button>
+    <button class="btn grid-btn" bindtap="switchTenant">🏞️ 切换景区</button>
+  </view>
+
+  <!-- 底部信息 -->
+  <text class="footer-info">当前景区：{{tenantName}} · 智慧导览 v2.0</text>
 </view>

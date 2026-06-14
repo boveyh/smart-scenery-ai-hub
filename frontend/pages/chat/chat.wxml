@@ -1,5 +1,4 @@
 <!--pages/chat/chat.wxml-->
-<button size="mini" bindtap="triggerOfflineFallback">模拟弱网降级</button>
 <view class="container">
   <!-- 模式切换开关 -->
   <view class="mode-switch">
@@ -87,3 +86,4 @@
     </view>
   </block>
 </view>
+

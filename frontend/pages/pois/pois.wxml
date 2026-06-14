@@ -1,0 +1,76 @@
+<view class="container">
+  <!-- 分类筛选 -->
+  <scroll-view class="category-bar" scroll-x show-scrollbar="{{false}}">
+    <view
+      class="category-item {{currentCategory === '' ? 'active' : ''}}"
+      data-category=""
+      bindtap="onFilterCategory"
+    >全部</view>
+    <view
+      class="category-item {{currentCategory === item ? 'active' : ''}}"
+      wx:for="{{categories}}"
+      wx:key="index"
+      data-category="{{item}}"
+      bindtap="onFilterCategory"
+    >{{item}}</view>
+  </scroll-view>
+
+  <!-- 排序切换 -->
+  <view class="sort-bar">
+    <text
+      class="sort-item {{sortBy === 'default' ? 'active' : ''}}"
+      data-sort="default"
+      bindtap="onSortChange"
+    >默认排序</text>
+    <text
+      class="sort-item {{sortBy === 'crowdedness' ? 'active' : ''}}"
+      data-sort="crowdedness"
+      bindtap="onSortChange"
+    >按拥挤度</text>
+    <text
+      class="sort-item {{sortBy === 'distance' ? 'active' : ''}}"
+      data-sort="distance"
+      bindtap="onSortChange"
+    >按距离</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-tip" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-tip" wx:if="{{!loading && pois.length === 0}}">
+    <text>暂无景点数据</text>
+  </view>
+
+  <!-- POI 列表 -->
+  <scroll-view class="poi-list" scroll-y enhanced show-scrollbar="{{false}}" wx:if="{{!loading && pois.length > 0}}">
+    <view
+      class="poi-card"
+      wx:for="{{pois}}"
+      wx:key="poiId"
+      data-poi-id="{{item.poiId}}"
+      bindtap="goToDetail"
+    >
+      <view class="poi-image-wrap">
+        <image class="poi-image" src="{{item.imageUrl || '/assets/default-poi.png'}}" mode="aspectFill" />
+        <view class="poi-crowdedness level-{{item.crowdedness}}">
+          <text>拥挤度 {{item.crowdedness}}/5</text>
+        </view>
+      </view>
+      <view class="poi-info">
+        <text class="poi-name">{{item.name}}</text>
+        <text class="poi-category">{{item.category}}{{item.subCategory ? ' · ' + item.subCategory : ''}}</text>
+        <text class="poi-desc">{{item.description || '暂无简介'}}</text>
+        <view class="poi-meta">
+          <text class="poi-meta-item" wx:if="{{item.avgStayMin}}">建议 {{item.avgStayMin}} 分钟</text>
+          <text class="poi-meta-item" wx:if="{{item.openingHours}}">{{item.openingHours}}</text>
+          <text class="poi-meta-item" wx:if="{{item.ticketPrice > 0}}">门票 ¥{{item.ticketPrice}}</text>
+          <text class="poi-meta-item" wx:if="{{item.ticketPrice === 0}}">免费</text>
+          <text class="poi-meta-item" wx:if="{{item.distance}}">{{item.distance}}m</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>
