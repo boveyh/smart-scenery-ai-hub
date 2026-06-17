@@ -1,76 +1,35 @@
+<!-- pages/pois/pois.wxml -->
 <view class="container">
   <!-- 分类筛选 -->
-  <scroll-view class="category-bar" scroll-x show-scrollbar="{{false}}">
-    <view
-      class="category-item {{currentCategory === '' ? 'active' : ''}}"
-      data-category=""
-      bindtap="onFilterCategory"
-    >全部</view>
-    <view
-      class="category-item {{currentCategory === item ? 'active' : ''}}"
-      wx:for="{{categories}}"
-      wx:key="index"
-      data-category="{{item}}"
-      bindtap="onFilterCategory"
-    >{{item}}</view>
+  <scroll-view class="category-bar" scroll-x>
+    <view wx:for="{{categories}}" wx:key="index" class="category-item {{currentCategory === item ? 'active' : ''}}" bindtap="selectCategory" data-cat="{{item}}">
+      {{item}}
+    </view>
   </scroll-view>
 
-  <!-- 排序切换 -->
+  <!-- 排序 -->
   <view class="sort-bar">
-    <text
-      class="sort-item {{sortBy === 'default' ? 'active' : ''}}"
-      data-sort="default"
-      bindtap="onSortChange"
-    >默认排序</text>
-    <text
-      class="sort-item {{sortBy === 'crowdedness' ? 'active' : ''}}"
-      data-sort="crowdedness"
-      bindtap="onSortChange"
-    >按拥挤度</text>
-    <text
-      class="sort-item {{sortBy === 'distance' ? 'active' : ''}}"
-      data-sort="distance"
-      bindtap="onSortChange"
-    >按距离</text>
+    <text class="sort-label">排序：</text>
+    <text class="sort-option {{sortBy === 'default' ? 'active' : ''}}" bindtap="setSort" data-sort="default">默认</text>
+    <text class="sort-option {{sortBy === 'crowdedness' ? 'active' : ''}}" bindtap="setSort" data-sort="crowdedness">拥挤度</text>
+    <text class="sort-option {{sortBy === 'distance' ? 'active' : ''}}" bindtap="setSort" data-sort="distance">距离</text>
   </view>
 
-  <!-- 加载状态 -->
-  <view class="loading-tip" wx:if="{{loading}}">
-    <text>加载中...</text>
-  </view>
-
-  <!-- 空状态 -->
-  <view class="empty-tip" wx:if="{{!loading && pois.length === 0}}">
-    <text>暂无景点数据</text>
-  </view>
-
-  <!-- POI 列表 -->
-  <scroll-view class="poi-list" scroll-y wx:if="{{!loading && pois.length > 0}}">
-    <view
-      class="poi-card"
-      wx:for="{{pois}}"
-      wx:key="poiId"
-      data-poi-id="{{item.poiId}}"
-      bindtap="goToDetail"
-    >
-      <view class="poi-image-wrap">
-        <image class="poi-image" src="{{item.imageUrl || '/assets/default-poi.png'}}" mode="aspectFill" />
-        <view class="poi-crowdedness level-{{item.crowdedness}}">
-          <text>拥挤度 {{item.crowdedness}}/5</text>
-        </view>
-      </view>
+  <!-- 列表 -->
+  <scroll-view class="poi-list" scroll-y>
+    <view wx:for="{{pois}}" wx:key="poiId" class="poi-card" bindtap="gotoDetail" data-id="{{item.poiId}}">
+      <image src="{{item.imageUrl || '/assets/default-poi.png'}}" mode="aspectFill" class="poi-img" />
       <view class="poi-info">
         <text class="poi-name">{{item.name}}</text>
-        <text class="poi-category">{{item.category}}{{item.subCategory ? ' · ' + item.subCategory : ''}}</text>
-        <text class="poi-desc">{{item.description || '暂无简介'}}</text>
+        <text class="poi-category">{{item.category}}</text>
+        <text class="poi-desc">{{item.description}}</text>
         <view class="poi-meta">
-          <text class="poi-meta-item" wx:if="{{item.avgStayMin}}">建议 {{item.avgStayMin}} 分钟</text>
-          <text class="poi-meta-item" wx:if="{{item.openingHours}}">{{item.openingHours}}</text>
-          <text class="poi-meta-item" wx:if="{{item.ticketPrice > 0}}">门票 ¥{{item.ticketPrice}}</text>
-          <text class="poi-meta-item" wx:if="{{item.ticketPrice === 0}}">免费</text>
-          <text class="poi-meta-item" wx:if="{{item.distance}}">{{item.distance}}m</text>
+          <text class="crowdedness">拥挤度：{{item.crowdedness}}/5</text>
+          <text class="stay">建议停留 {{item.avgStayMin}}min</text>
         </view>
       </view>
     </view>
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+    <view wx:if="{{!loading && pois.length === 0}}" class="empty">暂无景点</view>
   </scroll-view>
 </view>

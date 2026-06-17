@@ -7,72 +7,47 @@ Page({
   },
 
   onLoad() {
-    const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
-    const tenant = config.tenants[tenantId];
-    this.setData({
-      tenantName: tenant ? tenant.name : '西湖景区'
-    });
+    this.updateTenantName();
+  },
+  onShow() {
+    this.updateTenantName();
   },
 
-  onShow() {
-    // 每次返回首页时刷新租户名
-    const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
+  updateTenantName() {
+    const tenantId = wx.getStorageSync('tenantId') || config.DEFAULT_TENANT_ID;
     const tenant = config.tenants[tenantId];
-    this.setData({
-      tenantName: tenant ? tenant.name : '西湖景区'
-    });
+    this.setData({ tenantName: tenant ? tenant.name : '西湖景区' });
   },
 
   gotoChat(e) {
     const mode = e.currentTarget.dataset.mode;
-    const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
-    wx.navigateTo({
-      url: `/pages/chat/chat?mode=${mode}&tenantId=${tenantId}`,
-      fail: (err) => {
-        console.error('跳转失败', err);
-        wx.showToast({ title: '页面跳转失败', icon: 'none' });
-      }
-    });
+    const tenantId = wx.getStorageSync('tenantId') || config.DEFAULT_TENANT_ID;
+    wx.navigateTo({ url: `/pages/chat/chat?mode=${mode}&tenantId=${tenantId}` });
   },
 
-  /** 跳转景点列表 */
   gotoPOIs() {
-    wx.navigateTo({
-      url: '/pages/pois/pois',
-      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
-    });
+    wx.navigateTo({ url: '/pages/pois/pois' });
   },
 
-  /** 跳转实时资讯 */
   gotoRealtimeInfo() {
-    wx.navigateTo({
-      url: '/pages/realtime-info/realtime-info',
-      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
-    });
+    wx.navigateTo({ url: '/pages/realtime-info/realtime-info' });
   },
 
-  /** 跳转拍照识物 */
   gotoARScan() {
-    wx.navigateTo({
-      url: '/pages/ar-scan/ar-scan',
-      fail: () => wx.showToast({ title: '页面跳转失败', icon: 'none' })
-    });
+    wx.navigateTo({ url: '/pages/ar-scan/ar-scan' });
   },
 
   switchTenant() {
-    const tenantKeys = Object.keys(config.tenants);
-    const tenantNames = tenantKeys.map(k => `${config.tenants[k].name} (${k})`);
-
+    const keys = Object.keys(config.tenants);
+    const names = keys.map(k => `${config.tenants[k].name} (${k})`);
     wx.showActionSheet({
-      itemList: tenantNames,
+      itemList: names,
       success: (res) => {
-        const tenantId = tenantKeys[res.tapIndex];
-        const tenant = config.tenants[tenantId];
+        const tenantId = keys[res.tapIndex];
         wx.setStorageSync('tenantId', tenantId);
-        this.setData({ tenantName: tenant.name });
-        wx.showToast({ title: `已切换到${tenant.name}`, icon: 'success' });
+        this.updateTenantName();
+        wx.showToast({ title: `已切换到${config.tenants[tenantId].name}`, icon: 'success' });
       }
     });
   }
 });
-

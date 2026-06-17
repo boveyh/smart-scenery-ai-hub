@@ -1,93 +1,45 @@
+<!-- pages/realtime-info/realtime-info.wxml -->
 <view class="container">
-  <!-- 加载状态 -->
-  <view class="loading-tip" wx:if="{{loading}}">
-    <text>加载实时信息...</text>
-  </view>
+  <!-- 顶层守卫：info 未就绪时显示加载占位 -->
+  <block wx:if="{{!info}}">
+    <view class="loading-hint">加载中...</view>
+  </block>
 
-  <block wx:if="{{!loading && info}}">
-    <!-- 天气卡片 -->
+  <block wx:else>
     <view class="weather-card">
-      <view class="weather-main">
-        <text class="weather-icon">{{weatherIcon}}</text>
-        <view class="weather-temp">
-          <text class="temp-value">{{info.temperature}}°</text>
-          <text class="weather-desc">{{info.weather}}</text>
-        </view>
-      </view>
+      <text class="weather-temp">{{info.temperature}}°C</text>
+      <text class="weather-desc">{{info.weather}}</text>
       <view class="weather-detail">
-        <view class="weather-item" wx:if="{{info.humidity}}">
-          <text class="weather-item-label">湿度</text>
-          <text class="weather-item-value">{{info.humidity}}%</text>
-        </view>
-        <view class="weather-item" wx:if="{{info.windSpeed}}">
-          <text class="weather-item-label">风速</text>
-          <text class="weather-item-value">{{info.windSpeed}}m/s</text>
-        </view>
+        <text>💧 湿度 {{info.humidity}}%</text>
+        <text>💨 风速 {{info.windSpeed}} km/h</text>
       </view>
+      <text class="crowd-level">整体拥挤度：{{info.crowdednessLevel}}/5</text>
     </view>
 
-    <!-- 拥挤度 -->
-    <view class="crowd-card">
-      <view class="crowd-header">
-        <text class="card-title">景区人流热力</text>
-        <text class="update-time">更新于 {{updateTime}}</text>
-      </view>
-      <view class="crowd-level-display">
-        <view class="crowd-ring level-{{info.crowdednessLevel}}">
-          <text class="crowd-ring-text">{{info.crowdednessLevel}}</text>
+    <view class="section">
+      <text class="section-title">热门景点拥挤度</text>
+      <block wx:if="{{info.peakPois && info.peakPois.length > 0}}">
+        <view wx:for="{{info.peakPois}}" wx:key="poiId" class="bar-item">
+          <text class="bar-name">{{item.name}}</text>
+          <view class="bar-bg">
+            <view class="bar-fill" style="width: {{(item.crowdedness || 0) / 5 * 100 + '%'}};"></view>
+          </view>
+          <text class="bar-value">{{item.crowdedness}}/5</text>
         </view>
-        <view class="crowd-info">
-          <text class="crowd-status">{{crowdStatusText}}</text>
-          <text class="crowd-desc">{{crowdDescText}}</text>
-        </view>
-      </view>
-      <view class="crowd-bar">
-        <view class="crowd-bar-segment" wx:for="{{[1,2,3,4,5]}}" wx:key="index">
-          <view class="crowd-bar-fill {{info.crowdednessLevel >= item ? 'filled' : ''}} level-{{item}}"></view>
-        </view>
-      </view>
-      <view class="crowd-labels">
-        <text>宽松</text>
-        <text>适中</text>
-        <text>拥挤</text>
-      </view>
+      </block>
+      <view wx:else class="empty-hint">暂无热门景点数据</view>
     </view>
 
-    <!-- 公告 -->
-    <view class="announcement-card" wx:if="{{info.announcements && info.announcements.length > 0}}">
-      <text class="card-title">景区公告</text>
-      <view class="announcement-item" wx:for="{{info.announcements}}" wx:key="index">
-        <text class="announcement-dot">&#x2022;</text>
-        <text class="announcement-text">{{item}}</text>
-      </view>
-    </view>
-
-    <!-- 热门景点拥挤度 -->
-    <view class="poi-crowd-card" wx:if="{{popularPOIs.length > 0}}">
-      <text class="card-title">热门景点拥挤度</text>
-      <view class="poi-crowd-item" wx:for="{{popularPOIs}}" wx:key="poiId">
-        <text class="poi-crowd-name">{{item.name}}</text>
-        <view class="poi-crowd-level level-{{item.crowdedness}}">
-          <text>拥挤度 {{item.crowdedness}}/5</text>
+    <view class="section">
+      <text class="section-title">公告</text>
+      <block wx:if="{{info.announcements && info.announcements.length > 0}}">
+        <view wx:for="{{info.announcements}}" wx:key="*this" class="announcement">
+          <text>{{item}}</text>
         </view>
-      </view>
-    </view>
-
-    <!-- 建议 -->
-    <view class="suggestion-card" wx:if="{{suggestion}}">
-      <text class="card-title">游览建议</text>
-      <text class="suggestion-text">{{suggestion}}</text>
-    </view>
-
-    <view class="action-section">
-      <button class="action-btn" bindtap="goToPOIs">&#x1F5FA; 查看景点列表</button>
-      <button class="action-btn" bindtap="goToChat">&#x1F4AC; AI 智能导览</button>
+      </block>
+      <view wx:else class="empty-hint">暂无公告</view>
     </view>
   </block>
 
-  <!-- 刷新按钮 -->
-  <view class="refresh-bar" bindtap="refreshInfo">
-    <text class="refresh-text" wx:if="{{!refreshing}}">&#x1F504; 刷新信息</text>
-    <text class="refresh-text" wx:if="{{refreshing}}">刷新中...</text>
-  </view>
+  <button bindtap="refresh" class="refresh-btn">🔄 刷新</button>
 </view>

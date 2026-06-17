@@ -1,181 +1,104 @@
 /* pages/chat/chat.wxss */
-
-/* ========== 基础容器 ========== */
 .container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f7fa;
+  background: #f5f7fa;
 }
-
-/* ========== 模式切换 ========== */
 .mode-switch {
   display: flex;
-  justify-content: space-around;
-  padding: 16rpx 20rpx;
-  background-color: #ffffff;
-  border-bottom: 1rpx solid #e9ecef;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-bottom: 1rpx solid #eee;
 }
-
 .mode-switch button {
   flex: 1;
   margin: 0 10rpx;
-  background-color: #f1f3f5;
-  color: #495057;
   border-radius: 40rpx;
-  font-size: 26rpx;
-  padding: 12rpx 0;
+  font-size: 28rpx;
+  background: #f0f0f0;
+  color: #555;
 }
-
-.mode-switch button.active {
-  background-color: #3B82F6;
+.mode-switch .active {
+  background: #3B82F6;
   color: white;
 }
 
-/* ========== 消息列表 ========== */
+/* 文本模式 */
 .msg-list {
   flex: 1;
-  padding: 20rpx;
+  padding: 20rpx 30rpx;
   overflow-y: auto;
 }
-
 .msg {
-  max-width: 80%;
-  margin-bottom: 20rpx;
+  margin: 10rpx 0;
   padding: 16rpx 24rpx;
-  border-radius: 32rpx;
-  word-wrap: break-word;
-  font-size: 30rpx;
-  line-height: 1.5;
-  position: relative;
+  border-radius: 20rpx;
+  max-width: 80%;
+  word-break: break-all;
 }
-
 .msg.user {
-  background-color: #3B82F6;
-  color: white;
   align-self: flex-end;
+  background: #3B82F6;
+  color: white;
   margin-left: auto;
 }
-
 .msg.assistant {
-  background-color: #ffffff;
-  color: #212529;
-  border: 1rpx solid #dee2e6;
-  align-self: flex-start;
+  background: white;
+  color: #333;
+  border: 1rpx solid #e0e0e0;
 }
-
 .msg.system {
-  background-color: #fff3cd;
+  background: #fff3cd;
   color: #856404;
-  font-size: 26rpx;
   text-align: center;
-  max-width: 90%;
-  align-self: center;
-  border: 1rpx solid #ffc107;
-  margin: 10rpx auto;
-}
-
-.typing-dot {
-  color: #3B82F6;
+  width: 100%;
   font-size: 24rpx;
-  margin-left: 4rpx;
-  animation: blink 1s infinite;
 }
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* ========== 输入栏 ========== */
 .input-bar {
   display: flex;
   align-items: center;
-  padding: 16rpx 20rpx;
-  background-color: #ffffff;
-  border-top: 1rpx solid #e9ecef;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-top: 1rpx solid #e0e0e0;
 }
-
 .input-bar input {
   flex: 1;
-  background-color: #f8f9fa;
+  height: 70rpx;
+  border: 1rpx solid #ddd;
   border-radius: 40rpx;
-  padding: 18rpx 30rpx;
-  margin-right: 16rpx;
-  font-size: 30rpx;
+  padding: 0 20rpx;
+  margin-right: 20rpx;
 }
-
 .input-bar button {
-  background-color: #3B82F6;
+  background: #3B82F6;
   color: white;
   border-radius: 40rpx;
-  font-size: 26rpx;
   padding: 0 30rpx;
-  margin-left: 8rpx;
-}
-
-.input-bar button[disabled] {
-  background-color: #adb5bd;
-}
-
-/* ========== 数字人模式 ========== */
-
-/* 视频展示区 */
-.dh-video-area {
-  position: relative;
-  width: 100%;
-  height: 420rpx;
-  background-color: #000;
-  flex-shrink: 0;
-}
-
-.dh-video {
-  width: 100%;
-  height: 100%;
-}
-
-.dh-xr-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* 数字人模式消息区 */
-.dh-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.dh-msg-list {
-  flex: 1;
-}
-
-/* 字幕条 */
-.dh-subtitle {
-  background-color: rgba(0, 0, 0, 0.75);
-  padding: 16rpx 30rpx;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.subtitle-text {
-  color: #ffffff;
+  height: 70rpx;
+  line-height: 70rpx;
   font-size: 28rpx;
-  line-height: 1.5;
 }
 
-/* 离线模式占位 */
-.dh-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 80vh;
-  color: #6c757d;
+/* 数字人模式 */
+.player-wrapper {
+  width: 100%;
+  flex: 1;
+  background: #000;
+}
+.subtitle-area {
+  padding: 20rpx 30rpx;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 28rpx;
+  text-align: center;
+  min-height: 80rpx;
+}
+.clothing-btn {
+  margin: 20rpx auto;
+  background: #ff7e5f;
+  color: white;
+  border-radius: 40rpx;
+  padding: 12rpx 40rpx;
+  font-size: 28rpx;
 }

@@ -1,114 +1,47 @@
+<!-- pages/route-recommend/route-recommend.wxml -->
 <view class="container">
-  <!-- ===== 偏好表单 ===== -->
-  <view class="form-section" wx:if="{{!result}}">
-    <text class="form-title">个性化路线偏好</text>
-
-    <view class="form-group">
-      <text class="form-label">您的兴趣偏好</text>
-      <view class="option-group">
-        <view
-          class="option {{form.interest === item.value ? 'active' : ''}}"
-          wx:for="{{interestOptions}}"
-          wx:key="value"
-          data-field="interest"
-          data-value="{{item.value}}"
-          bindtap="onOptionSelect"
-        >{{item.label}}</view>
-      </view>
+  <view class="form">
+    <view class="field">
+      <text>兴趣偏好</text>
+      <picker mode="selector" range="{{interestOptions}}" bindchange="onInterestChange">
+        <view class="picker">{{interest}}</view>
+      </picker>
     </view>
-
-    <view class="form-group">
-      <text class="form-label">游览节奏</text>
-      <view class="option-group">
-        <view
-          class="option {{form.pace === item.value ? 'active' : ''}}"
-          wx:for="{{paceOptions}}"
-          wx:key="value"
-          data-field="pace"
-          data-value="{{item.value}}"
-          bindtap="onOptionSelect"
-        >{{item.label}}</view>
-      </view>
+    <view class="field">
+      <text>游览节奏</text>
+      <picker mode="selector" range="{{paceOptions}}" bindchange="onPaceChange">
+        <view class="picker">{{pace}}</view>
+      </picker>
     </view>
-
-    <view class="form-group">
-      <text class="form-label">同行人员</text>
-      <view class="option-group">
-        <view
-          class="option {{form.companions === item.value ? 'active' : ''}}"
-          wx:for="{{companionOptions}}"
-          wx:key="value"
-          data-field="companions"
-          data-value="{{item.value}}"
-          bindtap="onOptionSelect"
-        >{{item.label}}</view>
-      </view>
+    <view class="field">
+      <text>同行人</text>
+      <picker mode="selector" range="{{companionOptions}}" bindchange="onCompanionChange">
+        <view class="picker">{{companion}}</view>
+      </picker>
     </view>
-
-    <view class="form-group">
-      <text class="form-label">计划游览时长</text>
-      <view class="option-group">
-        <view
-          class="option {{form.durationMin === item.value ? 'active' : ''}}"
-          wx:for="{{durationOptions}}"
-          wx:key="value"
-          data-field="durationMin"
-          data-value="{{item.value}}"
-          bindtap="onOptionSelect"
-        >{{item.label}}</view>
-      </view>
+    <view class="field">
+      <text>游览时长（分钟）</text>
+      <slider min="60" max="360" value="{{duration}}" bindchange="onDurationChange" show-value />
     </view>
-
-    <button class="submit-btn" bindtap="submitRoute" disabled="{{submitting}}">
-      {{submitting ? '生成中...' : '生成推荐路线'}}
-    </button>
+    <button bindtap="getRecommendation">生成路线</button>
   </view>
 
-  <!-- ===== 路线结果 ===== -->
-  <view class="result-section" wx:if="{{result && !loading}}">
-    <view class="result-header">
-      <text class="result-title">推荐游览路线</text>
-      <text class="result-time">预计时长：约 {{result.estimatedTimeMin}} 分钟</text>
-    </view>
-
-    <!-- 路线步骤 -->
-    <view class="route-timeline">
-      <view
-        class="route-step"
-        wx:for="{{result.poiDetails}}"
-        wx:key="poiId"
-      >
-        <view class="step-dot {{item.crowdedness >= 4 ? 'crowded' : ''}}">
-          <text class="step-num">{{index + 1}}</text>
-        </view>
+  <view class="result" wx:if="{{route}}">
+    <text class="result-title">推荐路线</text>
+    <view class="timeline">
+      <view wx:for="{{route.poiSequence}}" wx:key="index" class="step">
+        <text class="step-index">{{index + 1}}</text>
         <view class="step-content">
           <text class="step-name">{{item.name}}</text>
-          <text class="step-desc">{{item.description || ''}}</text>
-          <view class="step-meta">
-            <text class="step-meta-item" wx:if="{{item.avgStayMin}}">建议停留 {{item.avgStayMin}} 分钟</text>
-            <text class="step-meta-item crowd-level-{{item.crowdedness}}">拥挤度 {{item.crowdedness}}/5</text>
-          </view>
+          <text class="step-desc">{{item.description}}</text>
         </view>
       </view>
     </view>
-
-    <!-- 温馨提示 -->
-    <view class="tips-section" wx:if="{{result.tips && result.tips.length > 0}}">
-      <text class="section-title">温馨提示</text>
-      <view class="tip-item" wx:for="{{result.tips}}" wx:key="index">
-        <text class="tip-dot">&#x2022;</text>
-        <text class="tip-text">{{item}}</text>
-      </view>
+    <text class="total-time">预计总时长：{{route.estimatedTimeMin}} 分钟</text>
+    <view class="tips" wx:if="{{route.tips}}">
+      <text class="tips-title">温馨提示</text>
+      <text wx:for="{{route.tips}}" wx:key="index" class="tip-item">• {{item}}</text>
     </view>
-
-    <view class="result-actions">
-      <button class="action-btn primary" bindtap="goToChat">&#x1F4AC; 开始导览</button>
-      <button class="action-btn secondary" bindtap="resetForm">&#x21A9; 重新选择</button>
-    </view>
-  </view>
-
-  <!-- 加载状态 -->
-  <view class="loading-tip" wx:if="{{loading}}">
-    <text>正在根据您的偏好生成最佳路线...</text>
+    <button bindtap="reset">重新选择</button>
   </view>
 </view>

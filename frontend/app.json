@@ -1,24 +1,28 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/chat/chat",
-    "pages/ar-view/ar-view",
-    "pages/pois/pois",
-    "pages/poi-detail/poi-detail",
-    "pages/route-recommend/route-recommend",
-    "pages/realtime-info/realtime-info",
-    "pages/ar-scan/ar-scan"
+    "pages/chat/chat"
+  ],
+  "subpackages": [
+    {
+      "root": "pages/pois",
+      "pages": [
+        "pois",
+        "poi-detail",
+        "route-recommend",
+        "realtime-info",
+        "ar-scan",
+        "ar-view"
+      ]
+    }
   ],
   "window": {
     "navigationBarTitleText": "智慧景区导览",
     "navigationBarBackgroundColor": "#3B82F6",
-    "navigationBarTextStyle": "white"
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f7fa"
   },
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents",
-  "permission": {
-    "scope.camera": {
-      "desc": "需要使用您的相机实现AR效果"
-    }
-  }
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
 }

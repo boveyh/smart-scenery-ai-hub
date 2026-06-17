@@ -1,154 +1,99 @@
+/* pages/pois/pois.wxss */
 .container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f7fa;
+  background: #f5f7fa;
 }
-
-/* ===== 分类筛选栏 ===== */
 .category-bar {
-  display: flex;
   white-space: nowrap;
-  padding: 16rpx 20rpx;
-  background-color: #fff;
-  border-bottom: 1rpx solid #e9ecef;
-  flex-shrink: 0;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-bottom: 1rpx solid #eee;
 }
-
 .category-item {
   display: inline-block;
-  padding: 10rpx 28rpx;
-  margin-right: 16rpx;
-  border-radius: 32rpx;
-  background-color: #f1f3f5;
-  color: #495057;
-  font-size: 26rpx;
+  padding: 10rpx 30rpx;
+  margin-right: 20rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  background: #f0f0f0;
+  color: #555;
 }
-
 .category-item.active {
-  background-color: #3B82F6;
-  color: #fff;
+  background: #3B82F6;
+  color: white;
 }
-
-/* ===== 排序栏 ===== */
 .sort-bar {
-  display: flex;
-  padding: 12rpx 20rpx;
-  background-color: #fff;
-  border-bottom: 1rpx solid #e9ecef;
-  flex-shrink: 0;
+  padding: 20rpx 30rpx;
+  background: white;
+  border-bottom: 1rpx solid #eee;
+  font-size: 28rpx;
 }
-
-.sort-item {
-  font-size: 26rpx;
-  color: #868e96;
-  margin-right: 24rpx;
-  padding: 4rpx 0;
+.sort-option {
+  margin-left: 30rpx;
+  color: #888;
 }
-
-.sort-item.active {
+.sort-option.active {
   color: #3B82F6;
   font-weight: bold;
-  border-bottom: 3rpx solid #3B82F6;
 }
-
-/* ===== 加载/空状态 ===== */
-.loading-tip, .empty-tip {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 30rpx;
-  color: #868e96;
-}
-
-/* ===== POI 列表 ===== */
 .poi-list {
   flex: 1;
-  padding: 20rpx;
-  overflow-y: auto;
-  height: 0; /* 配合 flex:1 正确撑满 */
+  padding: 20rpx 30rpx;
 }
-
 .poi-card {
   display: flex;
-  background-color: #fff;
+  background: white;
   border-radius: 16rpx;
   margin-bottom: 20rpx;
-  overflow: hidden;
-  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+  padding: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
 }
-
-.poi-image-wrap {
-  position: relative;
-  width: 240rpx;
-  height: 240rpx;
+.poi-img {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
   flex-shrink: 0;
+  background: #eee;
 }
-
-.poi-image {
-  width: 100%;
-  height: 100%;
-}
-
-.poi-crowdedness {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 6rpx 12rpx;
-  font-size: 22rpx;
-  color: #fff;
-  text-align: center;
-}
-
-.poi-crowdedness.level-1, .poi-crowdedness.level-2 { background-color: rgba(64, 178, 73, 0.85); }
-.poi-crowdedness.level-3 { background-color: rgba(255, 193, 7, 0.85); }
-.poi-crowdedness.level-4, .poi-crowdedness.level-5 { background-color: rgba(220, 53, 69, 0.85); }
-
 .poi-info {
   flex: 1;
-  padding: 20rpx;
+  margin-left: 20rpx;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-
 .poi-name {
   font-size: 32rpx;
-  font-weight: bold;
-  color: #212529;
-  margin-bottom: 6rpx;
+  font-weight: 600;
+  color: #2c3e50;
 }
-
 .poi-category {
   font-size: 24rpx;
-  color: #3B82F6;
-  margin-bottom: 8rpx;
+  color: #7f8c8d;
+  margin-top: 4rpx;
 }
-
 .poi-desc {
   font-size: 26rpx;
-  color: #6c757d;
-  line-height: 1.4;
+  color: #555;
+  margin: 8rpx 0;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  margin-bottom: 8rpx;
 }
-
 .poi-meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8rpx;
+  font-size: 24rpx;
+  color: #888;
 }
-
-.poi-meta-item {
-  font-size: 22rpx;
-  color: #868e96;
-  background-color: #f1f3f5;
-  padding: 4rpx 12rpx;
-  border-radius: 20rpx;
+.crowdedness {
+  margin-right: 30rpx;
+}
+.loading, .empty {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #888;
 }

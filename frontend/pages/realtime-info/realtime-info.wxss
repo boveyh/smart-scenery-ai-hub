@@ -1,298 +1,94 @@
+/* pages/realtime-info/realtime-info.wxss */
 .container {
+  padding: 30rpx;
+  background: #f5f7fa;
   min-height: 100vh;
-  background-color: #f0f4f8;
-  padding: 20rpx;
 }
-
-.loading-tip {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60vh;
-  font-size: 30rpx;
-  color: #868e96;
-}
-
-/* ===== 天气卡片 ===== */
 .weather-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 24rpx;
-  padding: 32rpx;
-  margin-bottom: 20rpx;
-  color: #fff;
+  padding: 40rpx;
+  color: white;
+  margin-bottom: 30rpx;
 }
-
-.weather-main {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20rpx;
-}
-
-.weather-icon {
-  font-size: 80rpx;
-  margin-right: 24rpx;
-}
-
 .weather-temp {
-  flex: 1;
-}
-
-.temp-value {
   font-size: 72rpx;
   font-weight: bold;
   display: block;
 }
-
 .weather-desc {
-  font-size: 30rpx;
-  opacity: 0.85;
+  font-size: 32rpx;
   display: block;
 }
-
 .weather-detail {
   display: flex;
-  gap: 24rpx;
-  border-top: 1rpx solid rgba(255,255,255,0.3);
-  padding-top: 16rpx;
-}
-
-.weather-item {
-  flex: 1;
-}
-
-.weather-item-label {
-  font-size: 24rpx;
-  opacity: 0.7;
-  display: block;
-}
-
-.weather-item-value {
-  font-size: 28rpx;
-  font-weight: bold;
-  display: block;
-  margin-top: 4rpx;
-}
-
-/* ===== 拥挤度 ===== */
-.crowd-card {
-  background-color: #fff;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-}
-
-.crowd-header {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24rpx;
+  margin: 20rpx 0;
+  font-size: 28rpx;
 }
-
-.card-title {
+.crowd-level {
   font-size: 30rpx;
-  font-weight: bold;
-  color: #212529;
+}
+.section {
+  background: white;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2c3e50;
   display: block;
-  margin-bottom: 16rpx;
-}
-
-.update-time {
-  font-size: 22rpx;
-  color: #868e96;
-}
-
-.crowd-level-display {
-  display: flex;
-  align-items: center;
   margin-bottom: 20rpx;
 }
-
-.crowd-ring {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
+.bar-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-right: 24rpx;
-  border: 6rpx solid;
+  margin: 16rpx 0;
 }
-
-.crowd-ring.level-1, .crowd-ring.level-2 { border-color: #40b249; }
-.crowd-ring.level-3 { border-color: #ffc107; }
-.crowd-ring.level-4, .crowd-ring.level-5 { border-color: #dc3545; }
-
-.crowd-ring-text {
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #212529;
+.bar-name {
+  width: 140rpx;
+  font-size: 28rpx;
+  color: #333;
 }
-
-.crowd-info {
+.bar-bg {
   flex: 1;
+  height: 30rpx;
+  background: #f0f0f0;
+  border-radius: 20rpx;
+  margin: 0 20rpx;
 }
-
-.crowd-status {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #212529;
-  display: block;
-}
-
-.crowd-desc {
-  font-size: 26rpx;
-  color: #6c757d;
-  margin-top: 4rpx;
-  display: block;
-}
-
-.crowd-bar {
-  display: flex;
-  gap: 8rpx;
-  margin-bottom: 6rpx;
-}
-
-.crowd-bar-segment {
-  flex: 1;
-  height: 12rpx;
-  border-radius: 6rpx;
-  background-color: #e9ecef;
-  overflow: hidden;
-}
-
-.crowd-bar-fill {
+.bar-fill {
   height: 100%;
-  border-radius: 6rpx;
-  width: 0;
+  background: #3B82F6;
+  border-radius: 20rpx;
   transition: width 0.3s;
 }
-
-.crowd-bar-fill.filled {
-  width: 100%;
+.bar-value {
+  font-size: 24rpx;
+  color: #888;
+  width: 60rpx;
+  text-align: right;
 }
-
-.crowd-bar-fill.level-1, .crowd-bar-fill.level-2 { background-color: #40b249; }
-.crowd-bar-fill.level-3 { background-color: #ffc107; }
-.crowd-bar-fill.level-4, .crowd-bar-fill.level-5 { background-color: #dc3545; }
-
-.crowd-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 22rpx;
-  color: #868e96;
-}
-
-/* ===== 公告 ===== */
-.announcement-card {
-  background-color: #fff9db;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  border: 1rpx solid #ffecb3;
-}
-
-.announcement-card .card-title {
-  color: #856404;
-}
-
-.announcement-item {
-  display: flex;
-  margin-bottom: 12rpx;
-}
-
-.announcement-dot {
-  color: #856404;
-  margin-right: 8rpx;
-  font-size: 28rpx;
-}
-
-.announcement-text {
-  font-size: 26rpx;
-  color: #856404;
-  flex: 1;
-  line-height: 1.5;
-}
-
-/* ===== 热门景点拥挤度 ===== */
-.poi-crowd-card {
-  background-color: #fff;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-}
-
-.poi-crowd-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f1f3f5;
-}
-
-.poi-crowd-item:last-child {
-  border-bottom: none;
-}
-
-.poi-crowd-name {
-  font-size: 28rpx;
-  color: #212529;
-}
-
-.poi-crowd-level {
-  padding: 6rpx 18rpx;
-  border-radius: 20rpx;
-  font-size: 22rpx;
-  color: #fff;
-}
-
-.poi-crowd-level.level-1, .poi-crowd-level.level-2 { background-color: #40b249; }
-.poi-crowd-level.level-3 { background-color: #ffc107; color: #333; }
-.poi-crowd-level.level-4, .poi-crowd-level.level-5 { background-color: #dc3545; }
-
-/* ===== 建议 ===== */
-.suggestion-card {
-  background-color: #e8f0fe;
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  border: 1rpx solid #b3d4fc;
-}
-
-.suggestion-card .card-title {
-  color: #1a73e8;
-}
-
-.suggestion-text {
-  font-size: 28rpx;
-  color: #1a56b3;
-  line-height: 1.6;
-  display: block;
-}
-
-/* ===== 按钮 ===== */
-.action-section {
-  display: flex;
-  gap: 16rpx;
-  margin-bottom: 20rpx;
-}
-
-.action-btn {
-  flex: 1;
-  background-color: #fff;
-  color: #3B82F6;
-  border: 2rpx solid #3B82F6;
-  border-radius: 48rpx;
-  font-size: 26rpx;
-  padding: 18rpx 0;
-}
-
-/* ===== 刷新 ===== */
-.refresh-bar {
-  text-align: center;
+.announcement {
+  background: #f8f9fa;
+  border-radius: 12rpx;
   padding: 20rpx;
+  margin: 10rpx 0;
+  font-size: 28rpx;
+  color: #555;
 }
-
-.refresh-text {
-  font-size: 26rpx;
-  color: #3B82F6;
+.empty-hint {
+  text-align: center;
+  font-size: 28rpx;
+  color: #aaa;
+  padding: 30rpx 0;
+}
+.refresh-btn {
+  background: #3B82F6;
+  color: white;
+  border-radius: 40rpx;
+  padding: 24rpx 0;
+  font-size: 30rpx;
 }

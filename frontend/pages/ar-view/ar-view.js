@@ -1,19 +1,18 @@
+// pages/ar-view/ar-view.js
 Page({
-  data: {
-    width: 375,
-    height: 600,
-    renderWidth: 375,
-    renderHeight: 600,
-  },
+  data: {},
+
   onLoad() {
-    const info = wx.getSystemInfoSync();
-    const width = info.windowWidth;
-    const height = info.windowHeight;
-    const dpi = info.pixelRatio;
-    this.setData({
-      width, height,
-      renderWidth: width * dpi,
-      renderHeight: height * dpi
-    });
+    // 可选：自动跳转（如果想直接跳转，取消注释下一行）
+    // wx.redirectTo({ url: '/pages/ar-scan/ar-scan' });
   },
-})
+
+  goToScan() {
+    wx.navigateTo({
+      url: '/pages/ar-scan/ar-scan',
+      fail: () => {
+        wx.showToast({ title: '页面跳转失败', icon: 'none' });
+      }
+    });
+  }
+});

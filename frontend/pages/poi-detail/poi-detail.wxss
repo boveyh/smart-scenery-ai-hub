@@ -1,200 +1,76 @@
+/* pages/poi-detail/poi-detail.wxss */
 .container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #f5f7fa;
+  background: white;
 }
-
-.loading-tip {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 30rpx;
-  color: #868e96;
-}
-
-/* ===== 顶部图片 ===== */
-.header-image-wrap {
-  position: relative;
+.header-img {
   width: 100%;
-  height: 480rpx;
+  height: 400rpx;
+  background: #eee;
 }
-
-.header-image {
-  width: 100%;
-  height: 100%;
+.content {
+  padding: 30rpx;
 }
-
-.header-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40rpx 30rpx 30rpx;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
-}
-
-.header-name {
-  font-size: 44rpx;
+.name {
+  font-size: 40rpx;
   font-weight: bold;
-  color: #fff;
-  display: block;
+  color: #2c3e50;
 }
-
-.header-category {
-  font-size: 28rpx;
-  color: rgba(255,255,255,0.85);
-  margin-top: 8rpx;
-  display: block;
+.tags {
+  margin: 20rpx 0;
 }
-
-/* ===== 信息区块 ===== */
-.info-section {
-  background-color: #fff;
-  padding: 24rpx 30rpx;
-  margin-bottom: 16rpx;
+.tag {
+  display: inline-block;
+  background: #f0f0f0;
+  border-radius: 40rpx;
+  padding: 6rpx 24rpx;
+  font-size: 24rpx;
+  color: #555;
+  margin-right: 20rpx;
 }
-
-.crowdedness-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20rpx;
+.tag.crowdedness {
+  background: #ff7e5f;
+  color: white;
 }
-
-.section-label {
-  font-size: 28rpx;
-  color: #495057;
-  margin-right: 16rpx;
-}
-
-.crowd-badge {
-  padding: 6rpx 20rpx;
-  border-radius: 24rpx;
-  font-size: 26rpx;
-  color: #fff;
-}
-
-.crowd-badge.level-1 { background-color: #40b249; }
-.crowd-badge.level-2 { background-color: #7bc67e; }
-.crowd-badge.level-3 { background-color: #ffc107; color: #333; }
-.crowd-badge.level-4 { background-color: #fd7e14; }
-.crowd-badge.level-5 { background-color: #dc3545; }
-
 .info-grid {
+  background: #f8f9fa;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin: 20rpx 0;
+  font-size: 28rpx;
+  color: #333;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16rpx;
 }
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
-  border-radius: 12rpx;
-  padding: 16rpx;
+.desc {
+  font-size: 30rpx;
+  line-height: 1.6;
+  color: #555;
+  margin: 20rpx 0;
 }
-
-.info-icon {
-  font-size: 32rpx;
-  margin-bottom: 6rpx;
+.chart-section {
+  margin: 30rpx 0;
 }
-
-.info-label {
-  font-size: 22rpx;
-  color: #868e96;
-}
-
-.info-value {
-  font-size: 26rpx;
-  color: #212529;
-  margin-top: 4rpx;
-}
-
-/* ===== 简介 ===== */
-.desc-section {
-  background-color: #fff;
-  padding: 24rpx 30rpx;
-  margin-bottom: 16rpx;
-}
-
 .section-title {
   font-size: 30rpx;
-  font-weight: bold;
-  color: #212529;
+  font-weight: 600;
+  color: #34495e;
   display: block;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
 }
-
-.desc-content {
+.chart {
+  width: 100%;
+  height: 300rpx;
+}
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40rpx;
+}
+.action-buttons button {
+  background: #3B82F6;
+  color: white;
+  border-radius: 40rpx;
+  padding: 12rpx 30rpx;
   font-size: 28rpx;
-  color: #495057;
-  line-height: 1.7;
-  display: block;
-}
-
-/* ===== 拥挤度趋势 ===== */
-.section {
-  background-color: #fff;
-  padding: 24rpx 30rpx;
-  margin-bottom: 16rpx;
-}
-
-.history-bar {
-  display: flex;
-  align-items: flex-end;
-  height: 200rpx;
-  gap: 8rpx;
-  padding-top: 20rpx;
-}
-
-.history-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-}
-
-.history-bar-fill {
-  width: 100%;
-  max-width: 40rpx;
-  background: linear-gradient(to top, #3B82F6, #60a5fa);
-  border-radius: 6rpx 6rpx 0 0;
-  min-height: 6rpx;
-}
-
-.history-time {
-  font-size: 20rpx;
-  color: #868e96;
-  margin-top: 6rpx;
-}
-
-/* ===== 操作按钮 ===== */
-.action-section {
-  padding: 30rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.action-btn {
-  width: 100%;
-  border-radius: 48rpx;
-  font-size: 30rpx;
-  padding: 22rpx 0;
-  font-weight: bold;
-}
-
-.action-btn.primary {
-  background-color: #3B82F6;
-  color: #fff;
-  border: none;
-}
-
-.action-btn.secondary {
-  background-color: #fff;
-  color: #3B82F6;
-  border: 2rpx solid #3B82F6;
 }

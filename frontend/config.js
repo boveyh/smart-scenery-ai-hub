@@ -1,41 +1,24 @@
-/**
- * 智慧景区导览系统 - 全局配置
- * 基于接口文档 v2.0（轻量化音视解耦版）
- */
-module.exports = {
-  // API 基础地址（生产环境需替换为真实域名）
-  baseURL: 'https://api-domain.com',
+// config.js
+const config = {
+  // 通用 API 前缀（所有 REST 接口）
+  API_BASE_URL: 'http://localhost:9000/api/v1',
+  // WebSocket 地址（文本聊天）
+  WS_BASE_URL: 'ws://localhost:9000/ws',
 
-  // WebSocket 地址
-  wsURL: 'wss://api-domain.com',
+  // 数字人服务（实时视频流）
+  DIGITAL_HUMAN_BASE: 'http://localhost:9000',
+  START_STREAM_API: '/api/v1/digitalhuman/start',
+  CHANGE_CLOTHING_API: '/api/v1/digitalhuman/change_clothing',
+  STOP_STREAM_API: '/api/v1/digitalhuman/stop',
+  CLOTHING_LIST_API: '/api/v1/digitalhuman/clothing_list',
 
-  // 多租户配置
+  // 租户
+  DEFAULT_TENANT_ID: 'west_lake',
   tenants: {
-    west_lake: { id: 'west_lake', name: '西湖景区' },
-    gugong: { id: 'gugong', name: '故宫景区' }
+    west_lake: { name: '西湖景区' },
+    gugong: { name: '故宫景区' }
   },
-
-  // 默认租户
-  defaultTenantId: 'west_lake',
-
-  // 视频资源（数字人模式）
-  digitalHuman: {
-    idleVideo: '/assets/video/idle.mp4',
-    speakingVideo: '/assets/video/speaking.mp4'
-  },
-
-  // 心跳间隔（毫秒）
-  heartbeatInterval: 30000,
-
-  // 音频加载超时（毫秒）
-  audioTimeout: 10000,
-
-  // 离线知识库
-  offlineFAQ: {
-    "西湖": "西湖是杭州著名的风景名胜区，被誉为\"人间天堂\"。包括苏堤春晓、断桥残雪等十景。",
-    "门票": "景区门票价格为80元，学生半价。",
-    "厕所": "前方50米游客中心旁有卫生间。",
-    "雷峰塔": "雷峰塔是西湖十景之一，始建于公元977年，白蛇传传说发生地。",
-    "苏堤": "苏堤春晓是西湖十景之首，由北宋苏轼主持修建。"
-  }
+  TIMEOUT_MS: 5000,
 };
+
+module.exports = config;

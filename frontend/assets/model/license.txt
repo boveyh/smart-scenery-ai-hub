@@ -1,0 +1,11 @@
+Model Information:
+* title:	RoboBit - Dex
+* source:	https://sketchfab.com/3d-models/robobit-dex-3b5d15acb0de42f685d71686c651dcd8
+* author:	Robin Butler (https://sketchfab.com/StarTrekGuy)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "RoboBit - Dex" (https://sketchfab.com/3d-models/robobit-dex-3b5d15acb0de42f685d71686c651dcd8) by Robin Butler (https://sketchfab.com/StarTrekGuy) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
