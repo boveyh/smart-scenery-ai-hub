@@ -1,5 +1,6 @@
 // pages/route-recommend/route-recommend.js
 const api = require('../../utils/api.js');
+const config = require('../../config.js');
 
 Page({
   data: {
@@ -29,17 +30,29 @@ Page({
   async getRecommendation() {
     wx.showLoading({ title: '生成中...' });
     try {
-      const preferences = {
+      // 先获取景点列表，用第一个作为起始点
+      const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
+      api.initApi('', tenantId);
+      const pois = await api.getPOIs();
+      const startPoiId = pois && pois.length > 0 ? pois[0].poiId : '';
+
+      const paceMap = { '悠闲': 'relaxed', '适中': 'normal', '紧凑': 'hurried' };
+      const companionMap = { '独自': 'alone', '情侣': 'solo', '亲子': 'with_children', '团队': 'group' };
+      const requestBody = {
+        startPoiId: startPoiId,
+        preferences: {
         interest: this.data.interest,
-        pace: this.data.pace,
-        companions: this.data.companion,
-        duration_min: this.data.duration
+          pace: paceMap[this.data.pace] || 'normal',
+          companions: companionMap[this.data.companion] || 'alone',
+          durationMin: this.data.duration
+        }
       };
-      const route = await api.recommendRoute(preferences);
+      const route = await api.recommendRoute(requestBody);
       this.setData({ route });
       wx.hideLoading();
     } catch (err) {
       wx.hideLoading();
+      console.error('路线推荐失败', err);
       wx.showToast({ title: '生成失败', icon: 'none' });
     }
   },

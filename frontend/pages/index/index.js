@@ -14,14 +14,14 @@ Page({
   },
 
   updateTenantName() {
-    const tenantId = wx.getStorageSync('tenantId') || config.DEFAULT_TENANT_ID;
+    const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
     const tenant = config.tenants[tenantId];
     this.setData({ tenantName: tenant ? tenant.name : '西湖景区' });
   },
 
   gotoChat(e) {
     const mode = e.currentTarget.dataset.mode;
-    const tenantId = wx.getStorageSync('tenantId') || config.DEFAULT_TENANT_ID;
+    const tenantId = wx.getStorageSync('tenantId') || config.defaultTenantId;
     wx.navigateTo({ url: `/pages/chat/chat?mode=${mode}&tenantId=${tenantId}` });
   },
 

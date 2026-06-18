@@ -5,7 +5,7 @@ const config = require('./config.js');
 App({
   onLaunch() {
     // 初始化租户
-    const storedTenant = wx.getStorageSync('tenantId') || config.DEFAULT_TENANT_ID;
+    const storedTenant = wx.getStorageSync('tenantId') || config.defaultTenantId;
     this.globalData.tenantId = storedTenant;
     // 初始化会话ID
     this.globalData.sessionId = generateUUID();
@@ -30,6 +30,6 @@ App({
   globalData: {
     userInfo: null,
     sessionId: '',
-    tenantId: config.DEFAULT_TENANT_ID
+    tenantId: config.defaultTenantId
   }
 });

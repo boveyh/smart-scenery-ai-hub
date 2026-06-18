@@ -28,8 +28,9 @@
 
   <view class="result" wx:if="{{route}}">
     <text class="result-title">推荐路线</text>
+    <text class="route-id">路线编号：{{route.routeId}}</text>
     <view class="timeline">
-      <view wx:for="{{route.poiSequence}}" wx:key="index" class="step">
+      <view wx:for="{{route.poiDetails}}" wx:key="poiId" class="step">
         <text class="step-index">{{index + 1}}</text>
         <view class="step-content">
           <text class="step-name">{{item.name}}</text>
@@ -38,7 +39,7 @@
       </view>
     </view>
     <text class="total-time">预计总时长：{{route.estimatedTimeMin}} 分钟</text>
-    <view class="tips" wx:if="{{route.tips}}">
+    <view class="tips" wx:if="{{route.tips && route.tips.length > 0}}">
       <text class="tips-title">温馨提示</text>
       <text wx:for="{{route.tips}}" wx:key="index" class="tip-item">• {{item}}</text>
     </view>

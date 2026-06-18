@@ -1,38 +1,85 @@
-<!-- pages/chat/chat.wxml -->
+<!--pages/chat/chat.wxml-->
 <view class="container">
-  <!-- 模式切换 -->
+  <!-- 模式切换开关 -->
   <view class="mode-switch">
     <button class="{{mode === 'text' ? 'active' : ''}}" bindtap="switchMode" data-mode="text">📝 极速文本</button>
     <button class="{{mode === 'digital_human' ? 'active' : ''}}" bindtap="switchMode" data-mode="digital_human">🎭 数字人</button>
   </view>
 
-  <!-- 文本模式 -->
+  <!-- ==================== 极速文本模式界面 ==================== -->
   <block wx:if="{{mode === 'text'}}">
-    <scroll-view class="msg-list" scroll-y scroll-into-view="{{lastMsgId}}">
-      <view wx:for="{{messages}}" wx:key="index" class="msg {{item.role}}">
+    <scroll-view class="msg-list" scroll-y scroll-into-view="{{lastMsgId}}" scroll-with-animation>
+      <block wx:for="{{messages}}" wx:key="index">
+        <view wx:if="{{item.role !== 'system'}}" class="msg {{item.role}}">
         <text>{{item.content}}</text>
+          <text wx:if="{{item.role === 'assistant' && !item.finished}}" class="typing-dot">●</text>
       </view>
+        <view wx:if="{{item.role === 'system'}}" class="msg system">
+          <text>{{item.content}}</text>
+    </view>
+  </block>
     </scroll-view>
     <view class="input-bar">
-      <input placeholder="说句话或打字..." bindinput="onInput" value="{{inputText}}" />
-      <button size="mini" bindtap="sendText">发送</button>
+      <input
+        placeholder="输入问题..."
+        bindinput="onInput"
+        value="{{inputText}}"
+        confirm-type="send"
+        bindconfirm="sendText"
+        disabled="{{isTyping}}"
+      />
+      <button size="mini" bindtap="sendText" disabled="{{isTyping}}">发送</button>
       <button size="mini" bindtap="startVoice">🎤</button>
     </view>
   </block>
 
-  <!-- 数字人模式 -->
+  <!-- ==================== 数字人模式界面 ==================== -->
   <block wx:if="{{mode === 'digital_human'}}">
-    <view class="player-wrapper">
-      <live-player
-        id="digitalHumanPlayer"
-        src="{{streamUrl}}"
-        mode="live"
-        autoplay="{{true}}"
-        bindstatechange="onPlayStateChange"
-        style="width: 100%; height: 70vh;"
-      />
+    <!-- 视频展示区域 -->
+    <view class="dh-video-area">
+      <video
+        class="dh-video"
+        src="{{videoSrc}}"
+        autoplay
+        loop
+        muted
+        object-fit="contain"
+        show-center-play-btn="{{false}}"
+        show-fullscreen-btn="{{false}}"
+        controls="{{false}}"
+      ></video>
+</view>
+
+    <!-- 消息/字幕区域 -->
+    <view class="dh-content">
+      <scroll-view class="msg-list dh-msg-list" scroll-y scroll-into-view="{{lastMsgId}}" scroll-with-animation>
+        <block wx:for="{{messages}}" wx:key="index">
+          <view class="msg {{item.role}}">
+            <text>{{item.content}}</text>
+            <text wx:if="{{item.role === 'assistant' && !item.finished}}" class="typing-dot">●</text>
+          </view>
+        </block>
+      </scroll-view>
     </view>
-    <view class="subtitle-area">{{currentSubtitle}}</view>
-    <button class="clothing-btn" bindtap="openClothingPanel">👗 换装</button>
+
+    <!-- 字幕条 -->
+    <view class="dh-subtitle" wx:if="{{subtitleText}}">
+      <text class="subtitle-text">{{subtitleText}}</text>
+    </view>
+
+    <!-- 输入栏 -->
+    <view class="input-bar">
+      <input
+        placeholder="输入问题..."
+        bindinput="onInput"
+        value="{{inputText}}"
+        confirm-type="send"
+        bindconfirm="sendText"
+        disabled="{{isTyping}}"
+      />
+      <button size="mini" bindtap="sendText" disabled="{{isTyping}}">发送</button>
+      <button size="mini" bindtap="startVoice">🎤</button>
+    </view>
   </block>
 </view>
+
