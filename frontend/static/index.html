@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>灵山圣地 · 智慧导览</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航 -->
+        <header>
+            <div class="header-title" id="pageTitle">灵山圣地·智慧导览</div>
+            <div class="header-tenant">🙏 江苏无锡</div>
+        </header>
+
+        <!-- 页面容器 -->
+        <main id="mainContent">
+            <!-- 首页 -->
+            <section id="page-home" class="page active">
+                <div class="hero-section">
+                    <div class="hero-title">灵山圣地</div>
+                    <div class="hero-subtitle">智慧景区导览系统</div>
+                    <div class="hero-tagline">一花一世界 · 一叶一菩提</div>
+                </div>
+
+                <div class="section-title">AI 智能导览</div>
+                <div class="card-grid">
+                    <div class="card" onclick="navigateTo('chat', 'text')">
+                        <span class="card-icon">💬</span>
+                        <span class="card-label">极速文本</span>
+                    </div>
+                    <div class="card" onclick="navigateTo('chat', 'digital_human')">
+                        <span class="card-icon">🧘</span>
+                        <span class="card-label">数字人导览</span>
+                    </div>
+                </div>
+
+                <div class="section-title">景区服务</div>
+                <div class="card-grid">
+                    <div class="card" onclick="navigateTo('pois')">
+                        <span class="card-icon">🏛️</span>
+                        <span class="card-label">景点列表</span>
+                    </div>
+                    <div class="card" onclick="navigateTo('realtime')">
+                        <span class="card-icon">🌤️</span>
+                        <span class="card-label">实时资讯</span>
+                    </div>
+                    <div class="card" onclick="navigateTo('route')">
+                        <span class="card-icon">🗺️</span>
+                        <span class="card-label">路线推荐</span>
+                    </div>
+                </div>
+                <div class="card-grid">
+                    <div class="card" onclick="navigateTo('scan')">
+                        <span class="card-icon">📸</span>
+                        <span class="card-label">拍照识别</span>
+                    </div>
+                    <div class="card" onclick="window.open('https://www.chinalingshan.com/', '_blank')">
+                        <span class="card-icon">🌐</span>
+                        <span class="card-label">官方网站</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 聊天页面 -->
+            <section id="page-chat" class="page">
+                <div class="chat-container">
+                    <div class="mode-switch">
+                        <button class="mode-btn active" data-mode="text" onclick="switchChatMode('text')">💬 极速文本</button>
+                        <button class="mode-btn" data-mode="digital_human" onclick="switchChatMode('digital_human')">🧘 数字人</button>
+                    </div>
+                    <div id="chatMessages" class="msg-list">
+                        <div class="msg assistant welcome-msg">🙏 欢迎来到灵山圣地！我是您的智能导览助手，可以为您介绍景点、推荐路线、解答问题。请问有什么可以帮您的？</div>
+                    </div>
+                    <div class="input-bar">
+                        <input id="chatInput" placeholder="说句话..." onkeydown="if(event.key==='Enter') sendChat()" />
+                        <button onclick="sendChat()">发送</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 景点列表 -->
+            <section id="page-pois" class="page">
+                <div class="pois-container">
+                    <div class="filter-bar">
+                        <select id="categoryFilter" onchange="loadPOIs()">
+                            <option value="全部">全部景点</option>
+                            <option value="佛教文化">佛教文化</option>
+                            <option value="自然风光">自然风光</option>
+                            <option value="人文艺术">人文艺术</option>
+                        </select>
+                        <select id="sortFilter" onchange="loadPOIs()">
+                            <option value="default">默认排序</option>
+                            <option value="crowdedness">拥挤度</option>
+                        </select>
+                    </div>
+                    <div id="poiList" class="poi-list"></div>
+                </div>
+            </section>
+
+            <!-- 景点详情 -->
+            <section id="page-poi-detail" class="page">
+                <div id="poiDetail" class="poi-detail-container"></div>
+                <button class="back-btn" onclick="navigateTo('pois')">← 返回列表</button>
+            </section>
+
+            <!-- 路线推荐 -->
+            <section id="page-route" class="page">
+                <div class="route-form">
+                    <div class="field">
+                        <label>📍 兴趣偏好</label>
+                        <select id="routeInterest">
+                            <option value="佛教文化">佛教文化</option>
+                            <option value="自然风光">自然风光</option>
+                            <option value="人文艺术">人文艺术</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>🚶 游览节奏</label>
+                        <select id="routePace">
+                            <option value="relaxed">悠闲（细细品味）</option>
+                            <option value="normal">适中（从容游览）</option>
+                            <option value="fast">紧凑（重点打卡）</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>👥 同行人</label>
+                        <select id="routeCompanion">
+                            <option value="alone">独自</option>
+                            <option value="couple">情侣</option>
+                            <option value="with_children">亲子</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>⏱️ 游览时长（分钟）<span id="durationVal">180</span></label>
+                        <input type="range" id="routeDuration" min="60" max="360" value="180" oninput="document.getElementById('durationVal').textContent=this.value">
+                    </div>
+                    <button onclick="generateRoute()">🙏 生成祈福路线</button>
+                </div>
+                <div id="routeResult" class="route-result"></div>
+            </section>
+
+            <!-- 实时资讯 -->
+            <section id="page-realtime" class="page">
+                <div id="realtimeInfo" class="realtime-container"></div>
+                <button class="back-btn" onclick="loadRealtime()">🔄 刷新数据</button>
+            </section>
+
+            <!-- 拍照识别 -->
+            <section id="page-scan" class="page">
+                <div class="scan-container">
+                    <div class="preview" id="scanPreview">
+                        <span style="color:var(--text-light);">📷 拍照识别灵山胜景</span>
+                        <img id="scanImage" src="" alt="预览" style="display:none; width:100%; border-radius:12px;">
+                    </div>
+                    <div class="scan-actions">
+                        <button onclick="takePhoto()">📷 拍照</button>
+                        <button onclick="chooseImage()">🖼️ 上传图片</button>
+                    </div>
+                    <div id="scanResult" class="scan-result"></div>
+                    <div class="question-area">
+                        <input id="scanQuestion" placeholder="对图片提问..." onkeydown="if(event.key==='Enter') askQuestion()">
+                        <button onclick="askQuestion()">提问</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部导航 -->
+        <nav class="tab-bar">
+            <span class="tab-item active" data-page="home" onclick="navigateTo('home')">🏠 首页</span>
+            <span class="tab-item" data-page="chat" onclick="navigateTo('chat')">💬 聊天</span>
+            <span class="tab-item" data-page="pois" onclick="navigateTo('pois')">🏛️ 景点</span>
+            <span class="tab-item" data-page="realtime" onclick="navigateTo('realtime')">🌤️ 实时</span>
+            <span class="tab-item" data-page="scan" onclick="navigateTo('scan')">📸 识别</span>
+        </nav>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
