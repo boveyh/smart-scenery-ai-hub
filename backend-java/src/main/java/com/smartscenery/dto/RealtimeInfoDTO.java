@@ -26,6 +26,18 @@ public class RealtimeInfoDTO {
     private BigDecimal windSpeed;
     private Integer crowdednessLevel;
     private List<String> announcements;
+    /** 热门景点拥挤度列表，每个元素含 poiId/name/crowdedness */
+    private List<PeakPoiDTO> peakPois;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class PeakPoiDTO {
+        private String poiId;
+        private String name;
+        private Integer crowdedness;
+    }
 
     public static RealtimeInfoDTO fromEntity(RealtimeInfo entity) {
         List<String> announcementsList = Collections.emptyList();
