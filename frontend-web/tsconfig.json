@@ -15,7 +15,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@framework/*": ["../CubismSdkForWeb-5-r.5/Framework/src/*"]
+    }
   },
   "include": ["src", "vite.config.ts"]
 }
