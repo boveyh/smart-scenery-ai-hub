@@ -24,7 +24,7 @@
   },
   "ling_shan": {
     "face_image": "lingshan_guide.jpg",
-    "tts_voice": "zh-CN-YunxiNeural",
+    "tts_voice": "zh-CN-XiaoxiaoNeural",
     "tts_rate": "+5%",
     "tts_pitch": "+0Hz",
     "persona_name": "灵善",
