@@ -34,3 +34,9 @@ digital-human/sadtalker-src/gfpgan/weights/
 
 # Web 调试台构建产物
 frontend-web/dist/
+
+# Live2D 第三方 SDK（通过 npm @framework/ 别名引用，不提交源码）
+CubismSdkForWeb-5-r.5/
+
+# 临时 VRM 数据（旧方案残余）
+_temp_vrm/
