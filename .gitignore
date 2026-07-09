@@ -28,3 +28,9 @@ digital-human/.venv/
 # SadTalker 模型权重（~2.5GB，不提交）
 digital-human/sadtalker-src/checkpoints/
 digital-human/sadtalker-src/gfpgan/weights/
+
+# Vite 缓存
+.vite/
+
+# Web 调试台构建产物
+frontend-web/dist/

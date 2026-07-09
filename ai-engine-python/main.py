@@ -5,6 +5,7 @@ FastAPI 异步服务,负责：
   2. 音频静态文件服务
   3. 健康检查 & 服务状态
 """
+import json
 import os
 import uuid
 import time
@@ -30,7 +31,7 @@ sys.path.insert(0, DIGITAL_HUMAN_DIR)
 from config.profile_loader import ProfileLoader
 
 # ─── 环境变量加载 ─────────────────────────────────────────
-load_dotenv()
+load_dotenv(override=True)
 
 # ─── 日志 ──────────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -89,7 +90,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -174,14 +175,14 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                         logger.warning(f"TTS 生成失败(降级纯文本): {e}")
 
                 # ─── Step 4: NDJSON 行输出 ──────────────────
-                yield f'{{"seq":{seq},"text_chunk":{__json_escape(trimmed)},"audio_url":"{audio_url}"}}\n'
+                yield json.dumps({"seq": seq, "text_chunk": trimmed, "audio_url": audio_url}, ensure_ascii=False) + "\n"
 
             # ─── Step 5: 结束标记 ──────────────────────────
-            yield f'{{"seq":{seq+1},"type":"end","reason":"complete"}}\n'
+            yield json.dumps({"seq": seq + 1, "type": "end", "reason": "complete"}, ensure_ascii=False) + "\n"
 
         except Exception as e:
             logger.error(f"流式处理异常: {e}", exc_info=True)
-            yield f'{{"type":"error","code":500,"message":"{str(e)}"}}\n'
+            yield json.dumps({"type": "error", "code": 500, "message": str(e)}, ensure_ascii=False) + "\n"
 
     return StreamingResponse(
         generate_ndjson(),

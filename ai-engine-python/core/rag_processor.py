@@ -55,7 +55,7 @@ class RAGProcessor:
     async def _get_client(self) -> httpx.AsyncClient:
         """懒加载 httpx 异步客户端"""
         if self._client is None:
-            self._client = httpx.AsyncClient(timeout=httpx.Timeout(5.0))
+            self._client = httpx.AsyncClient(timeout=httpx.Timeout(2.0))
         return self._client
 
     async def build_system_prompt(
@@ -76,8 +76,10 @@ class RAGProcessor:
             完整的系统提示词字符串
         """
         # ─── 并行获取：知识 + 客流数据 ─────────────────────
-        knowledge = await self._retrieve_knowledge(tenant_id, user_query)
-        crowd_data = await self._fetch_crowd_data(tenant_id)
+        import asyncio
+        knowledge_task = self._retrieve_knowledge(tenant_id, user_query)
+        crowd_task = self._fetch_crowd_data(tenant_id)
+        knowledge, crowd_data = await asyncio.gather(knowledge_task, crowd_task)
 
         # ─── 组装 System Prompt ────────────────────────────
         if persona_prompt:
