@@ -24,7 +24,7 @@ export class LipSyncAnalyser {
   // bin width = sampleRate / fftSize = 48000 / 512 ≈ 93.75 Hz
   // We'll compute dynamically in analyse()
 
-  // EMA asymmetric smoothing (ChatVRM-style)
+  // EMA asymmetric smoothing for Live2D lip-sync.
   private smoothedMouthOpen = 0;
   private smoothedMouthForm = 0.5; // neutral at 0.5
   private readonly ATTACK = 0.3;
