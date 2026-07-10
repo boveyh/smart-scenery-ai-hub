@@ -25,10 +25,7 @@ from core.tts_generator import TTSGenerator
 from core.rag_processor import RAGProcessor
 
 # ─── 数字人配置 ──────────────────────────────────────────
-import sys
-DIGITAL_HUMAN_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "digital-human")
-sys.path.insert(0, DIGITAL_HUMAN_DIR)
-from config.profile_loader import ProfileLoader
+from config.digital_human.profile_loader import ProfileLoader
 
 # ─── 环境变量加载 ─────────────────────────────────────────
 load_dotenv(override=True)

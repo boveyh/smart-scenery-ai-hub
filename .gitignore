@@ -13,21 +13,12 @@ ai-engine-python/static/audio/
 ai-engine-python/.venv/
 ai-engine-python/venv/
 
-# 数字人模块：Wav2Lip 源码 + 模型权重（数百 MB）
-digital-human/wav2lip-src/
-digital-human/checkpoints/
-digital-human/temp/
-
 # IDE
 .vscode/
 .idea/
-# ��������  
+#   
 data/  
 digital-human/.venv/
-
-# SadTalker 模型权重（~2.5GB，不提交）
-digital-human/sadtalker-src/checkpoints/
-digital-human/sadtalker-src/gfpgan/weights/
 
 # Vite 缓存
 .vite/
