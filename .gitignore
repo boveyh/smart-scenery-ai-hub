@@ -37,6 +37,8 @@ frontend-web/dist/
 
 # Live2D 第三方 SDK（通过 npm @framework/ 别名引用，不提交源码）
 CubismSdkForWeb-5-r.5/
+frontend-web/public/assets/live2d/cubism-sdk/
+frontend-web/public/assets/live2d/shaders/
 
 # 临时 VRM 数据（旧方案残余）
 _temp_vrm/

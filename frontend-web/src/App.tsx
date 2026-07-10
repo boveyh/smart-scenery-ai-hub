@@ -17,6 +17,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [availableExpressions, setAvailableExpressions] = useState<string[]>([]);
+  const [availableMotionGroups, setAvailableMotionGroups] = useState<string[]>([]);
   const [mouthOpenValue, setMouthOpenValue] = useState(0);
   const [mouthFormValue, setMouthFormValue] = useState(0.5);
 
@@ -101,6 +102,7 @@ export default function App() {
       try {
         await viewer.loadModel(entry.modelPath, entry.name);
         setAvailableExpressions(viewer.getAvailableExpressions());
+        setAvailableMotionGroups(viewer.getAvailableMotionGroups());
       } catch {
         // reported by viewer callbacks
       } finally {
@@ -176,6 +178,21 @@ export default function App() {
     setAudioError(null);
     viewer?.setSpeaking(false);
     log("已停止", "warn");
+  }, [log, viewer]);
+
+  const handleExpression = useCallback((name: string) => {
+    if (!viewer) return;
+    viewer.setExpression(name, 1);
+    log(`Expression: ${name}`, "info");
+  }, [log, viewer]);
+
+  const handleMotion = useCallback((group: string) => {
+    if (!viewer) return;
+    if (!viewer.playMotionGroup(group)) {
+      log(`Motion group unavailable: ${group}`, "warn");
+      return;
+    }
+    log(`Motion: ${group}`, "info");
   }, [log, viewer]);
 
   // Auto-load first model on mount
@@ -339,6 +356,47 @@ export default function App() {
               ))}
             </div>
             {loadError && <div className="panel-error">❌ {loadError}</div>}
+          </div>
+
+          <div className="panel-section">
+            <div className="panel-label">表情 / 配饰 / 换装</div>
+            {availableExpressions.length > 0 ? (
+              <div className="control-chip-grid">
+                {availableExpressions.map((name) => (
+                  <button
+                    key={name}
+                    className="control-chip"
+                    onClick={() => handleExpression(name)}
+                    title={name}
+                    disabled={!viewer || isLoading}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="panel-empty">当前模型没有登记可切换的表情或配饰。</div>
+            )}
+          </div>
+
+          <div className="panel-section">
+            <div className="panel-label">动作</div>
+            {availableMotionGroups.length > 0 ? (
+              <div className="control-chip-grid">
+                {availableMotionGroups.map((group) => (
+                  <button
+                    key={group}
+                    className="control-chip"
+                    onClick={() => handleMotion(group)}
+                    disabled={!viewer || isLoading}
+                  >
+                    {group}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="panel-empty">当前模型没有登记动作组。</div>
+            )}
           </div>
 
           {/* Audio State */}
