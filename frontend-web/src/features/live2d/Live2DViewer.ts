@@ -355,6 +355,13 @@ export class Live2DViewer {
 
   setSpeaking(_speaking: boolean) { /* stub */ }
   getAvailableExpressions() { return this.expressionNames; }
+  getAvailableMotionGroups() {
+    if (!this.modelData) return [];
+    return Array.from(new Set(this.modelData.motionDefs.map(d => d.group)));
+  }
+  playMotionGroup(group: string) {
+    return this.startRandomMotion(group, 2) !== InvalidMotionQueueEntryHandleValue;
+  }
   onResize() { this.resize(); }
 
   destroy() {

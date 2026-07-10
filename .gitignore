@@ -13,21 +13,12 @@ ai-engine-python/static/audio/
 ai-engine-python/.venv/
 ai-engine-python/venv/
 
-# 数字人模块：Wav2Lip 源码 + 模型权重（数百 MB）
-digital-human/wav2lip-src/
-digital-human/checkpoints/
-digital-human/temp/
-
 # IDE
 .vscode/
 .idea/
-# ��������  
+#   
 data/  
 digital-human/.venv/
-
-# SadTalker 模型权重（~2.5GB，不提交）
-digital-human/sadtalker-src/checkpoints/
-digital-human/sadtalker-src/gfpgan/weights/
 
 # Vite 缓存
 .vite/
@@ -37,6 +28,8 @@ frontend-web/dist/
 
 # Live2D 第三方 SDK（通过 npm @framework/ 别名引用，不提交源码）
 CubismSdkForWeb-5-r.5/
+frontend-web/public/assets/live2d/cubism-sdk/
+frontend-web/public/assets/live2d/shaders/
 
 # 临时 VRM 数据（旧方案残余）
 _temp_vrm/
