@@ -13,9 +13,6 @@ ai-engine-python/static/audio/
 ai-engine-python/.venv/
 ai-engine-python/venv/
 
-# 数字人模块：Live2D 纯前端方案（无 GPU 依赖）
-# 配置加载器（config/）仍归 AI 引擎调用
-
 # IDE
 .vscode/
 .idea/
