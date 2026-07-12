@@ -5,7 +5,9 @@ import Live2DStage from '@/components/Live2DStage';
 import { Live2DViewer } from '@/features/live2d/Live2DViewer';
 import { modelManifest } from '@/features/live2d/modelManifest';
 import apiClient from '@/api/client';
-import type { PoiItem } from '@/api/types';
+import type { PoiItem, DigitalHumanConfigItem } from '@/api/types';
+
+const ACTIVE_CONFIG_KEY = 'active_digital_human_config';
 
 function generateSessionId(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -36,7 +38,10 @@ export default function DigitalHumanPage() {
   const [fullText, setFullText] = useState('');
   const [viewer, setViewer] = useState<Live2DViewer | null>(null);
   const [pois, setPois] = useState<PoiItem[]>([]);
+  const [configs, setConfigs] = useState<DigitalHumanConfigItem[]>([]);
+  const [activeConfig, setActiveConfig] = useState<DigitalHumanConfigItem | null>(null);
   const viewerLoaded = useRef(false);
+  const configLoadingRef = useRef(false);
   const playNextRef = useRef<() => void>(() => {});
 
   const playNext = useCallback(() => { playNextRef.current(); }, []);
@@ -101,14 +106,45 @@ export default function DigitalHumanPage() {
     }).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    apiClient.getDigitalHumanConfigs().then(r => {
+      if (r.code === 200 && r.data) {
+        setConfigs(r.data);
+        const savedId = localStorage.getItem(ACTIVE_CONFIG_KEY);
+        const target = savedId ? r.data.find(c => c.tenantId === savedId) : null;
+        setActiveConfig(target || r.data[0] || null);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const loadModelFromConfig = useCallback((v: Live2DViewer, cfg: DigitalHumanConfigItem) => {
+    if (!cfg.live2dModel) return;
+    const entry = modelManifest.find(m => m.id === cfg.live2dModel);
+    if (entry) v.loadModel(entry.modelPath, cfg.personaName || entry.name).catch(() => {});
+  }, []);
+
   const handleViewerReady = useCallback((v: Live2DViewer) => {
     setViewer(v);
-    if (!viewerLoaded.current) {
-      viewerLoaded.current = true;
-      const entry = modelManifest[0];
-      if (entry) v.loadModel(entry.modelPath, entry.name).catch(() => {});
-    }
   }, []);
+
+  useEffect(() => {
+    if (viewer && activeConfig && !viewerLoaded.current) {
+      viewerLoaded.current = true;
+      loadModelFromConfig(viewer, activeConfig);
+    }
+  }, [viewer, activeConfig, loadModelFromConfig]);
+
+  const handleActivateConfig = useCallback((cfg: DigitalHumanConfigItem) => {
+    setActiveConfig(cfg);
+    localStorage.setItem(ACTIVE_CONFIG_KEY, cfg.tenantId);
+    viewerLoaded.current = false;
+    if (viewer && cfg.live2dModel) {
+      const entry = modelManifest.find(m => m.id === cfg.live2dModel);
+      if (entry) viewer.loadModel(entry.modelPath, cfg.personaName || entry.name).then(() => {
+        viewerLoaded.current = true;
+      }).catch(() => {});
+    }
+  }, [viewer]);
 
   const titlePois = pois.slice(0, 4);
   const routeLabels = pois.slice(0, 4).map(p => p.name);
@@ -211,9 +247,34 @@ export default function DigitalHumanPage() {
           overflowY: 'auto', paddingRight: 2,
         }}>
           <div style={rStyles.flexRowBetween}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#3D2C2A', letterSpacing: 3, fontFamily: "'Noto Serif SC',serif" }}>灵山胜景</h2>
-            <button className="btn btn-sm btn-secondary" style={{ fontSize: '0.75rem', padding: '4px 16px' }}>在线讲解</button>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#3D2C2A', letterSpacing: 2, fontFamily: "'Noto Serif SC',serif" }}>灵山胜景</h2>
+            <select
+              value={activeConfig?.tenantId || ''}
+              onChange={e => {
+                const cfg = configs.find(c => c.tenantId === e.target.value);
+                if (cfg) handleActivateConfig(cfg);
+              }}
+              style={{
+                padding: '4px 10px', borderRadius: 14, border: '1px solid rgba(180,136,100,0.12)',
+                background: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', color: '#3D2C2A',
+                fontFamily: "'Noto Sans SC',sans-serif", outline: 'none', cursor: 'pointer',
+                maxWidth: 130,
+              }}
+            >
+              {configs.length === 0 && <option value="">加载中...</option>}
+              {configs.map(c => (
+                <option key={c.tenantId} value={c.tenantId}>
+                  {c.personaName || c.tenantId}
+                </option>
+              ))}
+            </select>
           </div>
+          {activeConfig && (
+            <div style={{ fontSize: '0.65rem', color: 'rgba(61,44,42,0.4)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <span>🎤 {activeConfig.ttsVoice}</span>
+              {activeConfig.live2dModel && <span>🎭 {activeConfig.live2dModel}</span>}
+            </div>
+          )}
 
           <div>
             <div style={rStyles.subTitle}>半日游路线</div>

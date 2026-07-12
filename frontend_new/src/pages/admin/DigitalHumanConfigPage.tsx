@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '@/api/client';
 import type { DigitalHumanConfigItem } from '@/api/types';
+import { modelManifest } from '@/features/live2d/modelManifest';
 
 export default function AdminDigitalHumanPage() {
   const [configs, setConfigs] = useState<DigitalHumanConfigItem[]>([]);
@@ -54,11 +55,16 @@ export default function AdminDigitalHumanPage() {
                     <div>
                       <strong style={{ fontSize: '1rem', color: '#3D2C2A' }}>{c.personaName || '未命名'}</strong>
                       <span className="badge badge-blue" style={{ marginLeft: 8, fontSize: '0.65rem' }}>{c.tenantId}</span>
+                      {c.live2dModel && (
+                        <span style={{ marginLeft: 8, fontSize: '0.65rem', color: 'rgba(61,44,42,0.4)' }}>
+                          Live2D: {c.live2dModel}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button className="btn-text" onClick={() => { setEditing(c); setShowForm(true); }}>编辑</button>
+                  <button className="btn-text" onClick={() => { setEditing({ ...c }); setShowForm(true); }}>编辑</button>
                 </div>
               </div>
 
@@ -104,8 +110,13 @@ export default function AdminDigitalHumanPage() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <input className="input" placeholder="Live2D模型" value={editing.live2dModel || ''}
-                  onChange={e => setEditing({ ...editing, live2dModel: e.target.value })} />
+                <select className="input" value={editing.live2dModel || ''}
+                  onChange={e => setEditing({ ...editing, live2dModel: e.target.value })}>
+                  <option value="">不启用Live2D</option>
+                  {modelManifest.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
                 <input className="input" placeholder="服装" value={editing.costume || ''}
                   onChange={e => setEditing({ ...editing, costume: e.target.value })} />
               </div>
