@@ -154,6 +154,43 @@ CREATE TABLE IF NOT EXISTS t_route_history (
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='游览路线历史表';
 
+-- 9. 数字人配置表
+CREATE TABLE IF NOT EXISTS t_digital_human_config (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id       VARCHAR(64) NOT NULL UNIQUE COMMENT '租户ID',
+    persona_name    VARCHAR(64) COMMENT '数字人名称',
+    tts_voice       VARCHAR(64) DEFAULT 'zh-CN-XiaoxiaoNeural' COMMENT 'TTS语音',
+    tts_rate        VARCHAR(16) DEFAULT '+0%' COMMENT '语速',
+    tts_pitch       VARCHAR(16) DEFAULT '+0Hz' COMMENT '音调',
+    face_image      VARCHAR(512) COMMENT '面部贴图URL',
+    background_image VARCHAR(512) COMMENT '背景贴图URL',
+    persona_prompt  TEXT COMMENT '人设提示词',
+    live2d_model    VARCHAR(64) COMMENT 'Live2D模型ID',
+    costume         VARCHAR(64) COMMENT '服装',
+    enabled         TINYINT(1) DEFAULT 1,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数字人配置表';
+
+-- 10. 对话记录表
+CREATE TABLE IF NOT EXISTS t_conversation_log (
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    tenant_id       VARCHAR(64) NOT NULL COMMENT '租户ID',
+    session_id      VARCHAR(64) NOT NULL COMMENT '会话ID',
+    mode            VARCHAR(16) NOT NULL COMMENT '模式：text/digital_human',
+    user_content    TEXT NOT NULL COMMENT '用户输入',
+    ai_content      TEXT COMMENT 'AI回复',
+    user_intent     VARCHAR(32) COMMENT '用户意图分类',
+    sentiment       VARCHAR(16) COMMENT '情感：positive/neutral/negative',
+    sentiment_score DECIMAL(3,2) COMMENT '情感分数 0-1',
+    topic_tag       VARCHAR(64) COMMENT '话题标签',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_conv_tenant (tenant_id),
+    INDEX idx_conv_session (session_id),
+    INDEX idx_conv_created (created_at),
+    INDEX idx_conv_sentiment (tenant_id, sentiment)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='对话记录表';
+
 -- ============================================================
 -- 初始数据已迁移至 DataInitializer.java 管理
 -- ============================================================

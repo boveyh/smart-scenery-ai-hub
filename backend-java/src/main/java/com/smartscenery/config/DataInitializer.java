@@ -28,6 +28,8 @@ public class DataInitializer implements CommandLineRunner {
     private OfflineKnowledgeRepository offlineKnowledgeRepository;
     @Autowired
     private TenantRepository tenantRepository;
+    @Autowired
+    private DigitalHumanConfigRepository digitalHumanConfigRepository;
 
     @Override
     public void run(String... args) {
@@ -109,7 +111,18 @@ public class DataInitializer implements CommandLineRunner {
         );
         offlineKnowledgeRepository.saveAll(faqs);
 
-        log.info("✅ 演示数据初始化完成: {}个租户, {}个POI, {}条FAQ, {}条实时资讯",
-                tenants.size(), pois.size(), faqs.size(), infos.size());
+        // 数字人配置
+        List<DigitalHumanConfig> dhConfigs = Arrays.asList(
+                DigitalHumanConfig.builder().tenantId("west_lake").personaName("西子").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+10%").ttsPitch("+0Hz")
+                        .personaPrompt("你是一位优雅知性的西湖景区导游，名叫西子。用富有诗意的语言介绍西湖的历史文化、自然风光和民间传说。回答要娓娓道来，像在和朋友分享西湖的故事。").live2dModel("Hiyori").build(),
+                DigitalHumanConfig.builder().tenantId("ling_shan").personaName("灵善").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+5%").ttsPitch("+0Hz")
+                        .personaPrompt("你是一位庄重祥和的灵山胜境导游，名叫灵善。用虔诚而温暖的语言介绍佛教文化和灵山胜境的景点。语气要平和安定，传递禅意。").live2dModel("OsageGirl").build(),
+                DigitalHumanConfig.builder().tenantId("zhouzhuang").personaName("阿水").ttsVoice("zh-CN-XiaoyiNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你是一位热情亲切的周庄水乡导游，名叫阿水。用生动活泼的语言介绍周庄的水乡风情、古桥老街和民俗文化。").live2dModel("Haru").build()
+        );
+        digitalHumanConfigRepository.saveAll(dhConfigs);
+
+        log.info("✅ 演示数据初始化完成: {}个租户, {}个POI, {}条FAQ, {}条实时资讯, {}个数字人配置",
+                tenants.size(), pois.size(), faqs.size(), infos.size(), dhConfigs.size());
     }
 }

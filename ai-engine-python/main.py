@@ -5,6 +5,7 @@ FastAPI 异步服务,负责：
   2. 音频静态文件服务
   3. 健康检查 & 服务状态
 """
+import asyncio
 import json
 import os
 import uuid
@@ -16,8 +17,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.types import ASGIApp, Scope, Receive, Send
 from pydantic import BaseModel, Field
 
 from core.llm_client import LLMStreamClient
@@ -96,6 +98,16 @@ app.add_middleware(
 Path(TTS_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory="./static"), name="static")
 
+# 给静态文件的响应添加 CORS header
+@app.middleware("http")
+async def add_cors_to_static(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
 
 # ─── 请求/响应模型 ────────────────────────────────────────
 
@@ -135,6 +147,8 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
     async def generate_ndjson():
         seq = 0
         try:
+            yield json.dumps({"seq": 0, "type": "start", "text_chunk": ""}, ensure_ascii=False) + "\n"
+
             # ─── Step 1: RAG 检索 + Prompt 注入 ────────────
             if rag_processor:
                 system_prompt = await rag_processor.build_system_prompt(
@@ -146,30 +160,37 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                 system_prompt = persona_prompt or "你是一个专业的智慧景区AI导览助手,请用自然口语化的中文回答游客问题。"
 
             # ─── Step 2: LLM 流式调用 + 句级切片 ────────────
+            last_text = ""
             async for sentence in llm_client.stream_with_sentence_splitting(
                 system_prompt=system_prompt,
                 user_message=req.content,
             ):
                 trimmed = sentence.strip()
-                if not trimmed:
+                if not trimmed or trimmed == last_text:
                     continue
+                last_text = trimmed
                 seq += 1
 
                 # ─── Step 3: TTS 异步生成 MP3 ──────────────
                 audio_url = ""
                 if tts_gen:
                     try:
-                        audio_url = await tts_gen.generate_audio(
-                            text=trimmed,
-                            tenant_id=tenant_id,
-                            session_id=req.session_id,
-                            seq=seq,
-                            voice=tts_voice,
-                            rate=tts_rate,
-                            pitch=tts_pitch,
+                        audio_url = await asyncio.wait_for(
+                            tts_gen.generate_audio(
+                                text=trimmed,
+                                tenant_id=tenant_id,
+                                session_id=req.session_id,
+                                seq=seq,
+                                voice=tts_voice,
+                                rate=tts_rate,
+                                pitch=tts_pitch,
+                            ),
+                            timeout=15.0,
                         )
+                    except asyncio.TimeoutError:
+                        logger.warning(f"TTS 超时(seq={seq}): 降级纯文本")
                     except Exception as e:
-                        logger.warning(f"TTS 生成失败(降级纯文本): {e}")
+                        logger.warning(f"TTS 生成失败(seq={seq}): 降级纯文本: {e}")
 
                 # ─── Step 4: NDJSON 行输出 ──────────────────
                 yield json.dumps({"seq": seq, "text_chunk": trimmed, "audio_url": audio_url}, ensure_ascii=False) + "\n"
@@ -188,6 +209,51 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",   # 禁用 Nginx 缓冲
         },
+    )
+
+
+@app.post("/api/v1/textchat")
+async def text_chat(req: DigitalHumanRequest, request: Request):
+    """
+    极速文本模式流式接口（NDJSON，纯文本，无 TTS）
+    供后端 WebSocket 处理器转发调用。
+    """
+    tenant_id = request.headers.get("X-Tenant-Id", "default")
+    logger.info(f"[{tenant_id}][{req.session_id}] 文本咨询请求: {req.content[:50]}...")
+
+    async def generate_ndjson():
+        seq = 0
+        try:
+            if rag_processor:
+                system_prompt = await rag_processor.build_system_prompt(
+                    tenant_id=tenant_id,
+                    user_query=req.content,
+                )
+            else:
+                system_prompt = "你是一个专业的智慧景区AI导览助手，请用自然口语化的中文回答游客问题。"
+
+            last_text = ""
+            async for sentence in llm_client.stream_with_sentence_splitting(
+                system_prompt=system_prompt,
+                user_message=req.content,
+            ):
+                trimmed = sentence.strip()
+                if not trimmed or trimmed == last_text:
+                    continue
+                last_text = trimmed
+                seq += 1
+                yield json.dumps({"type": "text", "content": trimmed, "seq": seq}, ensure_ascii=False) + "\n"
+
+            yield json.dumps({"type": "end", "reason": "stop", "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}}, ensure_ascii=False) + "\n"
+
+        except Exception as e:
+            logger.error(f"文本咨询流式异常: {e}", exc_info=True)
+            yield json.dumps({"type": "error", "code": 500, "message": str(e)}, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(
+        generate_ndjson(),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 
