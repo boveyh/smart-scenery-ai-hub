@@ -27,20 +27,7 @@ export default function HomePage() {
 
   return (
     <div style={{ padding: 'var(--space-8) var(--space-8) var(--space-10)', maxWidth: 1100, margin: '0 auto' }}>
-      {/* Hero */}
-      <div style={{
-        padding: 'var(--space-8) var(--space-8)', marginBottom: 'var(--space-8)',
-        background: 'linear-gradient(135deg, #3D2C2A 0%, #4E3A37 100%)',
-        borderRadius: 'var(--radius-xl)', color: '#F7F2E6',
-      }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>欢迎来到智慧景区</h1>
-        <p style={{ color: 'rgba(61,44,42,0.4)', marginBottom: 'var(--space-5)' }}>AI 导览 · 实时资讯 · 智能路线规划</p>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {['🤖 AI 导览', '📍 景点', '🗺️ 路线', '📊 资讯'].map(item => (
-            <span key={item} style={{ padding: '4px 12px', borderRadius: 9999, background: 'rgba(255,255,255,0.08)', fontSize: 'var(--text-sm)', color: 'rgba(180,136,100,0.10)' }}>{item}</span>
-          ))}
-        </div>
-      </div>
+
 
       {/* 统计卡片 */}
       {info && (

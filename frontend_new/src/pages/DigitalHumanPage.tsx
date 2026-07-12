@@ -211,7 +211,7 @@ export default function DigitalHumanPage() {
           overflowY: 'auto', paddingRight: 2,
         }}>
           <div style={rStyles.flexRowBetween}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#3D2C2A', letterSpacing: 3, fontFamily: "'Noto Serif SC',serif" }}>云岭慢游</h2>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#3D2C2A', letterSpacing: 3, fontFamily: "'Noto Serif SC',serif" }}>灵山胜景</h2>
             <button className="btn btn-sm btn-secondary" style={{ fontSize: '0.75rem', padding: '4px 16px' }}>在线讲解</button>
           </div>
 

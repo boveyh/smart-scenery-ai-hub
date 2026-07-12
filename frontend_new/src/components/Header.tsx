@@ -4,9 +4,9 @@ interface HeaderProps {
   onNavigate: (page: string) => void;
   currentPage: string;
   tenantName?: string;
-  tenants?: { id: string; name: string }[];
-  currentTenantId?: string;
-  onTenantChange?: (id: string) => void;
+  pois?: { id: string; name: string; desc: string }[];
+  currentPoiId?: string;
+  onPoiChange?: (id: string) => void;
 }
 
 const navItems = [
@@ -29,7 +29,7 @@ const adminNavItems = [
   { id: 'admin-report',      label: '游客报告', icon: '📋' },
 ];
 
-export default function Header({ onNavigate, currentPage, tenantName, tenants, currentTenantId, onTenantChange }: HeaderProps) {
+export default function Header({ onNavigate, currentPage, tenantName, pois, currentPoiId, onPoiChange }: HeaderProps) {
   return (
     <aside style={{
       width: 220,
@@ -54,21 +54,21 @@ export default function Header({ onNavigate, currentPage, tenantName, tenants, c
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 22, lineHeight: 1 }}>🏔️</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#3D2C2A', letterSpacing: 2, fontFamily: "'Noto Serif SC',serif" }}>云岭慢游</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#3D2C2A', letterSpacing: 2, fontFamily: "'Noto Serif SC',serif" }}>灵山胜景</div>
             <div style={{ fontSize: '0.7rem', color: 'rgba(61,44,42,0.4)', marginTop: 1 }}>智慧景区导览</div>
           </div>
         </div>
       </div>
 
-      {/* Tenant Switcher */}
-      {tenants && onTenantChange && (
+      {/* POI Switcher */}
+      {pois && onPoiChange && (
         <div style={{
           padding: '12px 14px',
           borderBottom: '1px solid rgba(180,136,100,0.08)',
         }}>
           <select
-            value={currentTenantId}
-            onChange={e => onTenantChange(e.target.value)}
+            value={currentPoiId}
+            onChange={e => onPoiChange(e.target.value)}
             style={{
               width: '100%', padding: '7px 10px',
               borderRadius: 14, border: '1px solid rgba(180,136,100,0.12)',
@@ -79,8 +79,8 @@ export default function Header({ onNavigate, currentPage, tenantName, tenants, c
               cursor: 'pointer',
             }}
           >
-            {tenants.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+            {pois.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
         </div>
@@ -202,7 +202,7 @@ export default function Header({ onNavigate, currentPage, tenantName, tenants, c
         color: 'var(--text-muted)',
         fontFamily: "'Noto Sans SC',sans-serif",
       }}>
-        v2.0 · {tenantName}
+v2.0 · {pois?.find(p => p.id === currentPoiId)?.name || tenantName}
       </div>
     </aside>
   );

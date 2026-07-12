@@ -12,22 +12,28 @@ import AdminKnowledgePage from '@/pages/admin/KnowledgePage';
 import AdminDigitalHumanPage from '@/pages/admin/DigitalHumanConfigPage';
 import AdminReportPage from '@/pages/admin/ReportPage';
 
-const TENANTS = [
-  { id: 'west_lake', name: '西湖景区' },
-  { id: 'ling_shan', name: '灵山胜境' },
-  { id: 'qingmingqiao', name: '清名桥古运河' },
-  { id: 'zhouzhuang', name: '周庄古镇' },
-  { id: 'yuyuan', name: '豫园' },
-  { id: 'zhujiajiao', name: '朱家角古镇' },
-  { id: 'ningbo_fangte', name: '宁波方特' },
-  { id: 'suzhou_forest', name: '苏州乐园' },
-  { id: 'gucun_park', name: '顾村公园' },
-  { id: 'china_navigation_museum', name: '航海博物馆' },
+const POI_LIST = [
+  { id: 'LS-001', name: '灵山大照壁', desc: '长39.8m高7m青石雕刻，赵朴初题字' },
+  { id: 'LS-002', name: '五明桥', desc: '5座汉白玉石拱桥，五明智慧' },
+  { id: 'LS-003', name: '佛足坛', desc: '青铜佛足印1.2m，32吉祥瑞相' },
+  { id: 'LS-004', name: '五智门', desc: '高16.8m宽35m汉白玉牌坊，六度波罗蜜' },
+  { id: 'LS-005', name: '菩提大道', desc: '250m长，近百棵印度菩提树' },
+  { id: 'LS-006', name: '九龙灌浴', desc: '高27.2m，鎏金太子佛7.2m重12吨，动态喷泉' },
+  { id: 'LS-007', name: '降魔浮雕', desc: '长26m高4.6m花岗岩浮雕' },
+  { id: 'LS-008', name: '阿育王柱', desc: '高16.9m直径1.8m重180吨，四狮柱头' },
+  { id: 'LS-009', name: '百子戏弥勒', desc: '高3m宽7.8m重9吨青铜群雕' },
+  { id: 'LS-010', name: '祥符禅寺', desc: '唐贞观年间，占地30亩，千年古刹' },
+  { id: 'LS-011', name: '灵山大佛', desc: '高88m+9m莲花，耗铜725吨，2000块铜板' },
+  { id: 'LS-012', name: '佛教文化博览馆', desc: '三层10000㎡，9999尊小佛' },
+  { id: 'LS-013', name: '灵山梵宫', desc: '72000㎡，五座莲花圣塔，鲁班奖' },
+  { id: 'LS-014', name: '五印坛城', desc: '五层高30m，藏式碉楼，小布达拉宫' },
+  { id: 'LS-015', name: '曼飞龙塔', desc: '主塔16.9m，九塔组合，南传佛教' },
+  { id: 'LS-016', name: '无尽意斋', desc: '600㎡，赵朴初纪念馆，四合院' },
 ];
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const [currentTenant, setCurrentTenant] = useState(TENANTS[0]);
+  const [currentPoi, setCurrentPoi] = useState(POI_LIST[0]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -55,12 +61,12 @@ export default function App() {
       <Header
         onNavigate={setCurrentPage}
         currentPage={currentPage}
-        tenantName={currentTenant.name}
-        tenants={TENANTS}
-        currentTenantId={currentTenant.id}
-        onTenantChange={(id) => {
-          const t = TENANTS.find(x => x.id === id);
-          if (t) setCurrentTenant(t);
+        tenantName="灵山胜景"
+        pois={POI_LIST}
+        currentPoiId={currentPoi.id}
+        onPoiChange={(id) => {
+          const p = POI_LIST.find(x => x.id === id);
+          if (p) setCurrentPoi(p);
         }}
       />
       <main style={{
@@ -87,7 +93,7 @@ export default function App() {
           background: 'rgba(255,255,255,0.3)',
           fontFamily: 'var(--font-sans)',
         }}>
-          云岭慢游 · 智慧景区导览 &copy; {new Date().getFullYear()}
+          灵山胜景 · 智慧景区导览 &copy; {new Date().getFullYear()}
         </footer>
       </main>
     </div>
