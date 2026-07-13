@@ -184,6 +184,7 @@ export class Live2DViewer {
       }
 
       this.renderer = renderer;
+      (this as any)._modelName = fileName;
 
       await this.loadTextures(gl, data, renderer);
       this.expressionNames = await this.loadExpressions(model, data);
@@ -207,16 +208,20 @@ export class Live2DViewer {
     }
   }
 
+  private cbust(url: string): string {
+    return url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  }
+
   private async fetchModelData(path: string): Promise<ModelData> {
     const i = path.lastIndexOf("/"), home = path.substring(0, i + 1);
-    const r = await fetch(path);
+    const r = await fetch(this.cbust(path));
     if (!r.ok) throw new Error(`配置读取失败: ${r.status}`);
     const buf = await r.arrayBuffer();
     const s = new CubismModelSettingJson(buf, buf.byteLength);
 
     const mf = s.getModelFileName();
     if (!mf) throw new Error("未找到.moc3");
-    const mr = await fetch(home + mf);
+    const mr = await fetch(this.cbust(home + mf));
     if (!mr.ok) throw new Error(`.moc3 读取失败: ${mr.status}`);
     const moc = await mr.arrayBuffer();
 
@@ -464,23 +469,37 @@ export class Live2DViewer {
       if (!gl || !this.renderer || !this.model || !this.isModelLoaded || gl.isContextLost()) return;
       if (this.cw <= 0 || this.ch <= 0) return;
 
-      // Let the SDK's doDrawModel handle framebuffer binding and clearing internally.
-      // The SDK will either draw to an offscreen render target (if blend mode enabled)
-      // and then copy to the default FBO, or draw directly to the default FBO.
-      // We just need to set the render state and let the SDK do its work.
       const proj = new CubismMatrix44();
-      const modelWidth = this.model.getModel().getCanvasWidth();
-      const modelHeight = this.model.getModel().getCanvasHeight();
+      const mw = this.model.getModel().getCanvasWidth();
+      const mh = this.model.getModel().getCanvasHeight();
 
-      if (modelWidth > 0 && modelHeight > 0) {
-        // Map model canvas coordinates to clip space [-1, 1]
-        // SDK standard: scale = 2 / canvasSize
-        const sx = 2.0 / modelWidth;
-        const sy = 2.0 / modelHeight;
-        const s = Math.min(sx, sy);
-        proj.scale(s * 0.6, s * 0.6);
+      if (mw > 0 && mh > 0) {
+        const targetPortion = 0.75;
+        let sx = (2.0 * targetPortion) / mw;
+        let sy = (2.0 * targetPortion) / mh;
+
+        const modelName = (this as any)._modelName as string | undefined;
+
+        if (modelName === 'Z' || modelName === '871') {
+          const hiw = 2.0,
+                hih = 2.85;
+          const hix = (2.0 * targetPortion) / hiw;
+          const hiy = (2.0 * targetPortion) / hih;
+          sx = hix;
+          sy = hiy;
+        }
+
+        const scale = Math.min(sx, sy);
+        proj.scale(scale, scale);
       }
       proj.multiplyByMatrix(this.model.getModelMatrix());
+
+      const modelName = (this as any)._modelName as string | undefined;
+      if (modelName === 'Z' || modelName === '871') {
+        proj.translate(0, -0.05);
+      } else {
+        proj.translate(0, -0.05);
+      }
 
       this.renderer.setMvpMatrix(proj);
       this.renderer.setRenderState(this.defaultFbo!, [0, 0, this.cw, this.ch]);

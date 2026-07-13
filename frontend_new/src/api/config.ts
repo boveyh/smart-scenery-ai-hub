@@ -9,7 +9,7 @@
  */
 
 // 默认租户 ID
-export const DEFAULT_TENANT_ID = 'west_lake';
+export const DEFAULT_TENANT_ID = 'ling_shan';
 
 // 后端基础地址（Vite proxy 会将 /api 转发到 Java 后端 :9000）
 export const API_BASE = '/api/v1';

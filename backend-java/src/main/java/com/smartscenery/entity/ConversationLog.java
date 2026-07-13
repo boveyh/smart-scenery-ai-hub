@@ -46,7 +46,6 @@ public class ConversationLog {
     @Column(length = 16)
     private String sentiment;
 
-    @Column(precision = 3, scale = 2)
     private Double sentimentScore;
 
     @Column(length = 64)

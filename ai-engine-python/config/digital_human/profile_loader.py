@@ -2,7 +2,7 @@
 多租户数字人配置加载器
 ======================
 从 digital_human_profiles.json 读取每个景区的定制配置，
-供 AI 引擎（TTS语音、Persona Prompt）和数字人渲染（照片、背景）使用。
+同时尝试从 Java 后端获取最新的运行态配置（优先级更高）。
 
 使用方式:
   from config.profile_loader import ProfileLoader
@@ -16,8 +16,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
+import httpx
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(SCRIPT_DIR, "digital_human_profiles.json")
+
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:9000")
 
 # 可用的 edge-tts 中文语音列表（供前端选择）
 AVAILABLE_VOICES = [
@@ -65,9 +69,32 @@ class ProfileLoader:
             self._profiles = json.load(f)
         return self._profiles
 
+    def _fetch_from_backend(self, tenant_id: str) -> dict | None:
+        """尝试从 Java 后端获取最新配置，优先级高于本地 JSON"""
+        try:
+            import asyncio
+            resp = httpx.get(
+                f"{BACKEND_BASE_URL}/api/admin/digital-human/{tenant_id}",
+                timeout=1.5,
+            )
+            if resp.status_code == 200:
+                data = resp.json().get("data")
+                if data:
+                    return {
+                        "tts_voice": data.get("ttsVoice", "zh-CN-XiaoxiaoNeural"),
+                        "tts_rate": data.get("ttsRate", "+10%"),
+                        "tts_pitch": data.get("ttsPitch", "+0Hz"),
+                        "persona_name": data.get("personaName", "小灵"),
+                        "persona_prompt": data.get("personaPrompt", ""),
+                    }
+        except Exception:
+            pass
+        return None
+
     def get(self, tenant_id: str = "default") -> dict:
         """
         获取指定租户的数字人配置
+        优先级: Java 后端 > 本地 JSON > 默认配置
 
         Args:
             tenant_id: 租户ID（如 "west_lake"）
@@ -75,6 +102,12 @@ class ProfileLoader:
         Returns:
             配置字典，若租户不存在则返回 default 配置
         """
+        # 优先从 Java 后端获取最新配置
+        backend_cfg = self._fetch_from_backend(tenant_id)
+        if backend_cfg:
+            return backend_cfg
+
+        # 降级到本地 JSON
         profiles = self._load()
         return profiles.get(tenant_id, profiles.get("default", {}))
 

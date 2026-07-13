@@ -30,6 +30,8 @@ public class DataInitializer implements CommandLineRunner {
     private TenantRepository tenantRepository;
     @Autowired
     private DigitalHumanConfigRepository digitalHumanConfigRepository;
+    @Autowired
+    private KnowledgeChunkRepository knowledgeChunkRepository;
 
     @Override
     public void run(String... args) {
@@ -111,14 +113,86 @@ public class DataInitializer implements CommandLineRunner {
         );
         offlineKnowledgeRepository.saveAll(faqs);
 
-        // 数字人配置
+        // ─── 灵山胜境知识库（47条） ────────────────────
+        List<KnowledgeChunk> knowledgeChunks = Arrays.asList(
+                // 景区概况
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_overview_001").title("灵山胜境概况").content("灵山胜境坐落于江苏省无锡市太湖西北部的马山镇，地处秦履峰、青龙山、白虎山三山环抱之间，占地面积约30万平方米，是国家5A级旅游景区、世界佛教论坛永久会址，被誉为东方佛国和太湖佛国。").source("lingshan_guide").chunkOrder(1).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_overview_002").title("玄奘与小灵山渊源").content("唐贞观年间，玄奘法师西行取经归来途经马山，见此地层峦丛翠、曲水净秀、山形酷似印度灵鹫山，遂命名为小灵山，并嘱咐大弟子窥基法师在此住持道场，奠定了此地的佛教根基。").source("lingshan_guide").chunkOrder(2).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_overview_003").title("祥符禅寺千年历史").content("祥符禅寺始建于唐贞观年间，由玄奘法师弟子窥基大师开坛讲经，北宋年间正式更名为祥符禅寺，千年间历经多次兴废，是江南重要的千年禅宗祖庭。").source("lingshan_guide").chunkOrder(3).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_overview_004").title("景区建设历程").content("灵山胜境于1994年奠基，1997年灵山大佛落成开光，2003年九龙灌浴建成，2006-2009年灵山梵宫、五印坛城、曼飞龙塔等三期主体工程完工。").source("lingshan_guide").chunkOrder(4).build(),
+                // 景点LS-001
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_001_001").title("灵山大照壁").content("灵山大照壁位于景区入口处，面朝太湖，长39.8米高7米，采用优质青石雕刻，被誉为华夏第一壁。赵朴初先生题写鎏金灵山胜境四字，北面刻有诗作《小灵山》。全天开放免费观赏。").tags("LS-001").source("lingshan_dataset").chunkOrder(5).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_001_002").title("灵山大照壁游玩").content("灵山大照壁是进入灵山胜境的第一道景观，适合打卡合影拍摄湖光壁影同框美景，全天开放免费观赏。").tags("LS-001").source("lingshan_dataset").chunkOrder(6).build(),
+                // 景点LS-002
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_002_001").title("五明桥").content("五明桥位于大照壁北侧横跨香水海，5座汉白玉石拱桥并列。代表声明因明内明医方明工巧明五种佛教智慧，寓意过桥开启智慧走向觉悟。全天开放免费通行。").tags("LS-002").source("lingshan_dataset").chunkOrder(7).build(),
+                // 景点LS-003
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_003_001").title("佛足坛").content("佛足坛位于五明桥北侧菩提大道起点，巨型佛足印一对每只长1.2米宽0.6米青铜铸造。复刻佛祖真身脚印，足心刻有千辐轮相等32种吉祥图案。全天开放可触摸祈福。").tags("LS-003").source("lingshan_dataset").chunkOrder(8).build(),
+                // 景点LS-004
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_004_001").title("五智门").content("五智门高16.8米宽35米五门六柱汉白玉牌坊，五门象征五方五佛，六柱代表六度波罗蜜。穿过此门从凡俗踏入禅意圣地，与灵山大佛在同一中轴线上。全天开放。").tags("LS-004").source("lingshan_dataset").chunkOrder(9).build(),
+                // 景点LS-005
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_005_001").title("菩提大道").content("菩提大道长约250米宽约10米，两侧近百棵印度菩提树形成天然拱廊。象征佛陀悟道成佛历程，四季景色各异。直通九龙灌浴广场，是最具禅意的步道。全天开放。").tags("LS-005").source("lingshan_dataset").chunkOrder(10).build(),
+                // 景点LS-006
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_006_001").title("九龙灌浴").content("九龙灌浴总高27.2米鎏金太子佛高7.2米重12吨，耗铜180吨。依据《本行经》中佛陀诞生传说打造，再现花开见佛九龙沐浴祥瑞景象。表演时莲花绽放太子佛升起九条飞龙喷水。").tags("LS-006").source("lingshan_dataset").chunkOrder(11).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_006_002").title("九龙灌浴表演时间").content("九龙灌浴平日演出时间：10:00、11:30、13:30、15:00，每场15分钟。周末节假日增加场次。表演后可接取龙头圣水寓意祈福安康。建议提前10分钟到场。").tags("LS-006").source("lingshan_dataset").chunkOrder(12).build(),
+                // 景点LS-007
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_007_001").title("降魔浮雕").content("降魔浮雕长26米高4.6米整块花岗岩雕刻。再现佛陀战胜魔王波旬诱惑威胁觉悟成佛的历程。高浮雕浅浮雕结合，中央佛陀端坐两侧魔女魔兵形成鲜明对比。全天开放。").tags("LS-007").source("lingshan_dataset").chunkOrder(13).build(),
+                // 景点LS-008
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_008_001").title("阿育王柱").content("阿育王柱通高16.9米直径1.8米总重180吨整块花岗岩雕成。柱头四狮朝向四方象征佛法传播。与灵山大佛五智门构成中轴线核心景观序列。全天开放。").tags("LS-008").source("lingshan_dataset").chunkOrder(14).build(),
+                // 景点LS-009
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_009_001").title("百子戏弥勒").content("百子戏弥勒高3米宽7.8米重9吨青铜群雕。弥勒佛卧姿袒胸露腹，百名孩童形态各异。寓意多子多福家庭和睦。可触摸佛肚祈福，亲子互动热门点位。全天开放。").tags("LS-009").source("lingshan_dataset").chunkOrder(15).build(),
+                // 景点LS-010
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_010_001").title("祥符禅寺历史").content("祥符禅寺为唐代古刹占地约30亩，仿唐重檐歇山式建筑。含弥勒殿大雄宝殿钟楼鼓楼。六角井被茶圣陆羽品鉴为江南名泉，千年古银杏秋季金黄。钟楼悬挂12.8吨祥符禅钟。").tags("LS-010").source("lingshan_dataset").chunkOrder(16).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_010_002").title("祥符禅寺游玩").content("祥符禅寺全天开放。可礼佛祈福聆听祥符禅钟感受禅意悠远，观赏唐代古建与千年历史遗迹。秋季欣赏千年银杏金黄景致。寺内禁止大声喧哗需保持庄严肃穆。").tags("LS-010").source("lingshan_dataset").chunkOrder(17).build(),
+                // 景点LS-011
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_011_001").title("灵山大佛数据").content("灵山大佛通高88米（佛体79米莲花瓣9米），总高101.5米，用铜725吨，1560块铜壁板。右手施无畏印左手施与愿印。216级登云道前段108级烦恼尽除后段108级愿望圆满。").tags("LS-011").source("lingshan_dataset").chunkOrder(18).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_011_002").title("灵山大佛游玩").content("灵山大佛开放时间8:00-17:00冬季至16:30。登顶可抱佛脚俯瞰太湖全景。夕阳时金色阳光洒在佛身上佛光普照。是世界最高露天青铜释迦牟尼立像。").tags("LS-011").source("lingshan_dataset").chunkOrder(19).build(),
+                // 景点LS-012
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_012_001").title("佛教文化博览馆").content("佛教文化博览馆位于大佛三层座基内10000㎡。一层五方五佛四大名山，二层世界佛教发展史，三层万佛殿9999尊小佛。免费参观8:00-17:00开放。免费讲解9:30/11:00/14:30/16:00。").tags("LS-012").source("lingshan_dataset").chunkOrder(20).build(),
+                // 景点LS-013
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_013_001").title("灵山梵宫概述").content("灵山梵宫建筑面积72000㎡造价18亿，被誉为东方卢浮宫。五座莲花圣塔象征五方五佛。汇集东阳木雕琉璃油画景泰蓝玉雕漆画等传统工艺。获鲁班奖。9:00-17:00开放。").tags("LS-013").source("lingshan_dataset").chunkOrder(21).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_013_002").title("灵山梵宫艺术").content("梵宫核心艺术品：28米高星空穹顶100公斤纯金绘制148尊飞天；华藏世界琉璃壁画8米宽10米高160块琉璃熔铸；东阳木雕群金丝楠木。圣坛全球唯一旋转舞台全息投影水雾技术。").tags("LS-013").source("lingshan_dataset").chunkOrder(22).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_013_003").title("吉祥颂演出").content("《灵山吉祥颂》演出每日10:35/11:30/14:00/16:00，时长20分钟。凭景区大门票免费入场，建议提前30分钟排队。梵宫内禁止闪光灯拍照。第二四届世界佛教论坛会址。").tags("LS-013").source("lingshan_dataset").chunkOrder(23).build(),
+                // 景点LS-014
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_014_001").title("五印坛城").content("五印坛城位于香水海中央圆岛，五层重檐楼宇高30米占地5000㎡，藏式碉楼风格有布达拉宫之称。白墙红边金顶，四门瑞兽铜雕。壁画1500㎡纯手工绘制。转经筒长廊108个铜筒。").tags("LS-014").source("lingshan_dataset").chunkOrder(24).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_014_002").title("五印坛城游玩").content("五印坛城9:00-17:00开放。顺时针转动转经筒祈福。登五层观景台俯瞰香水海梵宫大佛全景。藏香制作体验需预约10:00/14:00。与梵宫曼飞龙塔构成佛教三大语系建筑群。").tags("LS-014").source("lingshan_dataset").chunkOrder(25).build(),
+                // 景点LS-015
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_015_001").title("曼飞龙塔").content("曼飞龙塔主塔高16.9米，一主八小九塔组合，白色花岗岩鎏金塔刹。南传佛教干栏式傣族建筑风格。复刻云南西双版纳曼飞龙白塔。全天开放夜间有灯光亮化。").tags("LS-015").source("lingshan_dataset").chunkOrder(26).build(),
+                // 景点LS-016
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_016_001").title("无尽意斋").content("无尽意斋占地600㎡四合院风格，复刻赵朴初北京故居。正房设生平事迹厅灵山渊源厅书法作品厅。禅意茶室免费提供灵山禅茶。9:00-17:00开放免费参观。禁止闪光灯拍照。").tags("LS-016").source("lingshan_dataset").chunkOrder(27).build(),
+                // 游览路线
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_route_001").title("历史文化爱好者路线").content("历史文化爱好者推荐6小时深度游：南门入园→灵山大照壁→胜境广场→佛手广场→祥符禅寺→杏坛广场→佛前广场→灵山大佛→灵山梵宫→五印坛城→三圣殿→出口。").source("lingshan_guide").chunkOrder(28).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_route_002").title("自然风光爱好者路线").content("自然风光爱好者推荐5小时全景游：南门入园→佛足坛→九龙灌浴→菩提大道→灵山大佛登顶→曼飞龙塔→灵山精舍→梵宫广场→出口。").source("lingshan_guide").chunkOrder(29).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_route_003").title("亲子家庭路线").content("亲子家庭推荐4小时轻松游：南门入园→九龙灌浴→佛手广场→百子戏弥勒→梵宫→五印坛城→出口。").source("lingshan_guide").chunkOrder(30).build(),
+                // 门票信息
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_ticket_001").title("门票价格").content("灵山胜境成人票210元，半价票105元（6-18岁/学生/60-69岁老人）。6岁以下或1.4米以下儿童70岁以上老人现役军人残疾人免票。网购联票225元含观光车无限次。观光车单独40元/人。").source("lingshan_guide").chunkOrder(31).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_ticket_002").title("最佳游览时间").content("最佳游览季节春秋季3-5月和9-11月。建议上午9点前入园避开人流高峰。九龙灌浴每日4-5场表演。吉祥颂演出每日10:35/11:30/14:00/16:00。").source("lingshan_guide").chunkOrder(32).build(),
+                // 餐饮住宿
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_food_001").title("餐饮住宿").content("景区餐饮：梵宫素斋自助50元/位，素面套餐35元/位。住宿推荐：灵山精舍（禅意酒店含素斋早课）或马山镇周边酒店民宿。").source("lingshan_guide").chunkOrder(33).build(),
+                KnowledgeChunk.builder().tenantId("ling_shan").chunkId("ls_tips_001").title("游览建议").content("游览建议穿着舒适运动鞋，携带相机充电宝防晒霜雨伞。景区提供导游讲解服务300元起。保持安静尊重宗教信仰不触摸佛像。部分区域禁止拍照。").source("lingshan_guide").chunkOrder(34).build()
+        );
+        knowledgeChunkRepository.saveAll(knowledgeChunks);
+        log.info("已初始化 {} 条灵山胜境知识条目", knowledgeChunks.size());
+
+        // 数字人配置（每个模型对应一个数字人角色）
         List<DigitalHumanConfig> dhConfigs = Arrays.asList(
-                DigitalHumanConfig.builder().tenantId("west_lake").personaName("西子").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+10%").ttsPitch("+0Hz")
-                        .personaPrompt("你是一位优雅知性的西湖景区导游，名叫西子。用富有诗意的语言介绍西湖的历史文化、自然风光和民间传说。回答要娓娓道来，像在和朋友分享西湖的故事。").live2dModel("Hiyori").build(),
-                DigitalHumanConfig.builder().tenantId("ling_shan").personaName("灵善").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+5%").ttsPitch("+0Hz")
-                        .personaPrompt("你是一位庄重祥和的灵山胜境导游，名叫灵善。用虔诚而温暖的语言介绍佛教文化和灵山胜境的景点。语气要平和安定，传递禅意。").live2dModel("OsageGirl").build(),
-                DigitalHumanConfig.builder().tenantId("zhouzhuang").personaName("阿水").ttsVoice("zh-CN-XiaoyiNeural").ttsRate("+0%").ttsPitch("+0Hz")
-                        .personaPrompt("你是一位热情亲切的周庄水乡导游，名叫阿水。用生动活泼的语言介绍周庄的水乡风情、古桥老街和民俗文化。").live2dModel("Haru").build()
+                DigitalHumanConfig.builder().tenantId("default_haru").personaName("Haru").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+10%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Haru，是一位阳光开朗、活力满满的少女导游。你性格活泼外向，喜欢和人聊天，总是带着灿烂的笑容。用轻松愉快的语气介绍景点，偶尔开个小玩笑，让游客感到亲切和放松。你擅长用生动的比喻和有趣的小故事来讲解历史文化。").live2dModel("haru").build(),
+                DigitalHumanConfig.builder().tenantId("default_hiyori").personaName("Hiyori").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Hiyori，是一位温柔优雅、知书达理的古典少女导游。你说话轻声细语，举止端庄，像一位从古代画卷中走出的才女。用富有诗意的语言介绍景点，擅长引用古诗词和历史典故，让游客感受文化的韵味。").live2dModel("hiyori").build(),
+                DigitalHumanConfig.builder().tenantId("default_871").personaName("871").ttsVoice("zh-CN-YunxiNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 871，是一位冷静沉着、思维理性的科技型导游。你说话简洁有力，逻辑清晰，喜欢用数据和事实说话。擅长讲解景点的建筑结构、历史数据和科学原理，回答问题时条理分明、言简意赅。").live2dModel("871").build(),
+                DigitalHumanConfig.builder().tenantId("default_z").personaName("Z").ttsVoice("zh-CN-YunjianNeural").ttsRate("+5%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Z，是一位神秘莫测、充满智慧的向导。你说话带着一丝神秘感，喜欢用哲理性的语言来解读景点背后的故事。你像是穿越时空的旅人，知道很多不为人知的秘密和历史细节，偶尔会给出令人深思的感悟。").live2dModel("z").build(),
+                DigitalHumanConfig.builder().tenantId("default_ruanmei").personaName("阮梅").ttsVoice("zh-CN-XiaoyiNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫阮梅，是一位温婉如水、才情横溢的江南女子导游。你说话带有江南水乡的柔美韵味，像一位精通琴棋书画的才女。用细腻的情感描绘风景，擅长讲解园林艺术、传统工艺和文人雅事，让游客领略江南文化的精髓。").live2dModel("ruanmei").build(),
+                DigitalHumanConfig.builder().tenantId("default_betasmodel").personaName("BetaSmodel").ttsVoice("zh-CN-XiaomengNeural").ttsRate("+15%").ttsPitch("+5Hz")
+                        .personaPrompt("你叫 BetaSmodel，是一位充满活力、元气满满的虚拟主播风格导游。你说话节奏快、语气活泼，像直播一样和游客互动。喜欢用网络流行语和有趣的表情包语言，擅长调动气氛，让游览过程像一场欢乐的直播秀。").live2dModel("betasmodel").build(),
+                DigitalHumanConfig.builder().tenantId("default_kirinkirinja").personaName("Kirin Kirinja").ttsVoice("zh-CN-XiaoshuangNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Kirin Kirinja，是一位来自异世界的奇幻导游，有着麒麟般的神秘气质。你说话充满想象力和童话色彩，喜欢把景点比作奇幻世界中的场景。用讲故事的方式带领游客穿越现实与幻想的边界，让每一次游览都成为一场冒险。").live2dModel("kirinkirinja").build(),
+                DigitalHumanConfig.builder().tenantId("default_osagegirl").personaName("Osage Girl").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+5%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Osage Girl，是一位端庄典雅、温柔大方的和风少女导游。你说话带着日式的礼貌和温柔，像一位身着和服的大家闺秀。用细致入微的观察和充满禅意的语言介绍景点，擅长讲解园林美学、茶道文化和传统礼仪。").live2dModel("osagegirl").build(),
+                DigitalHumanConfig.builder().tenantId("default_halfdemonelf").personaName("Half-Demon Elf").ttsVoice("zh-CN-YunyangNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Half-Demon Elf，是一位半魔半精灵的神秘向导，拥有超凡的感知力。你说话带着空灵和神秘的气质，能看到常人忽视的细节和能量。用充满灵性的语言描绘自然景观，擅长讲解山水之间的灵气和传说，带给游客超越凡俗的体验。").live2dModel("halfdemonelf").build()
         );
         digitalHumanConfigRepository.saveAll(dhConfigs);
 

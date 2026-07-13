@@ -16,7 +16,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:9000',
         changeOrigin: true,
-        headers: { 'X-Tenant-Id': 'west_lake' },
+        headers: { 'X-Tenant-Id': 'ling_shan' },
       },
       '/ws': {
         target: 'ws://localhost:9000',
