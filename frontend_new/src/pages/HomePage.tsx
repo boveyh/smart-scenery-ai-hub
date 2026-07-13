@@ -9,8 +9,7 @@ const FIVE_HOT_POIS = [
     badge: '必看表演',
     desc: '总高27.5米，260吨青铜铸造，中央7.2米鎏金太子佛。每日4-5场表演，莲花瓣缓缓开启，九龙吐水为太子沐浴，水幕与阳光交织出七彩佛光，再现释迦牟尼诞生时"九龙吐水"的神圣场景。',
     highlight: '表演结束可接取祈福圣水',
-    image: '🏛️',
-    detailUrl: '#',
+    image: '/assets/scenic/lingshan/ls-006.jpg',
   },
   {
     id: 'LS-011', name: '灵山大佛',
@@ -18,8 +17,7 @@ const FIVE_HOT_POIS = [
     badge: '核心地标',
     desc: '通高88米（佛体79米+莲花9米），总高101.5米，用铜725吨，佛体由1560块铜壁板构成。右手施无畏印，左手施与愿印，216级登云道暗合108烦恼与108愿望。',
     highlight: '登顶抱佛脚，俯瞰太湖全景',
-    image: '🗿',
-    detailUrl: '#',
+    image: '/assets/scenic/lingshan/ls-011.jpg',
   },
   {
     id: 'LS-013', name: '灵山梵宫',
@@ -27,8 +25,7 @@ const FIVE_HOT_POIS = [
     badge: '艺术殿堂',
     desc: '建筑面积7.2万平方米，造价18亿。28米高星空穹顶用100公斤纯金绘制，148尊飞天姿态各异；《华藏世界》琉璃壁画由160块琉璃构件熔铸而成；东阳木雕群采用金丝楠木，堪称当代佛教艺术巅峰。',
     highlight: '观看《吉祥颂》全息演出',
-    image: '🕍',
-    detailUrl: '#',
+    image: '/assets/scenic/lingshan/ls-013.jpg',
   },
   {
     id: 'LS-014', name: '五印坛城',
@@ -36,8 +33,7 @@ const FIVE_HOT_POIS = [
     badge: '异域风情',
     desc: '占地5000㎡，藏式碉楼风格建筑，金顶红墙，四面环香水海。坛城内供奉五方五佛，壁画由纯手工绘制达1500㎡。转经廊设有转经筒，顺时针转动寓意"转经一圈，福慧双增"。',
     highlight: '登顶层观景台俯瞰全景',
-    image: '🏯',
-    detailUrl: '#',
+    image: '/assets/scenic/lingshan/ls-014.jpg',
   },
   {
     id: 'LS-010', name: '祥符禅寺',
@@ -45,8 +41,7 @@ const FIVE_HOT_POIS = [
     badge: '历史遗迹',
     desc: '始建于唐贞观年间（公元627-649年），由玄奘法师弟子窥基大师开坛讲经。寺内保留千年银杏、六角古井等珍贵遗迹，悬挂重12.8吨"祥符禅钟"，钟声浑厚洪亮，响彻太湖之滨。',
     highlight: '撞钟祈福，聆听江南第一钟',
-    image: '⛩️',
-    detailUrl: '#',
+    image: '/assets/scenic/lingshan/ls-010.jpg',
   },
 ];
 
@@ -157,18 +152,20 @@ export default function HomePage() {
             boxShadow: '0 1px 4px rgba(61,44,42,0.03)',
           }}>
             <div style={{ display: 'flex' }}>
-              {/* 左侧编号/图标区域 */}
+              {/* 左侧图片区域 */}
               <div style={{
-                width: 90, flexShrink: 0,
-                background: idx === 0 ? '#3D2C2A' : 'rgba(180,136,100,0.08)',
+                width: 160, flexShrink: 0,
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                gap: 4, padding: '14px 0',
+                padding: '8px 0',
               }}>
-                <span style={{ fontSize: 28 }}>{poi.image}</span>
+                <img src={poi.image} alt={poi.name} style={{
+                  width: 140, height: 90, borderRadius: 14, objectFit: 'cover',
+                  display: 'block',
+                }} />
                 <span style={{
-                  fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1,
-                  color: idx === 0 ? '#D4C5B2' : '#8B6E57',
-                }}>#{idx + 1}</span>
+                  marginTop: 4, fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1,
+                  color: idx === 0 ? '#8B6E57' : 'rgba(61,44,42,0.4)',
+                }}>#{idx + 1} 推荐</span>
               </div>
               {/* 右侧内容 */}
               <div style={{ flex: 1, padding: '16px 18px' }}>

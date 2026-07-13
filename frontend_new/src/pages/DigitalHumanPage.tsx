@@ -29,6 +29,7 @@ export default function DigitalHumanPage() {
   const audioQueueRef = useRef<{ seq: number; text: string; url: string }[]>([]);
   const currentSeqRef = useRef(0);
   const [currentText, setCurrentText] = useState('');
+  const lipSyncRef = useRef<{ ctx: AudioContext | null; src: MediaElementAudioSourceNode | null; raf: number }>({ ctx: null, src: null, raf: 0 });
   const [viewer, setViewer] = useState<Live2DViewer | null>(null);
   const [configs, setConfigs] = useState<DigitalHumanConfigItem[]>([]);
   const [activeConfig, setActiveConfig] = useState<DigitalHumanConfigItem | null>(null);
@@ -39,6 +40,36 @@ export default function DigitalHumanPage() {
 
   const playNextRef = useRef<() => void>(() => {});
   const playNext = useCallback(() => { playNextRef.current(); }, []);
+  const startLipSync = (audio: HTMLAudioElement, v: Live2DViewer) => {
+    const ls = lipSyncRef.current;
+    if (ls.raf) cancelAnimationFrame(ls.raf);
+    if (ls.ctx) ls.ctx.close();
+    try {
+      const ctx = new AudioContext();
+      const src = ctx.createMediaElementSource(audio);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 128;
+      src.connect(analyser);
+      analyser.connect(ctx.destination);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(buf);
+        const avg = buf.reduce((a, b) => a + b, 0) / buf.length;
+        const norm = Math.min(avg / 100, 1);
+        v.setMouthOpen(norm);
+        ls.raf = requestAnimationFrame(tick);
+      };
+      ls.ctx = ctx;
+      ls.src = src;
+      tick();
+    } catch { /* cross-origin or no audio context */ }
+  };
+  const stopLipSync = () => {
+    const ls = lipSyncRef.current;
+    if (ls.raf) { cancelAnimationFrame(ls.raf); ls.raf = 0; }
+    if (ls.ctx) { ls.ctx.close(); ls.ctx = null; ls.src = null; }
+  };
+
   playNextRef.current = () => {
     const queue = audioQueueRef.current;
     if (queue.length === 0) return;
@@ -50,20 +81,25 @@ export default function DigitalHumanPage() {
     const audio = new Audio(next.url);
     audioRef.current = audio;
     audio.onended = () => {
+      stopLipSync();
+      if (viewer) viewer.setMouthOpen(0);
       setIsSpeaking(false);
       if (viewer) viewer.setSpeaking(false);
       playNextRef.current();
     };
-    audio.onerror = () => { setIsSpeaking(false); if (viewer) viewer.setSpeaking(false); playNextRef.current(); };
-    audio.play().catch(() => {});
+    audio.onerror = () => { stopLipSync(); setIsSpeaking(false); if (viewer) viewer.setSpeaking(false); playNextRef.current(); };
+    audio.play().then(() => {
+      if (viewer) startLipSync(audio, viewer);
+    }).catch(() => {});
   };
 
   const stopSpeaking = useCallback(() => {
+    stopLipSync();
     audioQueueRef.current = [];
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     setIsSpeaking(false);
     setIsPaused(false);
-    if (viewer) viewer.setSpeaking(false);
+    if (viewer) { viewer.setMouthOpen(0); viewer.setSpeaking(false); }
   }, [viewer]);
 
   const handleStopAll = useCallback(() => {
@@ -90,7 +126,7 @@ export default function DigitalHumanPage() {
       .filter(c => c.text_chunk && c.audio_url && c.seq > currentSeqRef.current)
       .map(c => ({
         seq: c.seq, text: c.text_chunk!,
-        url: c.audio_url!.startsWith('/') ? AI_ENGINE_BASE + c.audio_url! : c.audio_url!,
+        url: c.audio_url!.startsWith('/') ? c.audio_url! : c.audio_url!,
       }));
     if (newChunks.length > 0) {
       audioQueueRef.current.push(...newChunks);
@@ -262,7 +298,7 @@ export default function DigitalHumanPage() {
               flex: 1, color: 'rgba(61,44,42,0.25)', gap: 6,
             }}>
               <span style={{ fontSize: '2rem' }}>💬</span>
-              <span style={{ fontSize: '0.8rem' }}>向 AI 导游提问开始对话</span>
+              <span style={{ fontSize: '0.8rem' }}>向 {activeConfig?.personaName || 'AI'}导游提问开始对话</span>
             </div>
           )}
           {messages.map((m, i) => (

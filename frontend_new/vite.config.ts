@@ -18,6 +18,10 @@ export default defineConfig({
         changeOrigin: true,
         headers: { 'X-Tenant-Id': 'ling_shan' },
       },
+      '/static/audio': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
       '/ws': {
         target: 'ws://localhost:9000',
         ws: true,
