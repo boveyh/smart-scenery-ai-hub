@@ -35,7 +35,7 @@ const ROUTES: Record<string, { name: string; spots: string[]; travel: 'walk' | '
 };
 
 const TRAVEL_LABELS: Record<string, string> = { walk: '步行', drive: '驾车', transit: '公交' };
-const TRAVEL_COLORS: Record<string, string> = { walk: '#22c55e', drive: '#3b82f6', transit: '#f59e0b' };
+const TRAVEL_COLORS: Record<string, string> = { walk: '#C43A31', drive: '#C43A31', transit: '#C43A31' };
 
 function formatMeters(m: number): string {
   return m >= 1000 ? `${(m/1000).toFixed(1)}km` : `${Math.round(m)}m`;
@@ -90,7 +90,7 @@ export default function RoutePage() {
       const idx = routeSpots.indexOf(spot.id);
       const marker = new A.Marker({
         position: pos, anchor: 'bottom-center',
-        content: `<div style="display:flex;align-items:center;gap:4px;padding:3px 9px 3px 4px;background:#fff;border:1px solid ${idx>=0?'#8B6E57':'rgba(180,136,100,0.25)'};border-radius:18px;box-shadow:0 3px 12px rgba(0,0,0,0.12)"><img src="${spot.image}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><span style="font-size:11px;font-weight:${idx>=0?700:400};color:#3D2C2A;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${idx>=0?`${idx+1}.${spot.name}`:spot.name}</span></div>`,
+        content: `<div style="display:flex;align-items:center;gap:4px;padding:3px 9px 3px 4px;background:#fff;border:1px solid ${idx>=0?'#C43A31':'rgba(180,136,100,0.25)'};border-radius:18px;box-shadow:0 3px 12px rgba(0,0,0,0.12)${idx>=0?';background:#fef2f2':''}"><img src="${spot.image}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><span style="font-size:11px;font-weight:${idx>=0?700:400};color:#3D2C2A;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${idx>=0?`${idx+1}.${spot.name}`:spot.name}</span></div>`,
         offset: new A.Pixel(0, -8),
       });
       const info = new A.InfoWindow({
