@@ -116,6 +116,8 @@ export default function DigitalHumanPage() {
     setIsSpeaking(false);
     setIsPaused(false);
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    lastProcessedSeq.current = 0;
+    aiFullText.current = '';
     setMessages(prev => [...prev, { role: 'user', text: input.trim() }]);
     sendMessage(sessionId, input.trim());
     setInput('');
@@ -171,20 +173,26 @@ export default function DigitalHumanPage() {
     }
   }, [viewer]);
 
+  // 流式文本累加 — 每当有新 chunk 到来时追加到聊天框
+  const lastProcessedSeq = useRef(0);
+  const aiFullText = useRef('');
   useEffect(() => {
-    if (finished && currentText) {
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === 'ai') {
-          const updated = [...prev];
-          updated[updated.length - 1] = { ...last, text: last.text + currentText };
-          return updated;
-        }
-        return [...prev, { role: 'ai', text: currentText }];
-      });
-      setCurrentText('');
-    }
-  }, [finished]);
+    const newOnes = chunks.filter(c => c.text_chunk && c.seq > lastProcessedSeq.current);
+    if (newOnes.length === 0) return;
+    const textToAdd = newOnes.map(c => c.text_chunk).join('');
+    lastProcessedSeq.current = Math.max(...newOnes.map(c => c.seq));
+    aiFullText.current += textToAdd;
+    
+    setMessages(prev => {
+      const last = prev[prev.length - 1];
+      if (last?.role === 'ai') {
+        const updated = [...prev];
+        updated[updated.length - 1] = { ...last, text: aiFullText.current };
+        return updated;
+      }
+      return [...prev, { role: 'ai', text: aiFullText.current }];
+    });
+  }, [chunks]);
 
   return (
     <div style={{ height: 'calc(100vh - 130px)', display: 'flex', gap: 20 }}>
