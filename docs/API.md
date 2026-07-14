@@ -103,8 +103,8 @@ X-Tenant-Id: {tenant_id}
 - 正常分片行：携带单句文本+音频链接；结束行：type=end标记对话终止
 
 ```json
-{"seq":1, "text_chunk": "苏堤春晓是西湖十景之首。", "audio_url": "https://cdn.example.com/ttf/abc123.mp3"}
-{"seq":2, "text_chunk": "它由北宋诗人苏轼主持修建。", "audio_url": "https://cdn.example.com/ttf/abc124.mp3"}
+{"seq":1, "text_chunk": "苏堤春晓是西湖十景之首。", "audio_url": "https://cdn.example.com/ttf/abc123.mp3", "emotion": "calm"}
+{"seq":2, "text_chunk": "它由北宋诗人苏轼主持修建。", "audio_url": "https://cdn.example.com/ttf/abc124.mp3", "emotion": "serious"}
 {"seq":3, "type": "end", "reason": "complete"}
 ```
 
@@ -314,6 +314,7 @@ X-Tenant-Id: {tenant_id}
 | content | string | 用户提问原始文本/AI整段回复 | 雷峰塔的故事由来 |
 | text_chunk | string | 数字人专用：单句切片文本 | 苏堤春晓是西湖十景之首。 |
 | audio_url | string | 临时音频公网OSS地址 | <https://cdn.example.com/ttf/xxx.mp3> |
+| emotion | string | 数字人专用：句级情绪标签，用于前端驱动表情/动作；建议值 happy/calm/serious/sad/excited/warning | calm |
 
 ## 9. 版本与更新记录
 

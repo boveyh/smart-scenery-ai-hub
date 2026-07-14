@@ -147,6 +147,22 @@ class DigitalHumanRequest(BaseModel):
     timestamp: int = Field(default_factory=lambda: int(time.time() * 1000), description="毫秒时间戳")
 
 
+def infer_emotion(text: str) -> str:
+    """Lightweight sentence-level emotion label; no extra model call."""
+    t = text.lower()
+    rules = [
+        ("warning", ["注意", "小心", "危险", "禁止", "不要", "请勿", "安全", "warning", "danger"]),
+        ("sad", ["遗憾", "可惜", "纪念", "悼念", "伤心", "沉重", "sad"]),
+        ("excited", ["精彩", "震撼", "推荐", "必看", "亮点", "活动", "表演", "excited"]),
+        ("happy", ["欢迎", "喜欢", "开心", "高兴", "美", "太好了", "祝您", "happy", "love"]),
+        ("serious", ["历史", "文化", "宗教", "佛教", "典故", "保护", "规定", "serious"]),
+    ]
+    for emotion, keywords in rules:
+        if any(k in t for k in keywords):
+            return emotion
+    return "calm"
+
+
 # ─── 核心接口 ─────────────────────────────────────────────
 
 @app.post("/api/v1/digitalhuman/chat")
@@ -233,8 +249,16 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
                     except Exception as e:
                         logger.warning(f"TTS 生成失败(seq={seq}): 降级纯文本: {e}")
 
-                # ─── Step 5: NDJSON 行输出 ──────────────────
-                yield json.dumps({"seq": seq, "text_chunk": trimmed, "audio_url": audio_url}, ensure_ascii=False) + "\n"
+                # ─── Step 5: NDJSON 行输出（含 emotion 字段） ──
+                yield json.dumps(
+                    {
+                        "seq": seq,
+                        "text_chunk": trimmed,
+                        "audio_url": audio_url,
+                        "emotion": infer_emotion(trimmed),
+                    },
+                    ensure_ascii=False,
+                ) + "\n"
 
             # ─── Step 6: 保存会话历史（限制最大轮次） ──────────
             history.append({"role": "user", "content": req.content})

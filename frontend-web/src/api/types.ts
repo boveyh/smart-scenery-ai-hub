@@ -2,6 +2,7 @@ export interface DigitalHumanChunk {
   seq: number;
   text_chunk?: string;
   audio_url?: string;
+  emotion?: string;
   type?: string;
   reason?: string;
 }
