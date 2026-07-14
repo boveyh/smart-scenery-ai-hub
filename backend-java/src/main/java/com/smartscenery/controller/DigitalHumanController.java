@@ -76,7 +76,8 @@ public class DigitalHumanController {
                         "type", "chunk",
                         "seq", seq,
                         "text_chunk", textChunk,
-                        "audio_url", audioUrl
+                        "audio_url", audioUrl,
+                        "emotion", inferEmotion(textChunk)
                 );
 
                 writer.write(JsonUtils.toJson(chunkData));
@@ -133,6 +134,35 @@ public class DigitalHumanController {
                 "如果您需要更多帮助，\n",
                 "请随时告诉我！"
         };
+    }
+
+    private String inferEmotion(String text) {
+        String t = text == null ? "" : text.toLowerCase();
+        if (containsAny(t, "注意", "小心", "危险", "禁止", "不要", "请勿", "安全", "warning", "danger")) {
+            return "warning";
+        }
+        if (containsAny(t, "遗憾", "可惜", "纪念", "悼念", "伤心", "沉重", "sad")) {
+            return "sad";
+        }
+        if (containsAny(t, "精彩", "震撼", "推荐", "必看", "亮点", "活动", "表演", "excited")) {
+            return "excited";
+        }
+        if (containsAny(t, "欢迎", "喜欢", "开心", "高兴", "美", "太好了", "祝您", "happy", "love")) {
+            return "happy";
+        }
+        if (containsAny(t, "历史", "文化", "宗教", "佛教", "典故", "保护", "规定", "serious")) {
+            return "serious";
+        }
+        return "calm";
+    }
+
+    private boolean containsAny(String text, String... keywords) {
+        for (String keyword : keywords) {
+            if (text.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

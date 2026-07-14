@@ -501,6 +501,13 @@ body {
   background: var(--accent-dim);
 }
 
+.control-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: 600;
+}
+
 .control-chip:disabled {
   opacity: 0.5;
   cursor: not-allowed;

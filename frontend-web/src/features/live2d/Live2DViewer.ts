@@ -18,6 +18,8 @@ import { CubismShaderManager_WebGL } from "@framework/rendering/cubismshader_web
 import { CubismUpdateScheduler } from "@framework/motion/cubismupdatescheduler";
 import { CubismEyeBlinkUpdater } from "@framework/motion/cubismeyeblinkupdater";
 import { CubismBreathUpdater } from "@framework/motion/cubismbreathupdater";
+import { CubismExpressionUpdater } from "@framework/motion/cubismexpressionupdater";
+import { CubismPhysicsUpdater } from "@framework/motion/cubismphysicsupdater";
 import { CubismMotion } from "@framework/motion/cubismmotion";
 import { ACubismMotion } from "@framework/motion/acubismmotion";
 import {
@@ -40,6 +42,12 @@ export interface Live2DViewerCallbacks {
   onBlink: () => void;
 }
 
+export interface Live2DDisplayOptions {
+  scale?: number;
+  offsetX?: number;
+  offsetY?: number;
+}
+
 // ─── Framework init (sync, once) ──────────────────────────────────────────────
 let frameworkReady = false;
 function initFrameworkOnce(): void {
@@ -58,9 +66,17 @@ interface ModelData {
   setting: ICubismModelSetting;
   homeDir: string;
   mocBuffer: ArrayBuffer;
+  physicsBuffer: ArrayBuffer | null;
   textureFiles: string[];
   expressionDefs: { name: string; fileName: string }[];
   motionDefs: { group: string; index: number; fileName: string }[];
+}
+
+type ExpressionBlend = "Add" | "Multiply" | "Overwrite";
+interface ExpressionParam {
+  id: string;
+  value: number;
+  blend: ExpressionBlend;
 }
 
 // ─── Main class ────────────────────────────────────────────────────────────────
@@ -80,6 +96,8 @@ export class Live2DViewer {
 
   private motions = new Map<string, CubismMotion>();
   private expressionMotions = new Map<string, ACubismMotion>();
+  private expressionParams = new Map<string, ExpressionParam[]>();
+  private activeExpressions = new Set<string>();
 
   private isModelLoaded = false;
   private animFrameId: number | null = null;
@@ -93,6 +111,25 @@ export class Live2DViewer {
 
   private lipSyncIds: any[] = [];
   private expressionNames: string[] = [];
+  private fallbackIdleTime = 0;
+  private hasAuthoredMotions = false;
+  private hasEyeBlink = false;
+  private blinkTime = 0;
+  private nextBlinkTime = 2 + Math.random() * 2;
+  private idleGazeTime = 0;
+  private idleGazeX = 0;
+  private idleGazeY = 0;
+  private idleGazeTargetX = 0;
+  private idleGazeTargetY = 0;
+  private pointerX = 0;
+  private pointerY = 0;
+  private pointerTargetX = 0;
+  private pointerTargetY = 0;
+  private isSpeaking = false;
+  private speakingTime = 0;
+  private displayScale = 1;
+  private displayOffsetX = 0;
+  private displayOffsetY = 0;
   private frameErrorCount = 0;
   private readonly MAX_FRAME_ERRORS = 10;
 
@@ -141,10 +178,13 @@ export class Live2DViewer {
   }
 
   // ─── Load Model ───────────────────────────────────────────────────────────────
-  async loadModel(jsonPath: string, fileName: string): Promise<void> {
+  async loadModel(jsonPath: string, fileName: string, display: Live2DDisplayOptions = {}): Promise<void> {
     if ((this as any)._loading) return;
     (this as any)._loading = true;
     this.unloadModel();
+    this.displayScale = display.scale ?? 1;
+    this.displayOffsetX = display.offsetX ?? 0;
+    this.displayOffsetY = display.offsetY ?? 0;
     this.cb.onLoadStart();
 
     try {
@@ -167,6 +207,9 @@ export class Live2DViewer {
       // Create model
       const model = new CubismUserModel();
       model.loadModel(data.mocBuffer, true);
+      if (data.physicsBuffer) {
+        model.loadPhysics(data.physicsBuffer, data.physicsBuffer.byteLength);
+      }
       model.createRenderer(this.cw > 0 ? this.cw : 640, this.ch > 0 ? this.ch : 480);
 
       const renderer = model.getRenderer() as CubismRenderer_WebGL;
@@ -193,6 +236,7 @@ export class Live2DViewer {
       const layout = new Map<string, number>();
       data.setting.getLayoutMap(layout);
       model.getModelMatrix().setupFromLayout(layout);
+      model.getModel().saveParameters();
       this.model = model;
       this.isModelLoaded = true;
       this.lastTime = performance.now();
@@ -219,6 +263,20 @@ export class Live2DViewer {
     const mr = await fetch(home + mf);
     if (!mr.ok) throw new Error(`.moc3 读取失败: ${mr.status}`);
     const moc = await mr.arrayBuffer();
+
+    let physicsBuffer: ArrayBuffer | null = null;
+    const physicsFileName = s.getPhysicsFileName();
+    if (physicsFileName) {
+      try {
+        const physicsResp = await fetch(home + physicsFileName);
+        if (physicsResp.ok) {
+          physicsBuffer = await physicsResp.arrayBuffer();
+          console.log("[Live2D] Physics loaded:", physicsFileName);
+        }
+      } catch (e) {
+        console.warn("[Live2D] Failed to load physics:", e);
+      }
+    }
 
     // Load pose3.json for part visibility control (arm layer switching)
     const poseFileName = s.getPoseFileName();
@@ -252,7 +310,7 @@ export class Live2DViewer {
         if (fn) mot.push({ group: gn, index: m, fileName: home + fn });
       }
     }
-    return { setting: s, homeDir: home, mocBuffer: moc, textureFiles: tex, expressionDefs: exp, motionDefs: mot };
+    return { setting: s, homeDir: home, mocBuffer: moc, physicsBuffer, textureFiles: tex, expressionDefs: exp, motionDefs: mot };
   }
 
   private async loadTextures(gl: WebGLRenderingContext, data: ModelData, r: CubismRenderer_WebGL): Promise<void> {
@@ -288,6 +346,7 @@ export class Live2DViewer {
         const r = await fetch(d.fileName);
         if (!r.ok) { console.warn(`[Live2D] exp fail: ${d.fileName}`); return; }
         const buf = await r.arrayBuffer();
+        this.expressionParams.set(d.name, this.parseExpressionParams(buf));
         const m = model.loadExpression(buf, buf.byteLength, d.name);
         if (m) { this.expressionMotions.set(d.name, m); names.push(d.name); }
       } catch (e) { console.warn(`[Live2D] exp "${d.name}":`, e); }
@@ -295,9 +354,33 @@ export class Live2DViewer {
     return names;
   }
 
+  private parseExpressionParams(buf: ArrayBuffer): ExpressionParam[] {
+    try {
+      const json = JSON.parse(new TextDecoder().decode(buf));
+      return (json.Parameters ?? [])
+        .filter((p: any) => typeof p.Id === "string" && typeof p.Value === "number")
+        .map((p: any) => ({
+          id: p.Id,
+          value: p.Value,
+          blend: p.Blend === "Multiply" || p.Blend === "Overwrite" ? p.Blend : "Add",
+        }));
+    } catch {
+      return [];
+    }
+  }
+
   private setupEffects(model: CubismUserModel, s: ICubismModelSetting): void {
     this.updateScheduler = new CubismUpdateScheduler();
+    const expressionManager = (model as any)._expressionManager;
+    if (expressionManager) {
+      this.updateScheduler.addUpdatableList(new CubismExpressionUpdater(expressionManager));
+    }
+    const physics = (model as any)._physics;
+    if (physics) {
+      this.updateScheduler.addUpdatableList(new CubismPhysicsUpdater(physics));
+    }
     if (s.getEyeBlinkParameterCount() > 0) {
+      this.hasEyeBlink = true;
       this.eyeBlink = CubismEyeBlink.create(s);
       this.updateScheduler.addUpdatableList(
         new CubismEyeBlinkUpdater(() => (model as any)._motionUpdated ?? false, this.eyeBlink!)
@@ -306,10 +389,7 @@ export class Live2DViewer {
     this.breath = CubismBreath.create();
     const im = CubismFramework.getIdManager();
     this.breath.setParameters([
-      new BreathParameterData(im.getId(CubismDefaultParameterId.ParamAngleX), 0, 15, 6.5345, 0.5),
-      new BreathParameterData(im.getId(CubismDefaultParameterId.ParamAngleY), 0, 8, 3.5345, 0.5),
-      new BreathParameterData(im.getId(CubismDefaultParameterId.ParamAngleZ), 0, 10, 5.5345, 0.5),
-      new BreathParameterData(im.getId(CubismDefaultParameterId.ParamBodyAngleX), 0, 4, 15.5345, 0.5),
+      new BreathParameterData(im.getId(CubismDefaultParameterId.ParamBodyAngleX), 0, 1.5, 15.5345, 0.35),
       new BreathParameterData(im.getId(CubismDefaultParameterId.ParamBreath), 0.5, 0.5, 3.2345, 1),
     ]);
     this.updateScheduler.addUpdatableList(new CubismBreathUpdater(this.breath));
@@ -319,6 +399,7 @@ export class Live2DViewer {
   }
 
   private async preloadMotions(model: CubismUserModel, data: ModelData): Promise<void> {
+    this.hasAuthoredMotions = data.motionDefs.length > 0;
     for (const d of data.motionDefs) {
       const name = `${d.group}_${d.index}`;
       try {
@@ -343,18 +424,34 @@ export class Live2DViewer {
   /** 水平拉伸 (ParamMouthForm): 0=噘嘴/圆唇 0.5=自然 1=咧嘴/拉伸 */
   setMouthForm(v: number) { this.mouthFormValue = Math.max(0, Math.min(1, v)); }
 
-  setExpression(name: string, value: number) {
-    if (!this.model) return;
+  setExpression(name: string, value: number): boolean {
+    if (!this.model) return false;
+    if (this.expressionParams.has(name) && value > 0) {
+      if (this.activeExpressions.has(name)) this.activeExpressions.delete(name);
+      else this.activeExpressions.add(name);
+      return this.activeExpressions.has(name);
+    }
     const m = this.expressionMotions.get(name);
     if (m && value > 0) (this.model as any)._expressionManager?.startMotion(m, false);
-    try {
-      const id = CubismFramework.getIdManager().getId(name);
-      (this.model as any)._model.setParameterValueById(id, value);
-    } catch { /* */ }
+    return false;
   }
 
-  setSpeaking(_speaking: boolean) { /* stub */ }
+  playExpression(name: string) {
+    if (!this.model) return false;
+    const m = this.expressionMotions.get(name);
+    if (!m) return false;
+    (this.model as any)._expressionManager?.startMotion(m, false);
+    return true;
+  }
+
+  setSpeaking(speaking: boolean) { this.isSpeaking = speaking; }
+  setPointerTarget(x: number, y: number) {
+    this.pointerTargetX = Math.max(-1, Math.min(1, x));
+    this.pointerTargetY = Math.max(-1, Math.min(1, y));
+  }
+  clearPointerTarget() { this.setPointerTarget(0, 0); }
   getAvailableExpressions() { return this.expressionNames; }
+  getActiveExpressions() { return Array.from(this.activeExpressions); }
   getAvailableMotionGroups() {
     if (!this.modelData) return [];
     return Array.from(new Set(this.modelData.motionDefs.map(d => d.group)));
@@ -388,6 +485,8 @@ export class Live2DViewer {
     this.motions.clear();
     for (const [, m] of this.expressionMotions) ACubismMotion.delete(m);
     this.expressionMotions.clear();
+    this.expressionParams.clear();
+    this.activeExpressions.clear();
     this.expressionNames = []; this.lipSyncIds = [];
     if (this.eyeBlink) { CubismEyeBlink.delete(this.eyeBlink); this.eyeBlink = null; }
     if (this.pose) { CubismPose.delete(this.pose); this.pose = null; }
@@ -395,6 +494,10 @@ export class Live2DViewer {
     if (this.updateScheduler) { this.updateScheduler.release(); this.updateScheduler = null; }
     if (this.model) { this.model.release(); this.model = null; }
     this.renderer = null; this.modelData = null; this.mouthOpenValue = 0; this.mouthFormValue = 0.5;
+    this.fallbackIdleTime = 0; this.hasAuthoredMotions = false; this.hasEyeBlink = false;
+    this.blinkTime = 0; this.nextBlinkTime = 2 + Math.random() * 2;
+    this.idleGazeTime = 0; this.idleGazeX = 0; this.idleGazeY = 0; this.idleGazeTargetX = 0; this.idleGazeTargetY = 0;
+    this.displayScale = 1; this.displayOffsetX = 0; this.displayOffsetY = 0;
   }
 
   // ─── Loop ──────────────────────────────────────────────────────────────────
@@ -446,7 +549,26 @@ export class Live2DViewer {
       this.pose.updateParameters(model, dt);
     }
 
-    // 4. Lip-sync override — WRITTEN AFTER motions/effects to prevent idle animation overwrite
+    // 4. Minimal procedural idle for models without authored motions.
+    if (!this.hasAuthoredMotions) {
+      this.applyFallbackIdle(model, dt);
+    }
+
+    // 5. Eye fallback for models without authored blink.
+    if (!this.hasEyeBlink) {
+      this.applyFallbackEyes(model, dt);
+    }
+
+    // 6. Pointer-driven gaze/head/body tracking.
+    this.applyPointerLook(model, dt);
+
+    // 7. Speaking gesture layer.
+    this.applySpeakingGesture(model, dt);
+
+    // 8. Persistent expression toggles for outfits/accessories from VTS-style models.
+    this.applyActiveExpressions(model);
+
+    // 9. Lip-sync override — WRITTEN AFTER motions/effects to prevent idle animation overwrite
     //    This ensures TTS-driven mouth parameters always win over animation-driven values
     const idMgr = CubismFramework.getIdManager();
     model.setParameterValueById(
@@ -454,9 +576,118 @@ export class Live2DViewer {
     model.setParameterValueById(
       idMgr.getId(CubismDefaultParameterId.ParamMouthForm), this.mouthFormValue);
 
-    // 5. Save state + finalize
-    model.saveParameters();
+    // 10. Finalize. Do not save dynamic parameters here; that would make head tilt drift into the next frame baseline.
     model.update();
+  }
+
+  private applyFallbackEyes(model: any, dt: number) {
+    this.blinkTime += dt;
+    let eyeOpen = 1;
+    if (this.blinkTime >= this.nextBlinkTime) {
+      const phase = Math.min(1, (this.blinkTime - this.nextBlinkTime) / 0.16);
+      eyeOpen = phase < 0.5 ? 1 - phase * 2 : (phase - 0.5) * 2;
+      if (phase >= 1) {
+        this.blinkTime = 0;
+        this.nextBlinkTime = 2.2 + Math.random() * 3.2;
+        this.cb.onBlink();
+      }
+    }
+
+    const idMgr = CubismFramework.getIdManager();
+    const set = (id: string, value: number, weight = 1) => {
+      try { model.setParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    };
+    const add = (id: string, value: number, weight = 1) => {
+      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    };
+
+    set(CubismDefaultParameterId.ParamEyeLOpen, eyeOpen, 0.9);
+    set(CubismDefaultParameterId.ParamEyeROpen, eyeOpen, 0.9);
+
+    this.idleGazeTime -= dt;
+    if (this.idleGazeTime <= 0) {
+      this.idleGazeTargetX = (Math.random() - 0.5) * 0.22;
+      this.idleGazeTargetY = (Math.random() - 0.5) * 0.12;
+      this.idleGazeTime = 1.2 + Math.random() * 2.4;
+    }
+    const follow = 1 - Math.exp(-dt * 3);
+    this.idleGazeX += (this.idleGazeTargetX - this.idleGazeX) * follow;
+    this.idleGazeY += (this.idleGazeTargetY - this.idleGazeY) * follow;
+    add(CubismDefaultParameterId.ParamEyeBallX, this.idleGazeX, 0.45);
+    add(CubismDefaultParameterId.ParamEyeBallY, this.idleGazeY, 0.45);
+  }
+
+  private applySpeakingGesture(model: any, dt: number) {
+    if (!this.isSpeaking) {
+      this.speakingTime = 0;
+      return;
+    }
+
+    this.speakingTime += dt;
+    const t = this.speakingTime;
+    const energy = Math.min(1, 0.25 + this.mouthOpenValue * 0.75);
+    const idMgr = CubismFramework.getIdManager();
+    const add = (id: string, value: number, weight = 1) => {
+      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    };
+
+    add(CubismDefaultParameterId.ParamAngleY, Math.sin(t * 5.2) * 1.6 * energy, 0.35);
+    add(CubismDefaultParameterId.ParamAngleZ, Math.sin(t * 3.4 + 0.6) * 1.0 * energy, 0.25);
+    add(CubismDefaultParameterId.ParamBodyAngleX, Math.sin(t * 2.8 + 1.1) * 1.8 * energy, 0.35);
+    add("Param15", Math.sin(t * 4.4) * 0.08 * energy, 0.7);
+  }
+
+  private applyPointerLook(model: any, dt: number) {
+    const follow = 1 - Math.exp(-dt * 7);
+    this.pointerX += (this.pointerTargetX - this.pointerX) * follow;
+    this.pointerY += (this.pointerTargetY - this.pointerY) * follow;
+
+    const idMgr = CubismFramework.getIdManager();
+    const add = (id: string, value: number, weight = 1) => {
+      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    };
+
+    add(CubismDefaultParameterId.ParamEyeBallX, this.pointerX * 0.55, 0.9);
+    add(CubismDefaultParameterId.ParamEyeBallY, -this.pointerY * 0.32, 0.9);
+    add(CubismDefaultParameterId.ParamAngleX, this.pointerX * 14, 0.78);
+    add(CubismDefaultParameterId.ParamAngleY, -this.pointerY * 9.5, 0.68);
+    add(CubismDefaultParameterId.ParamAngleZ, -this.pointerX * 4.8, 0.38);
+    add(CubismDefaultParameterId.ParamBodyAngleX, this.pointerX * 4.2, 0.48);
+    add(CubismDefaultParameterId.ParamBodyAngleY, -this.pointerY * 2.4, 0.38);
+  }
+
+  private applyActiveExpressions(model: any) {
+    const idMgr = CubismFramework.getIdManager();
+    for (const name of this.activeExpressions) {
+      const params = this.expressionParams.get(name) ?? [];
+      for (const p of params) {
+        try {
+          const id = idMgr.getId(p.id);
+          if (p.blend === "Multiply") model.multiplyParameterValueById(id, p.value, 1);
+          else if (p.blend === "Overwrite") model.setParameterValueById(id, p.value, 1);
+          else model.addParameterValueById(id, p.value, 1);
+        } catch { /* parameter absent */ }
+      }
+    }
+  }
+
+  private applyFallbackIdle(model: any, dt: number) {
+    this.fallbackIdleTime += dt;
+    const t = this.fallbackIdleTime;
+    const idMgr = CubismFramework.getIdManager();
+    const add = (id: string, value: number, weight = 1) => {
+      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    };
+
+    add(CubismDefaultParameterId.ParamAngleX, Math.sin(t * 0.75) * 4.0, 0.45);
+    add(CubismDefaultParameterId.ParamAngleY, Math.sin(t * 0.52 + 1.3) * 2.0, 0.35);
+    add(CubismDefaultParameterId.ParamAngleZ, Math.sin(t * 0.38 + 0.7) * 1.0, 0.25);
+    add(CubismDefaultParameterId.ParamBodyAngleX, Math.sin(t * 0.55 + 2.1) * 2.0, 0.35);
+    add(CubismDefaultParameterId.ParamEyeBallX, Math.sin(t * 0.32) * 0.35, 0.6);
+    add(CubismDefaultParameterId.ParamEyeBallY, Math.sin(t * 0.41 + 1.7) * 0.18, 0.6);
+    add("Param4", 0.08 + Math.sin(t * 0.42 + 0.4) * 0.04, 0.7);
+    add("Param9", 0.10 + Math.sin(t * 0.36 + 1.2) * 0.05, 0.7);
+    add("Param15", Math.sin(t * 0.82) * 0.10, 0.8);
   }
 
     private render() {
@@ -478,7 +709,8 @@ export class Live2DViewer {
         const sx = 2.0 / modelWidth;
         const sy = 2.0 / modelHeight;
         const s = Math.min(sx, sy);
-        proj.scale(s * 0.6, s * 0.6);
+        proj.scale(s * 0.6 * this.displayScale, s * 0.6 * this.displayScale);
+        proj.translateRelative(this.displayOffsetX, this.displayOffsetY);
       }
       proj.multiplyByMatrix(this.model.getModelMatrix());
 

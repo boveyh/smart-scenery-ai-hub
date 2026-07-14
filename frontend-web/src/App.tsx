@@ -10,6 +10,23 @@ import Live2DStage from "./components/Live2DStage";
 
 let logIdCounter = 0;
 
+function pickExpressionForText(text: string, expressions: string[]): string | null {
+  if (!text || expressions.length === 0) return null;
+  const lowerText = text.toLowerCase();
+  const candidates: Array<[string[], string[]]> = [
+    [["开心", "高兴", "喜欢", "欢迎", "太好了", "美", "精彩", "love", "happy"], ["happy", "smile", "love", "excited", "kira", "blush"]],
+    [["抱歉", "遗憾", "难过", "可惜", "伤心", "sad"], ["sad", "cry"]],
+    [["注意", "小心", "危险", "禁止", "不要", "震惊", "惊", "shock"], ["angry", "mad", "shock", "scared", "confuse"]],
+  ];
+
+  for (const [textKeys, expressionKeys] of candidates) {
+    if (!textKeys.some((key) => lowerText.includes(key))) continue;
+    const match = expressions.find((name) => expressionKeys.some((key) => name.toLowerCase().includes(key)));
+    if (match) return match;
+  }
+  return null;
+}
+
 export default function App() {
   const [viewer, setViewer] = useState<Live2DViewer | null>(null);
   const [currentModelId, setCurrentModelId] = useState("");
@@ -18,6 +35,7 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [availableExpressions, setAvailableExpressions] = useState<string[]>([]);
   const [availableMotionGroups, setAvailableMotionGroups] = useState<string[]>([]);
+  const [activeExpressions, setActiveExpressions] = useState<string[]>([]);
   const [mouthOpenValue, setMouthOpenValue] = useState(0);
   const [mouthFormValue, setMouthFormValue] = useState(0.5);
 
@@ -44,6 +62,7 @@ export default function App() {
 
   const audioEngineRef = useRef<AudioEngine | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastAutoExpressionRef = useRef("");
 
   // Logger
   const log = useCallback((message: string, level: "info" | "warn" | "error" = "info") => {
@@ -100,9 +119,15 @@ export default function App() {
       setLoadError(null);
       setIsLoading(true);
       try {
-        await viewer.loadModel(entry.modelPath, entry.name);
+        await viewer.loadModel(entry.modelPath, entry.name, {
+          scale: entry.scale,
+          offsetX: entry.offsetX,
+          offsetY: entry.offsetY,
+        });
         setAvailableExpressions(viewer.getAvailableExpressions());
         setAvailableMotionGroups(viewer.getAvailableMotionGroups());
+        setActiveExpressions(viewer.getActiveExpressions());
+        lastAutoExpressionRef.current = "";
       } catch {
         // reported by viewer callbacks
       } finally {
@@ -145,6 +170,14 @@ export default function App() {
             }
             if (chunk.text_chunk) {
               aiText += chunk.text_chunk;
+              const autoExpression = pickExpressionForText(
+                [chunk.emotion, chunk.text_chunk].filter(Boolean).join(" "),
+                availableExpressions
+              );
+              if (autoExpression && autoExpression !== lastAutoExpressionRef.current && viewer?.playExpression(autoExpression)) {
+                lastAutoExpressionRef.current = autoExpression;
+                log(`Auto expression: ${autoExpression}`, "info");
+              }
             }
           },
           onEnd: (reason) => {
@@ -168,7 +201,7 @@ export default function App() {
       setIsStreaming(false);
       log(`异常: ${error instanceof Error ? error.message : String(error)}`, "error");
     }
-  }, [question, tenantId, sessionId, log]);
+  }, [question, tenantId, sessionId, log, availableExpressions, viewer]);
 
   const handleStop = useCallback(() => {
     audioEngineRef.current?.clear();
@@ -183,6 +216,7 @@ export default function App() {
   const handleExpression = useCallback((name: string) => {
     if (!viewer) return;
     viewer.setExpression(name, 1);
+    setActiveExpressions(viewer.getActiveExpressions());
     log(`Expression: ${name}`, "info");
   }, [log, viewer]);
 
@@ -365,7 +399,7 @@ export default function App() {
                 {availableExpressions.map((name) => (
                   <button
                     key={name}
-                    className="control-chip"
+                    className={`control-chip ${activeExpressions.includes(name) ? "active" : ""}`}
                     onClick={() => handleExpression(name)}
                     title={name}
                     disabled={!viewer || isLoading}
