@@ -47,5 +47,4 @@ set "MAVEN_OPTS=-Xmx1024m -XX:MaxMetaspaceSize=256m"
 set "CP=%WRAPPER_JAR%"
 java -classpath "%CP%" org.apache.maven.wrapper.MavenWrapperMain ^
     -Dmaven.multiModuleProjectDirectory="%MAVEN_PROJECTBASEDIR%" ^
-    %MAVEN_OPTS% ^
     %*
