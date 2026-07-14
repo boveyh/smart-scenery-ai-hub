@@ -303,6 +303,48 @@ async def text_chat(req: DigitalHumanRequest, request: Request):
     )
 
 
+@app.post("/api/v1/vision/recognize")
+async def vision_recognize(request: Request):
+    """
+    图片识别流式接口（NDJSON）
+    接收文字 + 图片(base64)，调用千问多模态模型识别
+    """
+    import base64
+    tenant_id = request.headers.get("X-Tenant-Id", "default")
+
+    async def generate():
+        try:
+            raw = await request.body()
+            if isinstance(raw, bytes):
+                raw = raw.decode('utf-8')
+            body = json.loads(raw)
+            content = body.get("content", "")
+            images_b64 = body.get("images", [])
+            if not images_b64:
+                yield json.dumps({"type": "error", "message": "请上传图片"}, ensure_ascii=False) + "\n"
+                return
+
+            profile = profile_loader.get(tenant_id)
+            persona_prompt = profile.get("persona_prompt", "你是一个专业的智慧景区AI导览助手。")
+            system_prompt = f"{persona_prompt}\n\n用户上传了一张图片，请根据图片内容结合景区知识进行讲解。"
+
+            logger.info(f"vision 调用 chat_with_images: images={len(images_b64)}张")
+            result = await llm_client.chat_with_images(
+                system_prompt=system_prompt,
+                user_message=content or "请描述这张图片的内容，结合景区知识进行讲解。",
+                images=images_b64,
+            )
+            logger.info(f"vision 识别结果: {len(result)} 字符")
+            if result:
+                yield json.dumps({"seq": 1, "type": "text", "content": result}, ensure_ascii=False) + "\n"
+            yield json.dumps({"seq": 2, "type": "end", "reason": "complete"}, ensure_ascii=False) + "\n"
+
+        except Exception as e:
+            logger.error(f"视觉识别异常: {e}", exc_info=True)
+            yield json.dumps({"type": "error", "code": 500, "message": str(e)}, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(generate(), media_type="application/x-ndjson", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
 @app.get("/api/v1/health")
 async def health_check():
     """健康检查接口"""
@@ -326,4 +368,4 @@ if __name__ == "__main__":
     import uvicorn
     host = os.getenv("SERVER_HOST", "0.0.0.0")
     port = int(os.getenv("SERVER_PORT", "8000"))
-    uvicorn.run("main:app", host=host, port=port, reload=True, log_level="info")
+    uvicorn.run("main:app", host=host, port=port, reload=False, log_level="info")

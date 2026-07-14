@@ -13,6 +13,16 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api/v1/vision': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        timeout: 60000,
+      },
+      '/api/v1/digitalhuman': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        timeout: 60000,
+      },
       '/api': {
         target: 'http://localhost:9000',
         changeOrigin: true,
