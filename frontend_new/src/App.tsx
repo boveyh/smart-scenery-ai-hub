@@ -4,6 +4,7 @@ import HomePage from '@/pages/HomePage';
 import DigitalHumanPage from '@/pages/DigitalHumanPage';
 import TextChatPage from '@/pages/TextChatPage';
 import PoiListPage from '@/pages/PoiListPage';
+import PoiDetailPage from '@/pages/PoiDetailPage';
 import RoutePage from '@/pages/RoutePage';
 import VisionPage from '@/pages/VisionPage';
 import InfoPage from '@/pages/InfoPage';
@@ -34,13 +35,19 @@ const POI_LIST = [
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentPoi, setCurrentPoi] = useState(POI_LIST[0]);
+  const [detailPoiId, setDetailPoiId] = useState<string | null>(null);
+
+  const navigateTo = (page: string, poiId?: string) => {
+    setCurrentPage(page);
+    if (poiId) setDetailPoiId(poiId);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
       case 'home': return <HomePage />;
       case 'digital-human': return <DigitalHumanPage />;
       case 'text-chat': return <TextChatPage />;
-      case 'pois': return <PoiListPage />;
+      case 'pois': return <PoiListPage onNavigate={(id) => navigateTo('poi-detail', id)} />;
       case 'route': return <RoutePage />;
       case 'vision': return <VisionPage />;
       case 'info': return <InfoPage />;
@@ -48,6 +55,7 @@ export default function App() {
       case 'admin-knowledge': return <AdminKnowledgePage />;
       case 'admin-digital-human': return <AdminDigitalHumanPage />;
       case 'admin-report': return <AdminReportPage />;
+      case 'poi-detail': return <PoiDetailPage poiId={detailPoiId || 'LS-001'} onNavigate={(page) => setCurrentPage(page)} />;
       default: return <HomePage />;
     }
   };

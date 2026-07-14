@@ -26,7 +26,7 @@ const POI_ICONS: Record<string, string> = {
   '休闲娱乐': '🎭',
 };
 
-export default function PoiListPage() {
+export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: string) => void }) {
   const [category, setCategory] = useState('全部');
 
   const categories = ['全部', ...new Set(ALL_POIS.map(p => p.category))];
@@ -84,7 +84,7 @@ export default function PoiListPage() {
           {filtered.map(poi => {
             const badge = getCrowdednessBadge(poi.crowdedness);
             return (
-              <div key={poi.poiId} style={{
+              <div key={poi.poiId} onClick={() => onNavigate?.(poi.poiId)} style={{
                 borderRadius: 18, overflow: 'hidden',
                 background: 'rgba(255,255,255,0.55)',
                 border: '1px solid rgba(180,136,100,0.08)',

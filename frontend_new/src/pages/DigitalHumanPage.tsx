@@ -19,7 +19,7 @@ interface ChatMsg {
 }
 
 export default function DigitalHumanPage() {
-  const [sessionId] = useState(() => generateSessionId());
+  const [sessionId, setSessionId] = useState(() => generateSessionId());
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -111,6 +111,7 @@ export default function DigitalHumanPage() {
     e.preventDefault();
     if (!input.trim() || loading) return;
     audioQueueRef.current = [];
+    queuedSeqs.current.clear();
     currentSeqRef.current = 0;
     setCurrentText('');
     setIsSpeaking(false);
@@ -119,18 +120,22 @@ export default function DigitalHumanPage() {
     lastProcessedSeq.current = 0;
     aiFullText.current = '';
     setMessages(prev => [...prev, { role: 'user', text: input.trim() }]);
-    sendMessage(sessionId, input.trim());
+    const newSid = generateSessionId();
+    setSessionId(newSid);
+    sendMessage(newSid, input.trim());
     setInput('');
   };
 
+  const queuedSeqs = useRef(new Set<number>());
   useEffect(() => {
     const newChunks = chunks
-      .filter(c => c.text_chunk && c.audio_url && c.seq > currentSeqRef.current)
+      .filter(c => c.text_chunk && c.audio_url && !queuedSeqs.current.has(c.seq))
       .map(c => ({
         seq: c.seq, text: c.text_chunk!,
         url: c.audio_url!.startsWith('/') ? c.audio_url! : c.audio_url!,
       }));
     if (newChunks.length > 0) {
+      newChunks.forEach(c => queuedSeqs.current.add(c.seq));
       audioQueueRef.current.push(...newChunks);
       if (!audioRef.current || audioRef.current.paused) playNext();
     }
@@ -364,8 +369,10 @@ export default function DigitalHumanPage() {
               fontSize: '0.65rem', padding: '4px 10px', borderRadius: 14,
               border: '1px solid rgba(180,136,100,0.10)',
             }} onClick={() => {
+              const newSid = generateSessionId();
+              setSessionId(newSid);
               setMessages(prev => [...prev, { role: 'user', text: q }]);
-              sendMessage(sessionId, q);
+              sendMessage(newSid, q);
             }}>
               {q}
             </button>

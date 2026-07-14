@@ -1,0 +1,262 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "",
+			"Name": "角度 X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "",
+			"Name": "角度 Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "",
+			"Name": "角度 Z"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "",
+			"Name": "左目　開閉"
+		},
+		{
+			"Id": "ParamEyeLSmile",
+			"GroupId": "",
+			"Name": "左目　笑顔"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "",
+			"Name": "右目　開閉"
+		},
+		{
+			"Id": "ParamEyeRSmile",
+			"GroupId": "",
+			"Name": "右目　笑顔"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "",
+			"Name": "目玉 X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "",
+			"Name": "目玉 Y"
+		},
+		{
+			"Id": "ParamBrowLY",
+			"GroupId": "",
+			"Name": "左眉　上下"
+		},
+		{
+			"Id": "ParamBrowRY",
+			"GroupId": "",
+			"Name": "右眉　上下"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "",
+			"Name": "口　変形"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "",
+			"Name": "口　開閉"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "",
+			"Name": "舌出し"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "",
+			"Name": "体の回転 X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "",
+			"Name": "体の回転 Y"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "",
+			"Name": "体の回転 Z"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "",
+			"Name": "呼吸"
+		},
+		{
+			"Id": "ParamHairFront",
+			"GroupId": "",
+			"Name": "髪揺れ　前"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "",
+			"Name": "前揺れ"
+		},
+		{
+			"Id": "ParamHairSide",
+			"GroupId": "",
+			"Name": "髪揺れ　横"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "",
+			"Name": "横揺れ"
+		},
+		{
+			"Id": "ParamHairBack",
+			"GroupId": "",
+			"Name": "髪揺れ　後"
+		},
+		{
+			"Id": "Param5",
+			"GroupId": "",
+			"Name": "目潤い"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "",
+			"Name": "ピアス揺れ"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "",
+			"Name": "光非表示"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "",
+			"Name": "頬非表示"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "",
+			"Name": "手上げ"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "",
+			"Name": "手振り"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "",
+			"Name": "リボン揺れ"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "",
+			"Name": "リボン縦"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "",
+			"Name": "服揺れ"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "",
+			"Name": "服縦"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "",
+			"Name": "切り替え"
+		},
+		{
+			"Id": "Param10",
+			"GroupId": "",
+			"Name": "左まつ毛"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "",
+			"Name": "右まつ毛"
+		}
+	],
+	"ParameterGroups": [],
+	"Parts": [
+		{
+			"Id": "Part11",
+			"Name": "871_1.psd"
+		},
+		{
+			"Id": "Part3",
+			"Name": "前髪"
+		},
+		{
+			"Id": "Part4",
+			"Name": "横髪"
+		},
+		{
+			"Id": "Part5",
+			"Name": "左目"
+		},
+		{
+			"Id": "Part8",
+			"Name": "右目"
+		},
+		{
+			"Id": "Part12",
+			"Name": "顔"
+		},
+		{
+			"Id": "Part13",
+			"Name": "体"
+		},
+		{
+			"Id": "Part14",
+			"Name": "足"
+		},
+		{
+			"Id": "Part15",
+			"Name": "後ろ髪"
+		},
+		{
+			"Id": "Part6",
+			"Name": "左まつ毛"
+		},
+		{
+			"Id": "Part7",
+			"Name": "左黒目"
+		},
+		{
+			"Id": "Part9",
+			"Name": "右まつ毛"
+		},
+		{
+			"Id": "Part10",
+			"Name": "右黒目"
+		},
+		{
+			"Id": "Part",
+			"Name": "左アーム"
+		},
+		{
+			"Id": "Part2",
+			"Name": "右アーム"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"ParamAngleX",
+			"ParamAngleY"
+		],
+		[
+			"ParamEyeBallX",
+			"ParamEyeBallY"
+		],
+		[
+			"ParamMouthForm",
+			"ParamMouthOpenY"
+		]
+	]
+}

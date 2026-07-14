@@ -1,0 +1,449 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "Param5",
+			"GroupId": "ParamGroup5",
+			"Name": "Head x1"
+		},
+		{
+			"Id": "Param6",
+			"GroupId": "ParamGroup5",
+			"Name": "Head x2"
+		},
+		{
+			"Id": "Param7",
+			"GroupId": "ParamGroup5",
+			"Name": "Head x3"
+		},
+		{
+			"Id": "Param8",
+			"GroupId": "ParamGroup5",
+			"Name": "Head y1"
+		},
+		{
+			"Id": "Param9",
+			"GroupId": "ParamGroup5",
+			"Name": "Head y2"
+		},
+		{
+			"Id": "Param10",
+			"GroupId": "ParamGroup5",
+			"Name": "2Head x1"
+		},
+		{
+			"Id": "Param11",
+			"GroupId": "ParamGroup5",
+			"Name": "2Head x2"
+		},
+		{
+			"Id": "Param12",
+			"GroupId": "ParamGroup5",
+			"Name": "2Head x3"
+		},
+		{
+			"Id": "Param13",
+			"GroupId": "ParamGroup5",
+			"Name": "2Head y1"
+		},
+		{
+			"Id": "Param14",
+			"GroupId": "ParamGroup5",
+			"Name": "2Head y2"
+		},
+		{
+			"Id": "Param3",
+			"GroupId": "ParamGroup5",
+			"Name": "Fisik Eye"
+		},
+		{
+			"Id": "Param4",
+			"GroupId": "ParamGroup5",
+			"Name": "Fisik Eye 1"
+		},
+		{
+			"Id": "Param18",
+			"GroupId": "ParamGroup5",
+			"Name": "Ribbon x1"
+		},
+		{
+			"Id": "Param19",
+			"GroupId": "ParamGroup5",
+			"Name": "Ribbon x2"
+		},
+		{
+			"Id": "Param20",
+			"GroupId": "ParamGroup5",
+			"Name": "Ribbon y1"
+		},
+		{
+			"Id": "Param21",
+			"GroupId": "ParamGroup5",
+			"Name": "Bra x1"
+		},
+		{
+			"Id": "Param35",
+			"GroupId": "ParamGroup5",
+			"Name": "Bra x2"
+		},
+		{
+			"Id": "Param22",
+			"GroupId": "ParamGroup5",
+			"Name": "Bra y1"
+		},
+		{
+			"Id": "Param36",
+			"GroupId": "ParamGroup5",
+			"Name": "Bra y2"
+		},
+		{
+			"Id": "Param23",
+			"GroupId": "ParamGroup5",
+			"Name": "Skirt x1"
+		},
+		{
+			"Id": "Param25",
+			"GroupId": "ParamGroup5",
+			"Name": "Skirt x2"
+		},
+		{
+			"Id": "Param24",
+			"GroupId": "ParamGroup5",
+			"Name": "Skirt y1"
+		},
+		{
+			"Id": "Param26",
+			"GroupId": "ParamGroup5",
+			"Name": "Skirt y2"
+		},
+		{
+			"Id": "Param29",
+			"GroupId": "ParamGroup5",
+			"Name": "Hand x1"
+		},
+		{
+			"Id": "Param31",
+			"GroupId": "ParamGroup5",
+			"Name": "Hand x2"
+		},
+		{
+			"Id": "Param30",
+			"GroupId": "ParamGroup5",
+			"Name": "Hand y1"
+		},
+		{
+			"Id": "Param32",
+			"GroupId": "ParamGroup5",
+			"Name": "Hand y2"
+		},
+		{
+			"Id": "Param33",
+			"GroupId": "ParamGroup5",
+			"Name": "Tail x"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroup",
+			"Name": "EyeR Open"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroup",
+			"Name": "EyeL Open"
+		},
+		{
+			"Id": "ParamEyeLSmile",
+			"GroupId": "ParamGroup",
+			"Name": "Eye Smile"
+		},
+		{
+			"Id": "ParamEyeLSmile2",
+			"GroupId": "ParamGroup",
+			"Name": "Eye Mad"
+		},
+		{
+			"Id": "Param",
+			"GroupId": "ParamGroup",
+			"Name": "Eyelashes R"
+		},
+		{
+			"Id": "Param2",
+			"GroupId": "ParamGroup",
+			"Name": "Eyelashes L"
+		},
+		{
+			"Id": "Param34",
+			"GroupId": "ParamGroup",
+			"Name": "Shy"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "ParamGroup3",
+			"Name": "Eyeball X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "ParamGroup3",
+			"Name": "Eyeball Y"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroup2",
+			"Name": "Mouth Form"
+		},
+		{
+			"Id": "ParamMouthOpen",
+			"GroupId": "ParamGroup2",
+			"Name": "Mouth Open"
+		},
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroup4",
+			"Name": "Angle X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroup4",
+			"Name": "Angle Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroup4",
+			"Name": "Angle Z"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroup4",
+			"Name": "Breath"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "ParamGroup6",
+			"Name": "Body X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "ParamGroup6",
+			"Name": "Body Y"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "ParamGroup6",
+			"Name": "Body Z"
+		},
+		{
+			"Id": "Param15",
+			"GroupId": "ParamGroup7",
+			"Name": "Blush"
+		},
+		{
+			"Id": "Param28",
+			"GroupId": "ParamGroup7",
+			"Name": "Tears"
+		},
+		{
+			"Id": "Param16",
+			"GroupId": "ParamGroup7",
+			"Name": "Heart Eyes"
+		},
+		{
+			"Id": "Param17",
+			"GroupId": "ParamGroup7",
+			"Name": "Shine Eyes"
+		},
+		{
+			"Id": "Param27",
+			"GroupId": "ParamGroup7",
+			"Name": "Con Eyes"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroup5",
+			"GroupId": "",
+			"Name": "Physic"
+		},
+		{
+			"Id": "ParamGroup",
+			"GroupId": "",
+			"Name": "Eyes"
+		},
+		{
+			"Id": "ParamGroup3",
+			"GroupId": "",
+			"Name": "Eyeballs"
+		},
+		{
+			"Id": "ParamGroup2",
+			"GroupId": "",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "ParamGroup4",
+			"GroupId": "",
+			"Name": "Angle"
+		},
+		{
+			"Id": "ParamGroup6",
+			"GroupId": "",
+			"Name": "Body"
+		},
+		{
+			"Id": "ParamGroup7",
+			"GroupId": "",
+			"Name": "Expression"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "Part",
+			"Name": "Folder 6"
+		},
+		{
+			"Id": "Rambut",
+			"Name": "Rambut"
+		},
+		{
+			"Id": "Mata2",
+			"Name": "Mata"
+		},
+		{
+			"Id": "Mulut",
+			"Name": "Mulut"
+		},
+		{
+			"Id": "Part17",
+			"Name": "Hidung"
+		},
+		{
+			"Id": "Wajah",
+			"Name": "Wajah"
+		},
+		{
+			"Id": "Part19",
+			"Name": "Telinga"
+		},
+		{
+			"Id": "Mendali",
+			"Name": "Mendali"
+		},
+		{
+			"Id": "Kancing",
+			"Name": "Kancing"
+		},
+		{
+			"Id": "Part20",
+			"Name": "Badan Atas"
+		},
+		{
+			"Id": "Leher",
+			"Name": "Leher"
+		},
+		{
+			"Id": "Part21",
+			"Name": "Lengan Kanan"
+		},
+		{
+			"Id": "Part22",
+			"Name": "Lengan Kiri"
+		},
+		{
+			"Id": "Part23",
+			"Name": "Badan Bawah"
+		},
+		{
+			"Id": "Part24",
+			"Name": "Kaki"
+		},
+		{
+			"Id": "Part25",
+			"Name": "Bagian Belakang"
+		},
+		{
+			"Id": "Part26",
+			"Name": "Rambut Belakang"
+		},
+		{
+			"Id": "Part27",
+			"Name": "Ekor"
+		},
+		{
+			"Id": "Ahoge",
+			"Name": "Ahoge"
+		},
+		{
+			"Id": "Part6",
+			"Name": "Poni Depan"
+		},
+		{
+			"Id": "Part7",
+			"Name": "Poni Kiri"
+		},
+		{
+			"Id": "Part8",
+			"Name": "Poni Kanan"
+		},
+		{
+			"Id": "Part9",
+			"Name": "Poni Belakang"
+		},
+		{
+			"Id": "Helaian",
+			"Name": "Helaian"
+		},
+		{
+			"Id": "Tanduk",
+			"Name": "Tanduk"
+		},
+		{
+			"Id": "Part10",
+			"Name": "Mata Kiri"
+		},
+		{
+			"Id": "Part12",
+			"Name": "Mata Kanan"
+		},
+		{
+			"Id": "Part14",
+			"Name": "Sketsa Mulut"
+		},
+		{
+			"Id": "Part15",
+			"Name": "Folder 5"
+		},
+		{
+			"Id": "Part18",
+			"Name": "Face Shading"
+		},
+		{
+			"Id": "Blush2",
+			"Name": "Blush2"
+		},
+		{
+			"Id": "Blush",
+			"Name": "Blush"
+		},
+		{
+			"Id": "Part11",
+			"Name": "Bola Mata"
+		},
+		{
+			"Id": "Part13",
+			"Name": "Bola Mata"
+		},
+		{
+			"Id": "Part16",
+			"Name": "Folder 4"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"ParamEyeROpen",
+			"ParamEyeLOpen"
+		],
+		[
+			"ParamEyeBallX",
+			"ParamEyeBallY"
+		]
+	]
+}
