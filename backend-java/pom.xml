@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.4</version>
         <relativePath/>
     </parent>
 
@@ -18,12 +18,12 @@
     <description>智慧景区 AI 导览系统 - Java 后端服务</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>24</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Lombok 版本（覆盖 Spring Boot Parent 管理） -->
         <lombok.version>1.18.46</lombok.version>
-        <!-- 编译器 release 版本（与 java.version 保持一致） -->
-        <maven.compiler.release>21</maven.compiler.release>
+        <!-- 编译器 release 版本 -->
+        <maven.compiler.release>24</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -65,6 +65,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- H2 内存数据库（开发调试用） -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- MySQL -->

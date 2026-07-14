@@ -5,6 +5,7 @@ import { modelManifest, ModelEntry } from "./features/live2d/modelManifest";
 import type { DigitalHumanChunk, LogEntry } from "./api/types";
 import { streamDigitalHumanChat } from "./api/digitalHumanClient";
 import { config } from "./config";
+import TourGuidePage from "./pages/TourGuidePage";
 
 import Live2DStage from "./components/Live2DStage";
 

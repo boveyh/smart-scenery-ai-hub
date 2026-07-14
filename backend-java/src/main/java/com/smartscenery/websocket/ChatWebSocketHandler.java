@@ -2,15 +2,23 @@ package com.smartscenery.websocket;
 
 import com.smartscenery.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,6 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 public class ChatWebSocketHandler extends TextWebSocketHandler {
+
+    @Value("${ai-engine.base-url:http://localhost:8000}")
+    private String aiEngineBaseUrl;
 
     /** 在线会话数统计 */
     private static final AtomicInteger ONLINE_COUNT = new AtomicInteger(0);
@@ -82,7 +93,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * 处理用户发送的消息
+     * 处理用户发送的消息 — 调用 Python AI 引擎 RAG + LLM 流式接口
      */
     private void handleSendMessage(WebSocketSession session, String sessionId, String tenantId,
                                    Map<String, Object> msg) {
@@ -93,13 +104,48 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
 
         log.info("[WS] 收到消息: session={}, tenant={}, content={}", sessionId, tenantId, content);
+        streamFromAiEngine(session, tenantId, sessionId, content);
+    }
 
-        // 模拟 AI 回复（分多个分片流式返回）
-        // 实际生产中应调用 AI 引擎 RAG 服务
-        sendTextChunk(session, "您好！您询问的是关于「" + content + "」的问题。", 1);
-        sendTextChunk(session, "根据景区知识库，我为您找到以下相关信息：\n\n", 2);
-        sendTextChunk(session, "西湖是杭州著名的风景名胜区，被列入《世界遗产名录》。\n包括苏堤春晓、断桥残雪等十景。", 3);
-        sendEnd(session, "stop", mockUsage());
+    /**
+     * 异步调用 Python AI 引擎的流式文本接口，逐行转发到 WebSocket
+     */
+    private void streamFromAiEngine(WebSocketSession session, String tenantId, String sessionId, String content) {
+        CompletableFuture.runAsync(() -> {
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(aiEngineBaseUrl + "/api/v1/textchat");
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("X-Tenant-Id", tenantId);
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(30000);
+
+                String body = JsonUtils.toJson(Map.of(
+                        "session_id", sessionId,
+                        "content", content,
+                        "timestamp", System.currentTimeMillis()
+                ));
+                conn.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
+
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.trim().isEmpty()) continue;
+                        if (!session.isOpen()) break;
+                        session.sendMessage(new TextMessage(line));
+                    }
+                }
+            } catch (Exception e) {
+                log.error("[WS] AI 引擎调用失败: {}", e.getMessage());
+                sendError(session, 503, "AI 服务暂时不可用，请稍后重试");
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        });
     }
 
     /**
@@ -191,14 +237,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
         }
         return null;
-    }
-
-    private Map<String, Object> mockUsage() {
-        return Map.of(
-                "prompt_tokens", 50,
-                "completion_tokens", 120,
-                "total_tokens", 170
-        );
     }
 
     /** 获取在线会话数 */

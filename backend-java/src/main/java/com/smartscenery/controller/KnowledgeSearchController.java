@@ -50,23 +50,18 @@ public class KnowledgeSearchController {
 
         log.info("知识检索: tenant={}, query={}, top_k={}", tenantId, query, topK);
 
-        // 1. 先尝试 MySQL 全文检索
+        // 1. 先用 LIKE 关键词检索（兼容 H2/MySQL）
         List<KnowledgeChunk> chunks;
         try {
-            // 清理查询文本用于全文检索
             String cleanQuery = query.replaceAll("[^\\u4e00-\\u9fffA-Za-z0-9 ]", " ").trim();
             if (cleanQuery.length() > 1) {
                 chunks = knowledgeChunkRepository.keywordSearch(tenantId, cleanQuery, topK);
-                if (chunks.isEmpty()) {
-                    // 尝试全文检索
-                    chunks = knowledgeChunkRepository.fullTextSearch(tenantId, cleanQuery, topK);
-                }
             } else {
                 chunks = knowledgeChunkRepository.findByTenantIdAndEnabledTrue(tenantId);
                 chunks = chunks.stream().limit(topK).toList();
             }
         } catch (Exception e) {
-            log.warn("全文检索失败，降级为全量查询: {}", e.getMessage());
+            log.warn("检索失败，降级为全量查询: {}", e.getMessage());
             chunks = knowledgeChunkRepository.findByTenantIdAndEnabledTrue(tenantId);
             chunks = chunks.stream().limit(topK).toList();
         }

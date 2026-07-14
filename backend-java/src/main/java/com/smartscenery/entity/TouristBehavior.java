@@ -65,36 +65,30 @@ public class TouristBehavior {
     private LocalDate visitDate;
 
     /** 停留时长（小时） */
-    @Column(precision = 5, scale = 1)
+    @Column(columnDefinition = "DOUBLE")
     private BigDecimal stayDuration;
 
     /** 门票消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal ticketCost = BigDecimal.ZERO;
 
     /** 餐饮消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal foodCost = BigDecimal.ZERO;
 
     /** 购物消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal shoppingCost = BigDecimal.ZERO;
 
     /** 交通消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal transportCost = BigDecimal.ZERO;
 
     /** 娱乐消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal entertainmentCost = BigDecimal.ZERO;
 
     /** 总消费 */
-    @Column(precision = 10, scale = 2)
     @Builder.Default
     private BigDecimal totalCost = BigDecimal.ZERO;
 

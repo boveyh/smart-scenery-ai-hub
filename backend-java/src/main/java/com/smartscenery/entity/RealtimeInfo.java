@@ -44,14 +44,14 @@ public class RealtimeInfo {
     private String weather;
 
     /** 温度（摄氏度） */
-    @Column(precision = 4, scale = 1)
+    @Column(columnDefinition = "DOUBLE")
     private BigDecimal temperature;
 
     /** 湿度百分比 */
     private Integer humidity;
 
     /** 风速(m/s) */
-    @Column(precision = 4, scale = 1)
+    @Column(columnDefinition = "DOUBLE")
     private BigDecimal windSpeed;
 
     /** 整体拥挤等级 1-5 */

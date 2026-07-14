@@ -57,11 +57,11 @@ public class Poi {
     private String subCategory;
 
     /** 纬度 */
-    @Column(nullable = false, precision = 10, scale = 7)
+    @Column(nullable = false, columnDefinition = "DOUBLE")
     private BigDecimal lat;
 
     /** 经度 */
-    @Column(nullable = false, precision = 10, scale = 7)
+    @Column(nullable = false, columnDefinition = "DOUBLE")
     private BigDecimal lng;
 
     /** 详细地址 */
@@ -85,7 +85,7 @@ public class Poi {
     private String openingHours;
 
     /** 门票价格（0表示免费） */
-    @Column(precision = 10, scale = 2)
+    @Column(columnDefinition = "DOUBLE")
     @Builder.Default
     private BigDecimal ticketPrice = BigDecimal.ZERO;
 
