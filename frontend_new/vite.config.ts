@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+const AI_ENGINE_TARGET = 'http://localhost:8001'
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -14,12 +16,22 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api/v1/vision': {
-        target: 'http://localhost:8000',
+        target: AI_ENGINE_TARGET,
         changeOrigin: true,
         timeout: 60000,
       },
       '/api/v1/digitalhuman': {
-        target: 'http://localhost:8000',
+        target: AI_ENGINE_TARGET,
+        changeOrigin: true,
+        timeout: 60000,
+      },
+      '/api/v1/asr': {
+        target: AI_ENGINE_TARGET,
+        changeOrigin: true,
+        timeout: 60000,
+      },
+      '/api/v1/tts': {
+        target: AI_ENGINE_TARGET,
         changeOrigin: true,
         timeout: 60000,
       },
@@ -29,7 +41,7 @@ export default defineConfig({
         headers: { 'X-Tenant-Id': 'ling_shan' },
       },
       '/static/audio': {
-        target: 'http://localhost:8000',
+        target: AI_ENGINE_TARGET,
         changeOrigin: true,
       },
       '/ws': {

@@ -34,9 +34,8 @@ function PieChart({ data, colors, size = 140 }: { data: { label: string; value: 
       const large = a2 - a1 > 180 ? 1 : 0;
       return <path key={i} d={`M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`} fill={colors[i % colors.length]}
         onMouseMove={e => showT(e, <><strong>{d.label}</strong><br/>{d.value.toLocaleString()}条 ({(pct*100).toFixed(1)}%)</>)}
-        onMouseLeave={hideT} style={{ cursor:'pointer', transition:'opacity 0.15s' }}
+        onMouseLeave={e => { (e.currentTarget as SVGPathElement).style.opacity = '1'; hideT(); }} style={{ cursor:'pointer', transition:'opacity 0.15s' }}
         onMouseEnter={e => (e.target as SVGPathElement).style.opacity = '0.85'}
-        onMouseLeaveCapture={e => { (e.target as SVGPathElement).style.opacity = '1'; hideT(); }}
       />;
     })}
     <circle cx={cx} cy={cy} r={r * 0.5} fill="#F7F2E6" />
@@ -126,8 +125,9 @@ export default function AdminReportPage() {
   if (!data) return <div className="empty-state"><span className="empty-state__text">暂无数据</span></div>;
 
   const ov = data.overview;
-  const costItems = Object.entries(data.cost_breakdown).map(([k, v]: any) => ({
-    label: { ticket_cost:'门票', food_cost:'餐饮', shopping_cost:'购物', transport_cost:'交通', entertainment_cost:'娱乐' }[k] || k, value: v.avg,
+  const costLabelMap: Record<string, string> = { ticket_cost:'门票', food_cost:'餐饮', shopping_cost:'购物', transport_cost:'交通', entertainment_cost:'娱乐' };
+  const costItems = Object.entries(data.cost_breakdown).map(([k, v]) => ({
+    label: costLabelMap[k] || k, value: v.avg,
   }));
   const satDist = Object.entries(data.satisfaction_dist).filter(([k]) => k !== '0').sort(([a]:any,[b]:any) => Number(a)-Number(b)).map(([k, v]) => ({ label: `${k}分`, value: v as number }));
   const satColors = ['#ef4444','#f59e0b','rgba(61,44,42,0.5)','#22c55e','#16a34a'];

@@ -43,31 +43,40 @@ export default function VisionPage() {
 
     try {
       const base64List = images.map(img => img.split(',')[1] || img);
-      const res = await fetch('http://localhost:8000/api/v1/vision/recognize', {
+      const res = await fetch('/api/v1/vision/recognize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': 'ling_shan' },
         body: JSON.stringify({ content: question.trim() || '请识别这张图片的内容', images: base64List }),
       });
+      if (!res.ok) throw new Error(`识别接口请求失败: ${res.status}`);
       const reader = res.body?.getReader();
       if (!reader) { setError('无法读取响应'); setLoading(false); return; }
       const decoder = new TextDecoder();
       let fullText = '';
+      let buffer = '';
+      const handleLine = (line: string) => {
+        const payload = line.trim().startsWith('data: ') ? line.trim().slice(6) : line.trim();
+        if (!payload) return;
+        try {
+          const data = JSON.parse(payload);
+          if (data.type === 'text' && data.content) {
+            fullText += data.content;
+            setResult(fullText);
+          }
+          if (data.type === 'error') {
+            setError(data.message || '识别失败');
+          }
+        } catch {}
+      };
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const text = decoder.decode(value);
-        for (const line of text.split('\n').filter(Boolean)) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.type === 'text' && data.content) {
-                fullText += data.content;
-                setResult(fullText);
-              }
-            } catch {}
-          }
-        }
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        lines.forEach(handleLine);
       }
+      if (buffer.trim()) handleLine(buffer);
     } catch (err: unknown) {
       setError((err as Error).message || '请求失败');
     } finally {
