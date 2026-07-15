@@ -11,6 +11,20 @@ import Live2DStage from "./components/Live2DStage";
 
 let logIdCounter = 0;
 
+const EDGE_TTS_VOICES = [
+  { id: "zh-CN-XiaoxiaoNeural", label: "晓晓 - 女声自然" },
+  { id: "zh-CN-XiaohanNeural", label: "晓涵 - 女声温柔" },
+  { id: "zh-CN-XiaoyiNeural", label: "晓伊 - 女声成熟" },
+  { id: "zh-CN-XiaochenNeural", label: "晓辰 - 女声清新" },
+  { id: "zh-CN-XiaoshuangNeural", label: "晓双 - 女声甜美" },
+  { id: "zh-CN-YunxiNeural", label: "云希 - 男声青年" },
+  { id: "zh-CN-YunyangNeural", label: "云扬 - 男声稳重" },
+  { id: "zh-CN-YunjianNeural", label: "云健 - 男声活力" },
+];
+
+const TTS_RATES = ["-10%", "+0%", "+5%", "+10%", "+15%", "+20%"];
+const TTS_PITCHES = ["-10Hz", "+0Hz", "+5Hz", "+10Hz"];
+
 function pickExpressionForText(text: string, expressions: string[]): string | null {
   if (!text || expressions.length === 0) return null;
   const lowerText = text.toLowerCase();
@@ -50,6 +64,9 @@ export default function App() {
   const [queueLength, setQueueLength] = useState(0);
   const [endReason, setEndReason] = useState<string | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [ttsVoice, setTtsVoice] = useState("zh-CN-XiaoxiaoNeural");
+  const [ttsRate, setTtsRate] = useState("+10%");
+  const [ttsPitch, setTtsPitch] = useState("+0Hz");
 
   // Conversation messages
   const [messages, setMessages] = useState<{ role: "user" | "ai"; text: string }[]>([]);
@@ -125,6 +142,9 @@ export default function App() {
           offsetX: entry.offsetX,
           offsetY: entry.offsetY,
         });
+        setTtsVoice(entry.defaultTtsVoice);
+        setTtsRate(entry.defaultTtsRate);
+        setTtsPitch(entry.defaultTtsPitch);
         setAvailableExpressions(viewer.getAvailableExpressions());
         setAvailableMotionGroups(viewer.getAvailableMotionGroups());
         setActiveExpressions(viewer.getActiveExpressions());
@@ -161,7 +181,15 @@ export default function App() {
 
     try {
       await streamDigitalHumanChat(
-        { session_id: sessionId, content: q, timestamp: Date.now(), tenantId },
+        {
+          session_id: sessionId,
+          content: q,
+          timestamp: Date.now(),
+          tenantId,
+          tts_voice: ttsVoice,
+          tts_rate: ttsRate,
+          tts_pitch: ttsPitch,
+        },
         {
           onRawLine: () => {},
           onChunk: (chunk: DigitalHumanChunk) => {
@@ -202,7 +230,7 @@ export default function App() {
       setIsStreaming(false);
       log(`异常: ${error instanceof Error ? error.message : String(error)}`, "error");
     }
-  }, [question, tenantId, sessionId, log, availableExpressions, viewer]);
+  }, [question, tenantId, sessionId, ttsVoice, ttsRate, ttsPitch, log, availableExpressions, viewer]);
 
   const handleStop = useCallback(() => {
     audioEngineRef.current?.clear();
@@ -454,6 +482,55 @@ export default function App() {
                 })()}
               </span>
             </div>
+          </div>
+
+          <div className="panel-section">
+            <div className="panel-label">音色选择</div>
+            <select
+              className="panel-input"
+              value={ttsVoice}
+              onChange={(e) => setTtsVoice(e.target.value)}
+              disabled={isStreaming}
+            >
+              {EDGE_TTS_VOICES.map((voice) => (
+                <option key={voice.id} value={voice.id}>
+                  {voice.label}
+                </option>
+              ))}
+            </select>
+            <div className="tts-control-row">
+              <label className="tts-control-field">
+                <span>语速</span>
+                <select
+                  className="panel-input"
+                  value={ttsRate}
+                  onChange={(e) => setTtsRate(e.target.value)}
+                  disabled={isStreaming}
+                >
+                  {TTS_RATES.map((rate) => (
+                    <option key={rate} value={rate}>
+                      {rate}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="tts-control-field">
+                <span>音高</span>
+                <select
+                  className="panel-input"
+                  value={ttsPitch}
+                  onChange={(e) => setTtsPitch(e.target.value)}
+                  disabled={isStreaming}
+                >
+                  {TTS_PITCHES.map((pitch) => (
+                    <option key={pitch} value={pitch}>
+                      {pitch}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {isStreaming && <div className="panel-empty">当前回答生成中，下一次提问生效。</div>}
           </div>
 
           {/* Mouth status */}
