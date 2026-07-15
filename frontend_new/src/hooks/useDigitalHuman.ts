@@ -26,9 +26,12 @@ export function useDigitalHuman(tenantId: string = DEFAULT_TENANT_ID) {
   const abortRef = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(async (sessionId: string, content: string) => {
-    // 取消之前的请求
-    abortRef.current?.abort();
+    let cancelled = false;
     const controller = new AbortController();
+    const prev = abortRef.current;
+    if (prev) {
+      try { prev.abort(); } catch {}
+    }
     abortRef.current = controller;
 
     setState({
@@ -47,14 +50,18 @@ export function useDigitalHuman(tenantId: string = DEFAULT_TENANT_ID) {
       };
 
       for await (const chunk of apiClient.digitalHumanChatStream(req, controller.signal)) {
-        setState(prev => ({
-          ...prev,
-          chunks: [...prev.chunks, chunk],
-          currentSeq: chunk.seq,
-          loading: !chunk.type || chunk.type !== 'end',
-          finished: chunk.type === 'end',
-          error: chunk.type === 'error' ? chunk.message || '未知错误' : null,
-        }));
+        if (cancelled) break;
+        setState(prev => {
+          if (cancelled) return prev;
+          return {
+            ...prev,
+            chunks: [...prev.chunks, chunk],
+            currentSeq: chunk.seq,
+            loading: !chunk.type || chunk.type !== 'end',
+            finished: chunk.type === 'end',
+            error: chunk.type === 'error' ? chunk.message || '未知错误' : null,
+          };
+        });
       }
     } catch (err: unknown) {
       if ((err as Error).name === 'AbortError') return;

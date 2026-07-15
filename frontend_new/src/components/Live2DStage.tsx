@@ -61,13 +61,48 @@ export default function Live2DStage({ onViewerReady, onLog }: Live2DStageProps) 
       handleResize();
     }, 50);
 
+    const pointerMargin = 96;
+    const handleWindowPointerMove = (event: PointerEvent) => {
+      const element = canvasRef.current?.parentElement ?? canvasRef.current;
+      if (!element) return;
+      const rect = element.getBoundingClientRect();
+      const inside =
+        event.clientX >= rect.left - pointerMargin &&
+        event.clientX <= rect.right + pointerMargin &&
+        event.clientY >= rect.top - pointerMargin &&
+        event.clientY <= rect.bottom + pointerMargin;
+
+      if (!inside) {
+        viewerRef.current?.clearPointerTarget();
+        return;
+      }
+
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+      viewerRef.current?.setPointerTarget(x, y);
+    };
+
+    const handleWindowPointerLeave = () => {
+      viewerRef.current?.clearPointerTarget();
+    };
+
+    window.addEventListener("pointermove", handleWindowPointerMove);
+    window.addEventListener("pointerleave", handleWindowPointerLeave);
+
     return () => {
       clearTimeout(initialTimer);
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerleave", handleWindowPointerLeave);
       resizeObserver.disconnect();
       viewer.destroy();
       viewerRef.current = null;
     };
   }, []); // Intentionally run once
 
-  return <canvas ref={canvasRef} style={{ width: "100%", height: "100%" }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
 }

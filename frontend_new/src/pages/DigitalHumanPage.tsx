@@ -224,10 +224,11 @@ export default function DigitalHumanPage() {
     }
   }, [viewer]);
 
-  // 流式文本累加 — 每当有新 chunk 到来时追加到聊天框
+  // 流式文本累加 — 仅在有新 chunk 且 loading 时追加
   const lastProcessedSeq = useRef(0);
   const aiFullText = useRef('');
   useEffect(() => {
+    if (!loading) return;
     const newOnes = chunks.filter(c => c.text_chunk && c.seq > lastProcessedSeq.current);
     if (newOnes.length === 0) return;
     const textToAdd = newOnes.map(c => c.text_chunk).join('');
@@ -243,7 +244,7 @@ export default function DigitalHumanPage() {
       }
       return [...prev, { role: 'ai', text: aiFullText.current }];
     });
-  }, [chunks]);
+  }, [chunks, loading]);
 
   return (
     <div style={{ height: 'calc(100vh - 130px)', display: 'flex', gap: 20 }}>
