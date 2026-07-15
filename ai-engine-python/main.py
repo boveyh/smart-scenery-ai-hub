@@ -6,8 +6,11 @@ FastAPI 异步服务,负责：
   3. 健康检查 & 服务状态
 """
 import asyncio
+import base64
 import json
+import mimetypes
 import os
+import re
 import uuid
 import time
 import logging
@@ -15,15 +18,16 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Scope, Receive, Send
 from pydantic import BaseModel, Field
+import httpx
 
 from core.llm_client import LLMStreamClient
-from core.tts_generator import TTSGenerator
+from core.tts_generator import TTSGenerator, normalize_tts_text
 from core.rag_processor import RAGProcessor
 
 # ─── 数字人配置 ──────────────────────────────────────────
@@ -44,12 +48,20 @@ LLM_MAX_TOKENS  = int(os.getenv("LLM_MAX_TOKENS", "2048"))
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 TTS_OUTPUT_DIR  = os.getenv("TTS_OUTPUT_DIR", "./static/audio")
 BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:9000")
+VISION_PROVIDER = os.getenv("VISION_PROVIDER", "").lower()
+QWEN_API_KEY = os.getenv("QWEN_API_KEY", "")
+QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+QWEN_VL_MODEL = os.getenv("QWEN_VL_MODEL", "qwen-vl-max")
+QWEN_ASR_MODEL = os.getenv("QWEN_ASR_MODEL", "qwen3-asr-flash")
+ASR_MAX_BYTES = int(os.getenv("ASR_MAX_BYTES", str(10 * 1024 * 1024)))
+VISION_MAX_TOKENS = int(os.getenv("VISION_MAX_TOKENS", "700"))
 
 # 数字人多租户配置加载器
 profile_loader = ProfileLoader()
 
 # ─── 全局组件（懒初始化在 lifespan 中完成） ─────────────────
 llm_client: LLMStreamClient | None = None
+vision_client: LLMStreamClient | None = None
 tts_gen: TTSGenerator | None = None
 rag_processor: RAGProcessor | None = None
 
@@ -57,7 +69,7 @@ rag_processor: RAGProcessor | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化组件，关闭时清理资源"""
-    global llm_client, tts_gen, rag_processor
+    global llm_client, vision_client, tts_gen, rag_processor
 
     # 确保音频输出目录存在
     Path(TTS_OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
@@ -70,6 +82,16 @@ async def lifespan(app: FastAPI):
         max_tokens=LLM_MAX_TOKENS,
         temperature=LLM_TEMPERATURE,
     )
+    if VISION_PROVIDER == "qwen" and QWEN_API_KEY:
+        vision_client = LLMStreamClient(
+            api_key=QWEN_API_KEY,
+            base_url=QWEN_BASE_URL,
+            model=QWEN_VL_MODEL,
+            max_tokens=LLM_MAX_TOKENS,
+            temperature=LLM_TEMPERATURE,
+        )
+    else:
+        vision_client = llm_client
     tts_gen = TTSGenerator(output_dir=TTS_OUTPUT_DIR)
     rag_processor = RAGProcessor(backend_base_url=BACKEND_BASE_URL)
 
@@ -135,9 +157,30 @@ class DigitalHumanRequest(BaseModel):
     session_id: str = Field(default_factory=lambda: uuid.uuid4().hex, description="会话唯一标识")
     content: str = Field(..., min_length=1, max_length=2000, description="游客输入文本")
     timestamp: int = Field(default_factory=lambda: int(time.time() * 1000), description="毫秒时间戳")
+    persona_prompt: str | None = None
     tts_voice: str | None = None
     tts_rate: str | None = None
     tts_pitch: str | None = None
+
+
+class ASRResponse(BaseModel):
+    text: str
+    model: str
+
+
+class TTSRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=2000)
+    session_id: str = Field(default_factory=lambda: uuid.uuid4().hex)
+    tenant_id: str = "ling_shan"
+    seq: int = 1
+    tts_voice: str | None = None
+    tts_rate: str | None = None
+    tts_pitch: str | None = None
+
+
+class TTSResponse(BaseModel):
+    text: str
+    audio_url: str
 
 
 def infer_emotion(text: str) -> str:
@@ -156,7 +199,110 @@ def infer_emotion(text: str) -> str:
     return "calm"
 
 
+def split_tts_sentences(text: str) -> list[str]:
+    raw_parts = [p.strip() for p in re.findall(r"[^。！？!?；;.\n]+[。！？!?；;.\n]?", text) if p.strip()]
+    parts: list[str] = []
+    for part in raw_parts:
+        cleaned = normalize_tts_text(part, max_len=120)
+        if not cleaned:
+            continue
+        parts.append(cleaned)
+    return parts
+
+
+def compact_vision_prompt(persona_prompt: str) -> str:
+    return (
+        f"{persona_prompt}\n\n"
+        "用户上传了一张图片。请只用中文口语化讲解，控制在2到3句，"
+        "先说图片里最重要的内容，再结合灵山胜境给一句导览说明。"
+        "不要使用 Markdown，不要加粗，不要列表，不要输出星号。"
+    )
+
+
 # ─── 核心接口 ─────────────────────────────────────────────
+
+@app.post("/api/v1/tts/synthesize", response_model=TTSResponse)
+async def synthesize_tts(req: TTSRequest, request: Request):
+    tenant_id = request.headers.get("X-Tenant-Id", req.tenant_id or "ling_shan")
+    text = normalize_tts_text(req.text, max_len=220)
+    if not text:
+        raise HTTPException(status_code=400, detail="没有可播报的文本")
+
+    profile = profile_loader.get(tenant_id)
+    if not tts_gen:
+        raise HTTPException(status_code=500, detail="TTS 引擎未初始化")
+
+    audio_url = await tts_gen.generate_audio(
+        text=text,
+        tenant_id=tenant_id,
+        session_id=req.session_id,
+        seq=req.seq,
+        voice=req.tts_voice or profile.get("tts_voice", "zh-CN-XiaoxiaoNeural"),
+        rate=req.tts_rate or profile.get("tts_rate", "+10%"),
+        pitch=req.tts_pitch or profile.get("tts_pitch", "+0Hz"),
+    )
+    if not audio_url:
+        raise HTTPException(status_code=502, detail="TTS 生成失败")
+    return TTSResponse(text=text, audio_url=audio_url)
+
+
+@app.post("/api/v1/asr/transcribe", response_model=ASRResponse)
+async def transcribe_audio(audio: UploadFile = File(...)):
+    if not QWEN_API_KEY:
+        raise HTTPException(status_code=500, detail="QWEN_API_KEY 未配置，无法使用语音识别")
+
+    audio_bytes = await audio.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="没有收到音频内容")
+    if len(audio_bytes) > ASR_MAX_BYTES:
+        raise HTTPException(status_code=413, detail="音频太大，请控制在 10MB 以内")
+
+    mime_type = audio.content_type or mimetypes.guess_type(audio.filename or "")[0] or "audio/webm"
+    data_uri = f"data:{mime_type};base64,{base64.b64encode(audio_bytes).decode('ascii')}"
+    endpoint = f"{QWEN_BASE_URL.rstrip('/')}/chat/completions"
+    payload = {
+        "model": QWEN_ASR_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_audio",
+                        "input_audio": {"data": data_uri},
+                    }
+                ],
+            }
+        ],
+        "stream": False,
+        "asr_options": {"enable_itn": False},
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(
+                endpoint,
+                headers={
+                    "Authorization": f"Bearer {QWEN_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+        resp.raise_for_status()
+        data = resp.json()
+        text = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+        if not text:
+            logger.warning("ASR 返回为空: %s", data)
+            raise HTTPException(status_code=502, detail="语音识别结果为空")
+        return ASRResponse(text=text, model=QWEN_ASR_MODEL)
+    except HTTPException:
+        raise
+    except httpx.HTTPStatusError as e:
+        logger.error("ASR 调用失败: %s %s", e.response.status_code, e.response.text[:500])
+        raise HTTPException(status_code=502, detail=f"语音识别服务返回错误: {e.response.status_code}") from e
+    except Exception as e:
+        logger.error("ASR 处理异常: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"语音识别失败: {e}") from e
+
 
 @app.post("/api/v1/digitalhuman/chat")
 async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
@@ -176,7 +322,7 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
 
     # ─── 加载租户数字人配置 ────────────────────────────────
     profile = profile_loader.get(tenant_id)
-    persona_prompt = profile.get("persona_prompt")
+    persona_prompt = req.persona_prompt or profile.get("persona_prompt")
     tts_voice = req.tts_voice or profile.get("tts_voice", "zh-CN-XiaoxiaoNeural")
     tts_rate = req.tts_rate or profile.get("tts_rate", "+10%")
     tts_pitch = req.tts_pitch or profile.get("tts_pitch", "+0Hz")
@@ -328,15 +474,16 @@ async def vision_recognize(request: Request):
     图片识别流式接口（NDJSON）
     接收文字 + 图片(base64)，调用千问多模态模型识别
     """
-    import base64
     tenant_id = request.headers.get("X-Tenant-Id", "default")
+    try:
+        body = await request.json()
+    except Exception as e:
+        logger.warning(f"视觉识别请求体解析失败: {e}")
+        body = {}
 
     async def generate():
         try:
-            raw = await request.body()
-            if isinstance(raw, bytes):
-                raw = raw.decode('utf-8')
-            body = json.loads(raw)
+            started_at = time.perf_counter()
             content = body.get("content", "")
             images_b64 = body.get("images", [])
             if not images_b64:
@@ -344,19 +491,59 @@ async def vision_recognize(request: Request):
                 return
 
             profile = profile_loader.get(tenant_id)
-            persona_prompt = profile.get("persona_prompt", "你是一个专业的智慧景区AI导览助手。")
-            system_prompt = f"{persona_prompt}\n\n用户上传了一张图片，请根据图片内容结合景区知识进行讲解。"
+            persona_prompt = body.get("persona_prompt") or profile.get("persona_prompt", "你是一个专业的智慧景区AI导览助手。")
+            tts_voice = body.get("tts_voice") or profile.get("tts_voice", "zh-CN-XiaoxiaoNeural")
+            tts_rate = body.get("tts_rate") or profile.get("tts_rate", "+10%")
+            tts_pitch = body.get("tts_pitch") or profile.get("tts_pitch", "+0Hz")
+            session_id = body.get("session_id") or uuid.uuid4().hex
+            system_prompt = compact_vision_prompt(persona_prompt)
 
             logger.info(f"vision 调用 chat_with_images: images={len(images_b64)}张")
-            result = await llm_client.chat_with_images(
+            client = vision_client or llm_client
+            result = await client.chat_with_images(
                 system_prompt=system_prompt,
-                user_message=content or "请描述这张图片的内容，结合景区知识进行讲解。",
+                user_message=content or "请用2到3句话讲解这张图片。",
                 images=images_b64,
+                max_tokens=VISION_MAX_TOKENS,
             )
-            logger.info(f"vision 识别结果: {len(result)} 字符")
-            if result:
-                yield json.dumps({"seq": 1, "type": "text", "content": result}, ensure_ascii=False) + "\n"
-            yield json.dumps({"seq": 2, "type": "end", "reason": "complete"}, ensure_ascii=False) + "\n"
+            logger.info(f"vision 识别结果: {len(result)} 字符, 耗时={time.perf_counter() - started_at:.2f}s")
+            seq = 0
+            sentences = split_tts_sentences(result)
+            for sentence in sentences:
+                seq += 1
+                audio_url = ""
+                if tts_gen and seq == 1:
+                    try:
+                        audio_url = await asyncio.wait_for(
+                            tts_gen.generate_audio(
+                                text=sentence,
+                                tenant_id=tenant_id,
+                                session_id=session_id,
+                                seq=seq,
+                                voice=tts_voice,
+                                rate=tts_rate,
+                                pitch=tts_pitch,
+                            ),
+                            timeout=35.0,
+                        )
+                    except asyncio.TimeoutError:
+                        logger.warning(f"vision TTS 超时(seq={seq}): 降级纯文本")
+                    except Exception as e:
+                        logger.warning(f"vision TTS 生成失败(seq={seq}): 降级纯文本: {e}")
+                yield json.dumps(
+                    {
+                        "seq": seq,
+                        "type": "text",
+                        "content": sentence,
+                        "text_chunk": sentence,
+                        "audio_url": audio_url,
+                        "tts_status": "ok" if audio_url else "pending",
+                        "emotion": infer_emotion(sentence),
+                    },
+                    ensure_ascii=False,
+                ) + "\n"
+                logger.info(f"vision 输出 seq={seq}, audio={bool(audio_url)}, elapsed={time.perf_counter() - started_at:.2f}s")
+            yield json.dumps({"seq": seq + 1, "type": "end", "reason": "complete"}, ensure_ascii=False) + "\n"
 
         except Exception as e:
             logger.error(f"视觉识别异常: {e}", exc_info=True)

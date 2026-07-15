@@ -15,6 +15,7 @@ TTS 语音合成引擎 — 基于 edge-tts 的异步轻量化文本转语音
 
 import asyncio
 import logging
+import re
 from pathlib import Path
 
 import edge_tts
@@ -25,6 +26,19 @@ logger = logging.getLogger("ai-engine.tts")
 # edge-tts --list-voices 可查看完整列表
 DEFAULT_VOICE = "zh-CN-XiaoxiaoNeural"      # 女声-晓晓，自然流畅
 FALLBACK_VOICE = "zh-CN-YunxiNeural"        # 男声-云希，备选
+SPEAKABLE_RE = re.compile(r"[\w\u4e00-\u9fff]")
+MARKDOWN_RE = re.compile(r"[*_#>`\[\]()]")
+URL_RE = re.compile(r"https?://\S+")
+
+
+def normalize_tts_text(text: str, max_len: int = 220) -> str:
+    text = URL_RE.sub("", text)
+    text = MARKDOWN_RE.sub("", text)
+    text = re.sub(r"^\s*[-+•\d.、]+\s*", "", text.strip())
+    text = re.sub(r"\s+", " ", text).strip()
+    if not SPEAKABLE_RE.search(text):
+        return ""
+    return text[:max_len]
 
 
 class TTSGenerator:
@@ -80,7 +94,8 @@ class TTSGenerator:
         Returns:
             音频文件相对 URL 路径，失败时返回空字符串 ""
         """
-        if not text.strip():
+        text = normalize_tts_text(text)
+        if not text:
             return ""
 
         # 构建安全文件名和路径
@@ -93,37 +108,38 @@ class TTSGenerator:
         # 如果已存在则直接返回（幂等）
         if mp3_path.exists() and mp3_path.stat().st_size > 0:
             return self._build_url(tenant_id, session_id, seq)
+        if mp3_path.exists():
+            mp3_path.unlink(missing_ok=True)
 
         # ─── 调用 edge-tts ────────────────────────────────
-        try:
-            communicate = edge_tts.Communicate(
-                text=text,
-                voice=voice or self.voice,
-                rate=rate or self.rate,
-                pitch=pitch or self.pitch,
-            )
-            await communicate.save(str(mp3_path))
+        voices = [voice or self.voice, FALLBACK_VOICE]
+        last_error: Exception | None = None
+        for voice_name in dict.fromkeys(voices):
+            for attempt in range(2):
+                mp3_path.unlink(missing_ok=True)
+                try:
+                    communicate = edge_tts.Communicate(
+                        text=text,
+                        voice=voice_name,
+                        rate=rate or self.rate,
+                        pitch=pitch or self.pitch,
+                    )
+                    await communicate.save(str(mp3_path))
+                    file_size = mp3_path.stat().st_size if mp3_path.exists() else 0
+                    if file_size <= 0:
+                        raise RuntimeError("edge-tts generated empty audio file")
+                    if voice_name == FALLBACK_VOICE and voice_name != (voice or self.voice):
+                        logger.info(f"TTS 备选语音成功: {mp3_path.name}")
+                    logger.debug(f"TTS 生成完成: {mp3_path.name} ({file_size} bytes)")
+                    return self._build_url(tenant_id, session_id, seq)
+                except Exception as e:
+                    last_error = e
+                    logger.warning(f"TTS 生成失败 voice={voice_name} attempt={attempt + 1} [{text[:20]}...]: {e}")
+                    await asyncio.sleep(0.2)
 
-            file_size = mp3_path.stat().st_size
-            logger.debug(f"TTS 生成完成: {mp3_path.name} ({file_size} bytes)")
-            return self._build_url(tenant_id, session_id, seq)
-
-        except Exception as e:
-            logger.warning(f"TTS 生成失败 [{text[:20]}...]: {e}")
-            # 尝试备选语音
-            try:
-                communicate = edge_tts.Communicate(
-                    text=text,
-                    voice=FALLBACK_VOICE,
-                    rate=rate or self.rate,
-                    pitch=pitch or self.pitch,
-                )
-                await communicate.save(str(mp3_path))
-                logger.info(f"TTS 备选语音成功: {mp3_path.name}")
-                return self._build_url(tenant_id, session_id, seq)
-            except Exception as e2:
-                logger.error(f"TTS 备选也失败: {e2}")
-                return ""
+        if last_error:
+            logger.error(f"TTS 全部失败: {last_error}")
+        return ""
 
     def _build_url(self, tenant_id: str, session_id: str, seq: int) -> str:
         """构建音频相对 URL"""

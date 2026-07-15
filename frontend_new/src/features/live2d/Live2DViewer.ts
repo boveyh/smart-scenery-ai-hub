@@ -33,6 +33,20 @@ const PRIORITY_IDLE = 1;
 // Shader files are served from public/assets/live2d/shaders/WebGL/
 const SHADER_PATH = "/assets/live2d/shaders/WebGL/";
 
+const PARAM_IDS = {
+  angleX: [CubismDefaultParameterId.ParamAngleX, "PARAM_ANGLE_X"],
+  angleY: [CubismDefaultParameterId.ParamAngleY, "PARAM_ANGLE_Y"],
+  angleZ: [CubismDefaultParameterId.ParamAngleZ, "PARAM_ANGLE_Z"],
+  bodyAngleX: [CubismDefaultParameterId.ParamBodyAngleX, "PARAM_BODY_ANGLE_X"],
+  bodyAngleY: [CubismDefaultParameterId.ParamBodyAngleY, "PARAM_BODY_ANGLE_Y"],
+  eyeBallX: [CubismDefaultParameterId.ParamEyeBallX, "PARAM_EYE_BALL_X"],
+  eyeBallY: [CubismDefaultParameterId.ParamEyeBallY, "PARAM_EYE_BALL_Y"],
+  eyeLOpen: [CubismDefaultParameterId.ParamEyeLOpen, "PARAM_EYE_L_OPEN"],
+  eyeROpen: [CubismDefaultParameterId.ParamEyeROpen, "PARAM_EYE_R_OPEN"],
+  mouthOpenY: [CubismDefaultParameterId.ParamMouthOpenY, "PARAM_MOUTH_OPEN_Y"],
+  mouthForm: [CubismDefaultParameterId.ParamMouthForm, "PARAM_MOUTH_FORM"],
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface Live2DViewerCallbacks {
   onLoadStart: () => void;
@@ -461,6 +475,20 @@ export class Live2DViewer {
   }
   onResize() { this.resize(); }
 
+  private addParameterByAliases(model: any, ids: string[], value: number, weight = 1) {
+    const idMgr = CubismFramework.getIdManager();
+    for (const id of ids) {
+      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    }
+  }
+
+  private setParameterByAliases(model: any, ids: string[], value: number, weight = 1) {
+    const idMgr = CubismFramework.getIdManager();
+    for (const id of ids) {
+      try { model.setParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
+    }
+  }
+
   destroy() {
     this.destroyed = true;
     if (this.animFrameId !== null) { cancelAnimationFrame(this.animFrameId); this.animFrameId = null; }
@@ -570,11 +598,8 @@ export class Live2DViewer {
 
     // 9. Lip-sync override — WRITTEN AFTER motions/effects to prevent idle animation overwrite
     //    This ensures TTS-driven mouth parameters always win over animation-driven values
-    const idMgr = CubismFramework.getIdManager();
-    model.setParameterValueById(
-      idMgr.getId(CubismDefaultParameterId.ParamMouthOpenY), this.mouthOpenValue);
-    model.setParameterValueById(
-      idMgr.getId(CubismDefaultParameterId.ParamMouthForm), this.mouthFormValue);
+    this.setParameterByAliases(model, PARAM_IDS.mouthOpenY, this.mouthOpenValue);
+    this.setParameterByAliases(model, PARAM_IDS.mouthForm, this.mouthFormValue);
 
     // 10. Finalize. Do not save dynamic parameters here; that would make head tilt drift into the next frame baseline.
     model.update();
@@ -593,16 +618,8 @@ export class Live2DViewer {
       }
     }
 
-    const idMgr = CubismFramework.getIdManager();
-    const set = (id: string, value: number, weight = 1) => {
-      try { model.setParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
-    };
-    const add = (id: string, value: number, weight = 1) => {
-      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
-    };
-
-    set(CubismDefaultParameterId.ParamEyeLOpen, eyeOpen, 0.9);
-    set(CubismDefaultParameterId.ParamEyeROpen, eyeOpen, 0.9);
+    this.setParameterByAliases(model, PARAM_IDS.eyeLOpen, eyeOpen, 0.9);
+    this.setParameterByAliases(model, PARAM_IDS.eyeROpen, eyeOpen, 0.9);
 
     this.idleGazeTime -= dt;
     if (this.idleGazeTime <= 0) {
@@ -613,8 +630,8 @@ export class Live2DViewer {
     const follow = 1 - Math.exp(-dt * 3);
     this.idleGazeX += (this.idleGazeTargetX - this.idleGazeX) * follow;
     this.idleGazeY += (this.idleGazeTargetY - this.idleGazeY) * follow;
-    add(CubismDefaultParameterId.ParamEyeBallX, this.idleGazeX, 0.45);
-    add(CubismDefaultParameterId.ParamEyeBallY, this.idleGazeY, 0.45);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallX, this.idleGazeX, 0.45);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallY, this.idleGazeY, 0.45);
   }
 
   private applySpeakingGesture(model: any, dt: number) {
@@ -626,15 +643,10 @@ export class Live2DViewer {
     this.speakingTime += dt;
     const t = this.speakingTime;
     const energy = Math.min(1, 0.25 + this.mouthOpenValue * 0.75);
-    const idMgr = CubismFramework.getIdManager();
-    const add = (id: string, value: number, weight = 1) => {
-      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
-    };
-
-    add(CubismDefaultParameterId.ParamAngleY, Math.sin(t * 5.2) * 1.6 * energy, 0.35);
-    add(CubismDefaultParameterId.ParamAngleZ, Math.sin(t * 3.4 + 0.6) * 1.0 * energy, 0.25);
-    add(CubismDefaultParameterId.ParamBodyAngleX, Math.sin(t * 2.8 + 1.1) * 1.8 * energy, 0.35);
-    add("Param15", Math.sin(t * 4.4) * 0.08 * energy, 0.7);
+    this.addParameterByAliases(model, PARAM_IDS.angleY, Math.sin(t * 5.2) * 1.6 * energy, 0.35);
+    this.addParameterByAliases(model, PARAM_IDS.angleZ, Math.sin(t * 3.4 + 0.6) * 1.0 * energy, 0.25);
+    this.addParameterByAliases(model, PARAM_IDS.bodyAngleX, Math.sin(t * 2.8 + 1.1) * 1.8 * energy, 0.35);
+    this.addParameterByAliases(model, ["Param15"], Math.sin(t * 4.4) * 0.08 * energy, 0.7);
   }
 
   private applyPointerLook(model: any, dt: number) {
@@ -642,18 +654,13 @@ export class Live2DViewer {
     this.pointerX += (this.pointerTargetX - this.pointerX) * follow;
     this.pointerY += (this.pointerTargetY - this.pointerY) * follow;
 
-    const idMgr = CubismFramework.getIdManager();
-    const add = (id: string, value: number, weight = 1) => {
-      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
-    };
-
-    add(CubismDefaultParameterId.ParamEyeBallX, this.pointerX * 0.55, 0.9);
-    add(CubismDefaultParameterId.ParamEyeBallY, -this.pointerY * 0.32, 0.9);
-    add(CubismDefaultParameterId.ParamAngleX, this.pointerX * 14, 0.78);
-    add(CubismDefaultParameterId.ParamAngleY, -this.pointerY * 9.5, 0.68);
-    add(CubismDefaultParameterId.ParamAngleZ, -this.pointerX * 4.8, 0.38);
-    add(CubismDefaultParameterId.ParamBodyAngleX, this.pointerX * 4.2, 0.48);
-    add(CubismDefaultParameterId.ParamBodyAngleY, -this.pointerY * 2.4, 0.38);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallX, this.pointerX * 0.55, 0.9);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallY, -this.pointerY * 0.32, 0.9);
+    this.addParameterByAliases(model, PARAM_IDS.angleX, this.pointerX * 14, 0.78);
+    this.addParameterByAliases(model, PARAM_IDS.angleY, -this.pointerY * 9.5, 0.68);
+    this.addParameterByAliases(model, PARAM_IDS.angleZ, -this.pointerX * 4.8, 0.38);
+    this.addParameterByAliases(model, PARAM_IDS.bodyAngleX, this.pointerX * 4.2, 0.48);
+    this.addParameterByAliases(model, PARAM_IDS.bodyAngleY, -this.pointerY * 2.4, 0.38);
   }
 
   private applyActiveExpressions(model: any) {
@@ -674,20 +681,15 @@ export class Live2DViewer {
   private applyFallbackIdle(model: any, dt: number) {
     this.fallbackIdleTime += dt;
     const t = this.fallbackIdleTime;
-    const idMgr = CubismFramework.getIdManager();
-    const add = (id: string, value: number, weight = 1) => {
-      try { model.addParameterValueById(idMgr.getId(id), value, weight); } catch { /* parameter absent */ }
-    };
-
-    add(CubismDefaultParameterId.ParamAngleX, Math.sin(t * 0.75) * 4.0, 0.45);
-    add(CubismDefaultParameterId.ParamAngleY, Math.sin(t * 0.52 + 1.3) * 2.0, 0.35);
-    add(CubismDefaultParameterId.ParamAngleZ, Math.sin(t * 0.38 + 0.7) * 1.0, 0.25);
-    add(CubismDefaultParameterId.ParamBodyAngleX, Math.sin(t * 0.55 + 2.1) * 2.0, 0.35);
-    add(CubismDefaultParameterId.ParamEyeBallX, Math.sin(t * 0.32) * 0.35, 0.6);
-    add(CubismDefaultParameterId.ParamEyeBallY, Math.sin(t * 0.41 + 1.7) * 0.18, 0.6);
-    add("Param4", 0.08 + Math.sin(t * 0.42 + 0.4) * 0.04, 0.7);
-    add("Param9", 0.10 + Math.sin(t * 0.36 + 1.2) * 0.05, 0.7);
-    add("Param15", Math.sin(t * 0.82) * 0.10, 0.8);
+    this.addParameterByAliases(model, PARAM_IDS.angleX, Math.sin(t * 0.75) * 4.0, 0.45);
+    this.addParameterByAliases(model, PARAM_IDS.angleY, Math.sin(t * 0.52 + 1.3) * 2.0, 0.35);
+    this.addParameterByAliases(model, PARAM_IDS.angleZ, Math.sin(t * 0.38 + 0.7) * 1.0, 0.25);
+    this.addParameterByAliases(model, PARAM_IDS.bodyAngleX, Math.sin(t * 0.55 + 2.1) * 2.0, 0.35);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallX, Math.sin(t * 0.32) * 0.35, 0.6);
+    this.addParameterByAliases(model, PARAM_IDS.eyeBallY, Math.sin(t * 0.41 + 1.7) * 0.18, 0.6);
+    this.addParameterByAliases(model, ["Param4"], 0.08 + Math.sin(t * 0.42 + 0.4) * 0.04, 0.7);
+    this.addParameterByAliases(model, ["Param9"], 0.10 + Math.sin(t * 0.36 + 1.2) * 0.05, 0.7);
+    this.addParameterByAliases(model, ["Param15"], Math.sin(t * 0.82) * 0.10, 0.8);
   }
 
     private render() {

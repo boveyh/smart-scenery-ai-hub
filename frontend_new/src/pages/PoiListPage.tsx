@@ -26,6 +26,21 @@ const POI_ICONS: Record<string, string> = {
   '休闲娱乐': '🎭',
 };
 
+function getPoiImageFit(poiId: string) {
+  return (poiId === 'LS-011' ? 'contain' : 'cover') as React.CSSProperties['objectFit'];
+}
+
+function getPoiImagePosition(poiId: string) {
+  const map: Record<string, string> = {
+    'LS-006': 'center center',
+    'LS-010': 'center center',
+    'LS-011': 'center center',
+    'LS-013': 'center center',
+    'LS-014': 'center center',
+  };
+  return map[poiId] || 'center center';
+}
+
 export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: string) => void }) {
   const [category, setCategory] = useState('全部');
 
@@ -93,7 +108,11 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
               }}>
                 <img src={poi.image} alt={poi.name}
                   style={{
-                    width: '100%', height: 130, objectFit: 'cover', display: 'block',
+                    width: '100%', height: 130,
+                    objectFit: getPoiImageFit(poi.poiId),
+                    objectPosition: getPoiImagePosition(poi.poiId),
+                    background: '#F2EBDA',
+                    display: 'block',
                     borderBottom: '1px solid rgba(180,136,100,0.06)',
                   }}
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
