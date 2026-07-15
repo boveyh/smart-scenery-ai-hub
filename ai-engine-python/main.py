@@ -145,6 +145,9 @@ class DigitalHumanRequest(BaseModel):
     session_id: str = Field(default_factory=lambda: uuid.uuid4().hex, description="会话唯一标识")
     content: str = Field(..., min_length=1, max_length=2000, description="游客输入文本")
     timestamp: int = Field(default_factory=lambda: int(time.time() * 1000), description="毫秒时间戳")
+    tts_voice: str | None = None
+    tts_rate: str | None = None
+    tts_pitch: str | None = None
 
 
 def infer_emotion(text: str) -> str:
@@ -184,9 +187,9 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
     # ─── 加载租户数字人配置 ────────────────────────────────
     profile = profile_loader.get(tenant_id)
     persona_prompt = profile.get("persona_prompt")
-    tts_voice = profile.get("tts_voice", "zh-CN-XiaoxiaoNeural")
-    tts_rate = profile.get("tts_rate", "+10%")
-    tts_pitch = profile.get("tts_pitch", "+0Hz")
+    tts_voice = req.tts_voice or profile.get("tts_voice", "zh-CN-XiaoxiaoNeural")
+    tts_rate = req.tts_rate or profile.get("tts_rate", "+10%")
+    tts_pitch = req.tts_pitch or profile.get("tts_pitch", "+0Hz")
     persona_name = profile.get("persona_name", "AI导览")
 
     async def generate_ndjson():
@@ -392,4 +395,4 @@ if __name__ == "__main__":
     import uvicorn
     host = os.getenv("SERVER_HOST", "0.0.0.0")
     port = int(os.getenv("SERVER_PORT", "8000"))
-    uvicorn.run("main:app", host=host, port=port, reload=False, log_level="info")
+    uvicorn.run("main:app", host=host, port=port, reload=True, log_level="info")
