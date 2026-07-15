@@ -9,6 +9,19 @@ __pycache__/
 target/
 dist/
 .vite/
+venv/
+logs/
+
+# Local test/run outputs
+test*_result.txt
+test_*_output.txt
+vision*_result.txt
+analysis_full_report.*
+analysis_summary.xlsx
+analysis_main.py
+door*.webp
+~$*.docx
+
 # AI 引擎：临时音频文件 + 虚拟环境
 ai-engine-python/static/audio/*
 !ai-engine-python/static/audio/.gitkeep
@@ -23,11 +36,11 @@ assets/data/*.xlsx
 .vscode/
 .idea/
 
-# 旧的虚拟环境
-digital-human/.venv/
-venv/
+# Web 调试台构建产物
+frontend-web/dist/
+frontend_new/dist/
 
-# Live2D 第三方 SDK
+# Live2D 第三方 SDK（通过 npm @framework/ 别名引用，不提交源码）
 CubismSdkForWeb-5-r.5/
 frontend_new/public/assets/live2d/cubism-sdk/
 frontend_new/public/assets/live2d/shaders/

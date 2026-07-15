@@ -61,6 +61,23 @@ export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }
   const [expandedSpotId, setExpandedSpotId] = useState<string | null>(focusPoiId || null);
   const [routeDetail, setRouteDetail] = useState<{ segIdx: number; distance: number; time: number; path: [number,number][] }[] | null>(null);
 
+  const focusSpot = (spotId: string) => {
+    const m = mapInstance.current;
+    const spot = SPOTS.find(s => s.id === spotId);
+    if (!m || !spot) return;
+    const pos: [number, number] = [spot.lng, spot.lat];
+    try {
+      m.setZoomAndCenter(18, pos, false, 500);
+    } catch {
+      try { m.setCenter(pos); m.setZoom(18); } catch {}
+    }
+    const item = markersRef.current.find(x => x.spotId === spotId);
+    if (item?.info) item.info.open(m, pos);
+    window.setTimeout(() => {
+      spotRefs.current[spotId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).AMap) { setMapLoaded(true); return; }
     (window as any)._AMapSecurityConfig = { securityJsCode: 'bc348939baaa34701862ebc09c248651' };
@@ -107,7 +124,8 @@ export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }
       m.add(marker);
       markersRef.current.push({spotId: spot.id, marker, info, position: pos});
     });
-  }, [mapLoaded, activeRoute]);
+    if (focusPoiId) window.setTimeout(() => focusSpot(focusPoiId), 80);
+  }, [mapLoaded, activeRoute, focusPoiId]);
 
   useEffect(() => {
     if (!focusPoiId) return;
@@ -116,21 +134,8 @@ export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }
 
   useEffect(() => {
     if (!focusPoiId || !mapLoaded || !mapInstance.current) return;
-    const spot = SPOTS.find(s => s.id === focusPoiId);
-    if (!spot) return;
-    const m = mapInstance.current;
-    const pos: [number, number] = [spot.lng, spot.lat];
-    try {
-      m.setZoomAndCenter(18, pos, false, 500);
-    } catch {
-      try { m.setCenter(pos); m.setZoom(18); } catch {}
-    }
-    const item = markersRef.current.find(x => x.spotId === focusPoiId);
-    if (item?.info) item.info.open(m, pos);
-    window.setTimeout(() => {
-      spotRefs.current[focusPoiId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 120);
-  }, [focusPoiId, mapLoaded, markersRef.current.length]);
+    focusSpot(focusPoiId);
+  }, [focusPoiId, mapLoaded]);
 
   // Route drawing — three-layer fallback
   useEffect(() => {
@@ -334,11 +339,7 @@ export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }
                   ref={el => { spotRefs.current[spot.id] = el; }}
                   onClick={() => {
                     setExpandedSpotId(expanded ? null : spot.id);
-                    const m = mapInstance.current;
-                    if (m) {
-                      const pos: [number, number] = [spot.lng, spot.lat];
-                      try { m.setZoomAndCenter(18, pos, false, 400); } catch { try { m.setCenter(pos); m.setZoom(18); } catch {} }
-                    }
+                    focusSpot(spot.id);
                   }}
                   style={{
                     gridColumn: expanded ? '1 / -1' : undefined,

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface HeaderProps {
   onNavigate: (page: string) => void;
@@ -107,7 +107,7 @@ export default function Header({
           <span style={{ fontSize: 22, lineHeight: 1 }}>🏔️</span>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, color: '#3D2C2A', letterSpacing: 2, fontFamily: "'Noto Serif SC',serif" }}>
-              灵山胜景
+              灵山胜境
             </div>
             <div style={{ fontSize: '0.7rem', color: 'rgba(61,44,42,0.4)', marginTop: 1 }}>
               {isAdmin ? '管理后台' : '游客服务端'}
