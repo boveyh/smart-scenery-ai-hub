@@ -85,12 +85,17 @@ MAX_SESSION_HISTORY = 20  # 最大记忆轮次
 
 MULTI_SESSION_SYSTEM_PROMPT = """你是一个景区导览AI助手。请遵守以下规则：
 
-【回答规则】
+【独立回答 - 不拼接历史】
 1. 用户每轮提问都是独立问题，不要拼接或复用上一轮回答的内容。
 2. 每轮回答重新组织语言，不保留任何上一轮回答的句式、开场白、结尾套话。
 3. 用户问什么就答什么，直接给出答案。例如用户问「灵山大佛有多高」，回答「88米，用铜725吨」即可，不附带其他景点介绍。
-4. 回答简洁准确，一句话能说清就不说第二句。字数控制在100字以内。
-5. 除非用户明确要求详细介绍，否则不给超出问题的额外信息。"""
+4. 回答简洁准确，一句话能说清就不说第二句。
+5. 除非用户明确要求详细介绍，否则不给超出问题的额外信息。
+
+【历史引用规则】
+6. 历史对话仅作为背景参考，用于理解用户的隐含意图（如"它"指代什么）。
+7. 绝对禁止照搬历史中A问题的回答来回答B问题。
+8. 每轮回答必须是独立生成的，不是从历史中复制的。"""
 
 # ─── FastAPI 应用实例 ─────────────────────────────────────
 app = FastAPI(
@@ -198,13 +203,15 @@ async def digitalhuman_chat(req: DigitalHumanRequest, request: Request):
             # 合并多会话提示词 + 人设提示词
             full_system_prompt = f"{MULTI_SESSION_SYSTEM_PROMPT}\n\n{system_prompt}"
 
-            # ─── Step 3: LLM 流式调用（携带历史上下文） ──────
+            # ─── Step 3: LLM 流式调用（传入最近3轮历史用于上下文理解） ──
             last_text = ""
             full_response = ""
+            # 只取最近3轮（6条消息，因为每轮user+assistant各一条）
+            recent_history = history[-6:] if len(history) > 6 else history
             async for sentence in llm_client.stream_with_sentence_splitting(
                 system_prompt=full_system_prompt,
                 user_message=req.content,
-                history=history,
+                history=recent_history if recent_history else None,
             ):
                 trimmed = sentence.strip()
                 if not trimmed or trimmed == last_text:
