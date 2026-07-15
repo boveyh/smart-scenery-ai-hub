@@ -3,7 +3,7 @@ import pandas as pd, json, os, sys
 sys.stdout.reconfigure(encoding='utf-8')
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-csv_path = os.path.join(BASE, 'ai-engine-python', '景点景区旅游数据行为分析数据new.csv')
+csv_path = os.path.join(BASE, 'assets', 'data', '景点景区旅游数据行为分析数据new.csv')
 out_path = os.path.join(BASE, 'frontend_new', 'public', 'data', 'report_v2.json')
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 

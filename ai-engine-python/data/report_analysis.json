@@ -1,0 +1,234 @@
+{
+  "overview": {
+    "total_records": 140447,
+    "unique_tourists": 50000,
+    "avg_satisfaction": 3.72,
+    "avg_stay_hours": 4.2,
+    "avg_total_cost": 693.0,
+    "avg_group_size": 2.6,
+    "male_ratio": 50.1,
+    "female_ratio": 49.9
+  },
+  "satisfaction_dist": {
+    "2": 6565,
+    "3": 56819,
+    "4": 45908,
+    "5": 31155,
+    "1": 0
+  },
+  "age_gender": {
+    "19-30": {
+      "count": 49866,
+      "avg_sat": 3.7,
+      "avg_cost": 520.0,
+      "avg_stay": 4.2,
+      "male_pct": 48.8,
+      "female_pct": 51.2
+    },
+    "31-45": {
+      "count": 55674,
+      "avg_sat": 3.56,
+      "avg_cost": 1011.0,
+      "avg_stay": 4.2,
+      "male_pct": 51.0,
+      "female_pct": 49.0
+    },
+    "46-60": {
+      "count": 24030,
+      "avg_sat": 3.83,
+      "avg_cost": 489.0,
+      "avg_stay": 4.2,
+      "male_pct": 50.9,
+      "female_pct": 49.1
+    },
+    "60+": {
+      "count": 10877,
+      "avg_sat": 4.47,
+      "avg_cost": 305.0,
+      "avg_stay": 4.3,
+      "male_pct": 48.9,
+      "female_pct": 51.1
+    }
+  },
+  "stay_analysis": [
+    {
+      "hours": "0-2h",
+      "count": 13505,
+      "avg_sat": 4.19,
+      "avg_cost": 355.0
+    },
+    {
+      "hours": "2-4h",
+      "count": 67788,
+      "avg_sat": 3.84,
+      "avg_cost": 524.0
+    },
+    {
+      "hours": "4-6h",
+      "count": 41770,
+      "avg_sat": 3.57,
+      "avg_cost": 708.0
+    },
+    {
+      "hours": "6-8h",
+      "count": 5913,
+      "avg_sat": 3.27,
+      "avg_cost": 1582.0
+    },
+    {
+      "hours": "8-10h",
+      "count": 5833,
+      "avg_sat": 3.26,
+      "avg_cost": 1588.0
+    },
+    {
+      "hours": "10h+",
+      "count": 5638,
+      "avg_sat": 3.26,
+      "avg_cost": 1562.0
+    }
+  ],
+  "cost_breakdown": {
+    "ticket_cost": {
+      "avg": 101.0,
+      "total": 14149442.0
+    },
+    "food_cost": {
+      "avg": 196.0,
+      "total": 27539216.0
+    },
+    "shopping_cost": {
+      "avg": 210.0,
+      "total": 29525870.0
+    },
+    "transport_cost": {
+      "avg": 73.0,
+      "total": 10183860.0
+    },
+    "entertainment_cost": {
+      "avg": 113.0,
+      "total": 15915444.0
+    }
+  },
+  "group_analysis": [
+    {
+      "size": 1,
+      "count": 20197,
+      "avg_sat": 3.84,
+      "avg_cost": 538.0
+    },
+    {
+      "size": 2,
+      "count": 50908,
+      "avg_sat": 3.78,
+      "avg_cost": 587.0
+    },
+    {
+      "size": 3,
+      "count": 36003,
+      "avg_sat": 3.69,
+      "avg_cost": 734.0
+    },
+    {
+      "size": 4,
+      "count": 28213,
+      "avg_sat": 3.63,
+      "avg_cost": 846.0
+    },
+    {
+      "size": 5,
+      "count": 5126,
+      "avg_sat": 3.48,
+      "avg_cost": 1227.0
+    }
+  ],
+  "cost_tier_analysis": [
+    {
+      "tier": "0-100",
+      "count": 17473,
+      "avg_sat": 4.8
+    },
+    {
+      "tier": "100-300",
+      "count": 30387,
+      "avg_sat": 4.33
+    },
+    {
+      "tier": "300-500",
+      "count": 24668,
+      "avg_sat": 4.09
+    },
+    {
+      "tier": "500-1000",
+      "count": 36237,
+      "avg_sat": 3.02
+    },
+    {
+      "tier": "1000-2000",
+      "count": 23613,
+      "avg_sat": 3.05
+    },
+    {
+      "tier": "2000+",
+      "count": 8069,
+      "avg_sat": 3.11
+    }
+  ],
+  "satisfaction_trend": [
+    {
+      "age_group": "19-30",
+      "avg_sat": 3.7
+    },
+    {
+      "age_group": "31-45",
+      "avg_sat": 3.56
+    },
+    {
+      "age_group": "46-60",
+      "avg_sat": 3.83
+    },
+    {
+      "age_group": "60+",
+      "avg_sat": 4.47
+    }
+  ],
+  "suggestions": [
+    "低满意度记录(评分≤2)共6565条，占比4.7%，需重点关注",
+    "19-30年龄段游客低满意度占比5%，建议优化该群体服务体验",
+    "31-45年龄段游客低满意度占比6%，建议优化该群体服务体验",
+    "高消费群体(前10%)满意度(3.1)低于平均(3.7)，建议提升高端服务品质",
+    "团队游客(5人+)满意度(3.5)低于均值，建议优化团队接待流程和讲解服务"
+  ],
+  "topic_hotwords": [
+    {
+      "word": "门票价格",
+      "count": 0,
+      "sentiment": 0
+    },
+    {
+      "word": "排队时间",
+      "count": 0,
+      "sentiment": 0
+    },
+    {
+      "word": "餐饮品质",
+      "count": 0,
+      "sentiment": 0
+    },
+    {
+      "word": "导览讲解",
+      "count": 0,
+      "sentiment": 0
+    },
+    {
+      "word": "停车便利",
+      "count": 0,
+      "sentiment": 0
+    },
+    {
+      "word": "环境卫生",
+      "count": 0,
+      "sentiment": 0
+    }
+  ]
+}

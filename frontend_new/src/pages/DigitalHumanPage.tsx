@@ -93,6 +93,8 @@ export default function DigitalHumanPage() {
   const currentSeqRef = useRef(0);
   const [currentText, setCurrentText] = useState('');
   const lipSyncRef = useRef<{ ctx: AudioContext | null; src: MediaElementAudioSourceNode | null; raf: number }>({ ctx: null, src: null, raf: 0 });
+  // 用于浏览器自动播放策略：在用户手势中创建并 resume 一个永久 AudioContext
+  const gestureCtxRef = useRef<AudioContext | null>(null);
   const [viewer, setViewer] = useState<Live2DViewer | null>(null);
   const viewerRef = useRef<Live2DViewer | null>(null);
   const [configs, setConfigs] = useState<DigitalHumanConfigItem[]>([]);
@@ -186,11 +188,32 @@ export default function DigitalHumanPage() {
       const currentViewer = viewerRef.current || viewer;
       if (currentViewer) startLipSync(audio, currentViewer);
     }).catch(() => {
-      stopLipSync();
-      setIsSpeaking(false);
-      setTtsError('浏览器阻止了语音播放，请再点一次发送或检查自动播放权限');
-      const currentViewer = viewerRef.current || viewer;
-      if (currentViewer) { currentViewer.setMouthOpen(0); currentViewer.setSpeaking(false); }
+      // 尝试利用 gestureCtx resume 后重试
+      if (gestureCtxRef.current) {
+        gestureCtxRef.current.resume().then(() => {
+          audio.play().then(() => {
+            const currentViewer = viewerRef.current || viewer;
+            if (currentViewer) startLipSync(audio, currentViewer);
+          }).catch(() => {
+            stopLipSync();
+            setIsSpeaking(false);
+            setTtsError('浏览器阻止了语音播放，请再点一次发送或检查自动播放权限');
+            const currentViewer = viewerRef.current || viewer;
+            if (currentViewer) { currentViewer.setMouthOpen(0); currentViewer.setSpeaking(false); }
+          });
+        }).catch(() => {
+          stopLipSync();
+          setIsSpeaking(false);
+          const currentViewer = viewerRef.current || viewer;
+          if (currentViewer) { currentViewer.setMouthOpen(0); currentViewer.setSpeaking(false); }
+        });
+      } else {
+        stopLipSync();
+        setIsSpeaking(false);
+        setTtsError('浏览器阻止了语音播放，请再点一次发送或检查自动播放权限');
+        const currentViewer = viewerRef.current || viewer;
+        if (currentViewer) { currentViewer.setMouthOpen(0); currentViewer.setSpeaking(false); }
+      }
     });
   };
 
@@ -268,6 +291,15 @@ export default function DigitalHumanPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if ((!input.trim() && selectedImages.length === 0) || loading || isVisionLoading) return;
+    // 同步激活音频上下文（浏览器自动播放策略）
+    try {
+      if (!gestureCtxRef.current) {
+        gestureCtxRef.current = new AudioContext();
+      }
+      if (gestureCtxRef.current.state === 'suspended') {
+        gestureCtxRef.current.resume();
+      }
+    } catch {}
     audioQueueRef.current = [];
     queuedSeqs.current.clear();
     currentSeqRef.current = 0;

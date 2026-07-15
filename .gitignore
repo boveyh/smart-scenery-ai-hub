@@ -7,29 +7,31 @@ weights/
 __pycache__/
 *.pyc
 target/
-
-# AI 引擎：临时音频文件 + uv 虚拟环境
-ai-engine-python/static/audio/
+dist/
+.vite/
+# AI 引擎：临时音频文件 + 虚拟环境
+ai-engine-python/static/audio/*
+!ai-engine-python/static/audio/.gitkeep
 ai-engine-python/.venv/
 ai-engine-python/venv/
+
+# 大容量数据文件（CSV、Excel）
+assets/data/*.csv
+assets/data/*.xlsx
 
 # IDE
 .vscode/
 .idea/
-#   
-data/  
+
+# 旧的虚拟环境
 digital-human/.venv/
+venv/
 
-# Vite 缓存
-.vite/
-
-# Web 调试台构建产物
-frontend-web/dist/
-
-# Live2D 第三方 SDK（通过 npm @framework/ 别名引用，不提交源码）
+# Live2D 第三方 SDK
 CubismSdkForWeb-5-r.5/
-frontend-web/public/assets/live2d/cubism-sdk/
-frontend-web/public/assets/live2d/shaders/
+frontend_new/public/assets/live2d/cubism-sdk/
+frontend_new/public/assets/live2d/shaders/
 
-# 临时 VRM 数据（旧方案残余）
-_temp_vrm/
+# 大型二进制资产
+frontend_new/public/assets/live2d/*/texture_*.png
+frontend_new/public/assets/live2d/*/prev.mp4

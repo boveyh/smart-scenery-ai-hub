@@ -1,8 +1,0 @@
-[[index]]
-url = "https://mirrors.aliyun.com/pypi/simple/"
-default = true
-
-[[index]]
-name = "pytorch-cuda"
-url = "https://download.pytorch.org/whl/cu121"
-
