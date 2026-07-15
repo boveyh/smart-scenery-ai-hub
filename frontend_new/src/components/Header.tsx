@@ -3,7 +3,8 @@ import React from 'react';
 interface HeaderProps {
   onNavigate: (page: string) => void;
   currentPage: string;
-  mode?: 'visitor' | 'admin';
+  onLogout?: () => void;
+  mode?: 'client' | 'admin';
   tenantName?: string;
   pois?: { id: string; name: string; desc: string }[];
   currentPoiId?: string;
@@ -33,7 +34,8 @@ const adminNavItems = [
 export default function Header({
   onNavigate,
   currentPage,
-  mode = 'visitor',
+  onLogout,
+  mode = 'client',
   tenantName,
   pois,
   currentPoiId,
@@ -171,8 +173,15 @@ export default function Header({
         fontSize: '0.65rem',
         color: 'var(--text-muted)',
         fontFamily: "'Noto Sans SC',sans-serif",
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        v2.0 · {isAdmin ? '管理员端' : (pois?.find(p => p.id === currentPoiId)?.name || tenantName)}
+        <span>v2.0 · {isAdmin ? '管理员端' : (pois?.find(p => p.id === currentPoiId)?.name || tenantName)}</span>
+        {onLogout && (
+          <button onClick={onLogout}
+            style={{ background:'none', border:'none', color:'rgba(61,44,42,0.3)', cursor:'pointer', fontSize:'0.6rem', padding:0, fontFamily:'inherit' }}>
+            退出
+          </button>
+        )}
       </div>
     </aside>
   );
