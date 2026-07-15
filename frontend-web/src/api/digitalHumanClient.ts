@@ -19,6 +19,9 @@ export async function streamDigitalHumanChat(
         session_id: params.session_id,
         content: params.content,
         timestamp: params.timestamp,
+        tts_voice: params.tts_voice,
+        tts_rate: params.tts_rate,
+        tts_pitch: params.tts_pitch,
       }),
     });
 
