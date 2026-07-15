@@ -21,9 +21,11 @@ interface ChatMsg {
 export default function DigitalHumanPage() {
   const [sessionId, setSessionId] = useState(() => generateSessionId());
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
   const { chunks, loading, error, finished, sendMessage, cancel } = useDigitalHuman(DEFAULT_TENANT_ID);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioQueueRef = useRef<{ seq: number; text: string; url: string }[]>([]);
@@ -109,7 +111,7 @@ export default function DigitalHumanPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if ((!input.trim() && selectedImages.length === 0) || loading) return;
     audioQueueRef.current = [];
     queuedSeqs.current.clear();
     currentSeqRef.current = 0;
@@ -119,11 +121,55 @@ export default function DigitalHumanPage() {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
     lastProcessedSeq.current = 0;
     aiFullText.current = '';
-    setMessages(prev => [...prev, { role: 'user', text: input.trim() }]);
+    const msgText = input.trim() || '[图片]';
+    setMessages(prev => [...prev, { role: 'user', text: msgText }]);
     const newSid = generateSessionId();
     setSessionId(newSid);
-    sendMessage(newSid, input.trim());
-    setInput('');
+
+    if (selectedImages.length > 0) {
+      // 图片模式：调用 vision 接口
+      const images = selectedImages.map(img => img.split(',')[1] || img);
+      setSelectedImages([]);
+      setInput('');
+      // 直接 fetch vision 端点，流式追加到聊天框
+      fetch('/api/v1/vision/recognize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': 'ling_shan' },
+        body: JSON.stringify({ content: input.trim(), images }),
+      }).then(async res => {
+        const reader = res.body?.getReader();
+        if (!reader) return;
+        const decoder = new TextDecoder();
+        let aiText = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const text = decoder.decode(value);
+          text.split('\n').filter(Boolean).forEach(line => {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.type === 'text' && data.content) {
+                  aiText += data.content;
+                  setMessages(prev => {
+                    const last = prev[prev.length - 1];
+                    if (last?.role === 'ai') {
+                      const updated = [...prev];
+                      updated[updated.length - 1] = { ...last, text: aiText };
+                      return updated;
+                    }
+                    return [...prev, { role: 'ai', text: aiText }];
+                  });
+                }
+              } catch {}
+            }
+          });
+        }
+      }).catch(() => {});
+    } else {
+      sendMessage(newSid, input.trim());
+      setInput('');
+    }
   };
 
   const queuedSeqs = useRef(new Set<number>());
@@ -379,8 +425,37 @@ export default function DigitalHumanPage() {
           ))}
         </div>
 
+        {/* 图片预览 */}
+        {selectedImages.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0, padding: '4px 0' }}>
+            {selectedImages.map((img, i) => (
+              <div key={i} style={{ position: 'relative' }}>
+                <img src={img} alt="preview" style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'cover', border: '1px solid rgba(180,136,100,0.15)' }} />
+                <button onClick={() => setSelectedImages(prev => prev.filter((_, j) => j !== i))}
+                  style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', border: 'none', background: '#ef4444', color: '#fff', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+            ))}
+          </div>
+        )}
         {/* input */}
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
+            onChange={e => {
+              const files = e.target.files;
+              if (!files) return;
+              Array.from(files).forEach(f => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const result = reader.result as string;
+                  setSelectedImages(prev => [...prev, result]);
+                };
+                reader.readAsDataURL(f);
+              });
+              e.target.value = '';
+            }}
+          />
+          <button className="btn btn-sm btn-secondary" onClick={() => fileInputRef.current?.click()}
+            style={{ fontSize: '0.7rem', padding: '6px 10px', borderRadius: 14 }}>📷</button>
           {(isSpeaking || loading) && (
             <button className="btn btn-danger" onClick={handleStopAll}
               style={{ fontSize: '0.7rem', padding: '8px 12px', borderRadius: 18, flexShrink: 0 }}>
@@ -395,7 +470,7 @@ export default function DigitalHumanPage() {
               style={{ flex: 1, fontSize: '0.78rem', borderRadius: 18 }}
             />
             <button className="btn btn-primary" type="submit"
-              disabled={loading || !input.trim()}
+              disabled={loading || !input.trim() || selectedImages.length > 0 ? false : false}
               style={{ fontSize: '0.78rem', padding: '8px 18px', borderRadius: 18 }}>
               发送
             </button>

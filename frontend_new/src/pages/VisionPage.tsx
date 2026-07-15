@@ -1,125 +1,160 @@
 import React, { useState, useRef } from 'react';
-import apiClient from '@/api/client';
-import type { VisionRecognizeResult } from '@/api/types';
 
 export default function VisionPage() {
-  const [image, setImage] = useState<string | null>(null);
-  const [imageBlob, setImageBlob] = useState<Blob | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [question, setQuestion] = useState('');
-  const [result, setResult] = useState<VisionRecognizeResult | null>(null);
+  const [result, setResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImage(reader.result as string);
-    reader.readAsDataURL(file);
-    setImageBlob(file);
-    setResult(null);
-    setError(null);
+    const files = e.target.files;
+    if (!files) return;
+    const newImages: string[] = [];
+    const newFiles: File[] = [];
+    Array.from(files).forEach(f => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        newImages.push(reader.result as string);
+        if (newImages.length === files.length) {
+          setImages(prev => [...prev, ...newImages]);
+          setImageFiles(prev => [...prev, ...newFiles]);
+          setResult('');
+          setError(null);
+        }
+      };
+      reader.readAsDataURL(f);
+      newFiles.push(f);
+    });
+  };
+
+  const removeImage = (idx: number) => {
+    setImages(prev => prev.filter((_, i) => i !== idx));
+    setImageFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async () => {
-    if (!imageBlob) return;
+    if (images.length === 0) return;
     setLoading(true);
     setError(null);
+    setResult('');
+
     try {
-      const res = await apiClient.recognizeImage(imageBlob, question.trim() || undefined);
-      if (res.code === 200 && res.data) setResult(res.data);
-      else setError(res.message || '识别失败');
+      const base64List = images.map(img => img.split(',')[1] || img);
+      const res = await fetch('http://localhost:8000/api/v1/vision/recognize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': 'ling_shan' },
+        body: JSON.stringify({ content: question.trim() || '请识别这张图片的内容', images: base64List }),
+      });
+      const reader = res.body?.getReader();
+      if (!reader) { setError('无法读取响应'); setLoading(false); return; }
+      const decoder = new TextDecoder();
+      let fullText = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value);
+        for (const line of text.split('\n').filter(Boolean)) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === 'text' && data.content) {
+                fullText += data.content;
+                setResult(fullText);
+              }
+            } catch {}
+          }
+        }
+      }
     } catch (err: unknown) {
-      setError((err as Error).message);
+      setError((err as Error).message || '请求失败');
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = () => {
-    setImage(null); setImageBlob(null); setResult(null); setError(null); setQuestion('');
+    setImages([]); setImageFiles([]); setResult(''); setError(''); setQuestion('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
-    <div style={{ padding: 'var(--space-8) var(--space-8) var(--space-10)', maxWidth: 640, margin: '0 auto' }}>
-      {/* 标题栏 */}
-      <div style={{ marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-3)', borderBottom: '2px solid var(--primary)' }}>
-        <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20 }}>📷</span> 拍照识物
+    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, paddingBottom:14, borderBottom:'2px solid rgba(180,136,100,0.15)' }}>
+        <h2 style={{ fontSize:'1rem', fontWeight:700, color:'#3D2C2A', fontFamily:"'Noto Serif SC',serif", display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:20 }}>📷</span> 拍照识物
         </h2>
+        <span style={{ fontSize:'0.7rem', color:'rgba(61,44,42,0.4)' }}>支持 JPG / PNG / WebP</span>
       </div>
 
-      {/* 主卡片 */}
-      <div className="card" style={{ padding: 'var(--space-6)' }}>
-        {/* 上传区域 */}
+      {/* 上传区 */}
+      <div style={{ borderRadius:22, padding:0, overflow:'hidden', background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)', marginBottom:16 }}>
         <div
           style={{
-            border: '2px dashed var(--border)',
-            borderRadius: 'var(--radius-lg)', padding: 'var(--space-10)',
-            textAlign: 'center', cursor: 'pointer',
-            marginBottom: 'var(--space-5)',
-            background: image ? 'transparent' : 'var(--bg)',
-            transition: 'all 150ms ease',
+            border:'2px dashed rgba(180,136,100,0.15)', borderRadius:22,
+            padding:'40px 20px', textAlign:'center', cursor:'pointer', margin:6,
+            background: images.length > 0 ? 'transparent' : '#F7F2E6',
+            transition:'all 200ms',
           }}
           onClick={() => fileInputRef.current?.click()}
           onDragOver={e => e.preventDefault()}
         >
-          {image ? (
-            <img src={image} alt="预览" style={{
-              maxWidth: '100%', maxHeight: 320,
-              borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow)',
-            }} />
+          {images.length > 0 ? (
+            <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
+              {images.map((img, i) => (
+                <div key={i} style={{ position:'relative' }}>
+                  <img src={img} alt={`预览${i}`} style={{ width:160, height:120, borderRadius:14, objectFit:'cover', border:'1px solid rgba(180,136,100,0.10)' }} />
+                  <button onClick={(e) => { e.stopPropagation(); removeImage(i); }}
+                    style={{ position:'absolute', top:-6, right:-6, width:20, height:20, borderRadius:'50%', border:'none', background:'#ef4444', color:'#fff', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>×</button>
+                </div>
+              ))}
+              <div onClick={() => fileInputRef.current?.click()} style={{ width:160, height:120, borderRadius:14, border:'2px dashed rgba(180,136,100,0.12)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.5rem', color:'rgba(61,44,42,0.25)', cursor:'pointer' }}>+</div>
+            </div>
           ) : (
             <div>
-              <div style={{ fontSize: 48, marginBottom: 'var(--space-3)', opacity: 0.5 }}>📸</div>
-              <p style={{ fontSize: 'var(--text-base)', color: 'var(--text-secondary)', marginBottom: 'var(--space-1)' }}>点击上传或拖拽图片到这里</p>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>支持 JPG / PNG 格式</p>
+              <div style={{ fontSize:48, marginBottom:12, opacity:0.5 }}>📸</div>
+              <p style={{ fontSize:'0.85rem', color:'rgba(61,44,42,0.5)', marginBottom:4 }}>点击上传或拖拽图片到这里</p>
+              <p style={{ fontSize:'0.7rem', color:'rgba(61,44,42,0.3)' }}>支持 JPG / PNG / WebP 格式</p>
             </div>
           )}
-          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleFileChange} style={{ display: 'none' }} />
-        </div>
-
-        {/* 自定义问题 */}
-        <div style={{ marginBottom: 'var(--space-5)' }}>
-          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 600, display: 'block', marginBottom: 6 }}>自定义问题（可选）</label>
-          <input className="input" value={question} onChange={e => setQuestion(e.target.value)} placeholder="例如：这是什么植物？" />
-        </div>
-
-        {/* 按钮 */}
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="btn btn-primary btn-lg" onClick={handleSubmit} disabled={!imageBlob || loading} style={{ flex: 1, fontWeight: 600 }}>
-            {loading ? <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> 识别中...</> : '🔍 开始识别'}
-          </button>
-          {image && <button className="btn btn-lg" onClick={handleReset}>重新选择</button>}
+          <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileChange} style={{ display:'none' }} />
         </div>
       </div>
 
-      {error && <div className="alert alert-error" style={{ marginTop: 'var(--space-4)' }}>❌ {error}</div>}
+      {/* 自定义问题 */}
+      <div style={{ marginBottom:16 }}>
+        <div style={{ fontSize:'0.75rem', fontWeight:600, color:'#8B6E57', marginBottom:6 }}>自定义问题（可选）</div>
+        <div style={{ display:'flex', gap:10 }}>
+          <input className="input" value={question} onChange={e => setQuestion(e.target.value)} placeholder="例如：这是什么植物？" style={{ fontSize:'0.8rem', flex:1, borderRadius:16 }} />
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={images.length === 0 || loading}
+            style={{ fontSize:'0.8rem', padding:'8px 20px', borderRadius:16 }}>
+            {loading ? <><span className="spinner" style={{ width:14, height:14 }} /> 识别中...</> : '🔍 开始识别'}
+          </button>
+          {images.length > 0 && <button className="btn btn-secondary" onClick={handleReset} style={{ fontSize:'0.8rem', padding:'8px 16px', borderRadius:16 }}>重置</button>}
+        </div>
+      </div>
 
+      {error && <div className="alert alert-error" style={{ marginBottom:16 }}>❌ {error}</div>}
+
+      {/* 识别结果 */}
       {result && (
-        <div className="card" style={{ marginTop: 'var(--space-5)', padding: 'var(--space-6)' }}>
-          <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 600, marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ borderRadius:22, padding:20, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+          <div style={{ fontSize:'0.75rem', fontWeight:600, color:'#8B6E57', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
             <span>🔍</span> 识别结果
-          </h3>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
-            marginBottom: 'var(--space-4)',
-            padding: 'var(--space-4)', background: 'var(--bg)',
-            borderRadius: 'var(--radius-md)',
-          }}>
-            <span style={{ fontSize: 32 }}>🎯</span>
-            <div>
-              <div style={{ fontSize: 'var(--text-lg)', fontWeight: 700 }}>{result.object}</div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 4 }}>
-                置信度：<strong style={{ color: 'var(--success)' }}>{(result.confidence * 100).toFixed(1)}%</strong>
-              </div>
-            </div>
           </div>
-          <p style={{ fontSize: 'var(--text-base)', lineHeight: 1.8, color: 'var(--text)' }}>{result.description}</p>
+          <p style={{ fontSize:'0.85rem', lineHeight:1.8, color:'rgba(61,44,42,0.6)', whiteSpace:'pre-wrap' }}>{result}</p>
         </div>
       )}
+
+      {/* 快捷问题 */}
+      <div style={{ display:'flex', gap:6, marginTop:12, flexWrap:'wrap' }}>
+        {['这是什么景点？', '介绍一下这个建筑', '这里有什么故事？'].map((q, i) => (
+          <button key={i} className="btn btn-sm" onClick={() => setQuestion(q)}
+            style={{ fontSize:'0.65rem', padding:'4px 10px', borderRadius:14, border:'1px solid rgba(180,136,100,0.10)' }}>{q}</button>
+        ))}
+      </div>
     </div>
   );
 }

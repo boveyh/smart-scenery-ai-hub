@@ -24,25 +24,12 @@ logger = logging.getLogger("ai-engine.llm")
 # ─── 句级切片触发字符 ─────────────────────────────────────
 SENTENCE_BOUNDARIES = {
     "。", "！", "？", "!", "?", ".", "；", ";",
-    "\n", "\r\n",   # 换行符也视为句边界
+    "\n", "\r\n",
 }
-# 逗号/顿号不作为边界，避免碎片化过短影响 TTS 体验
 PAUSE_BOUNDARIES = {"，", ",", "、", "：", ":"}
 
 
 class LLMStreamClient:
-    """
-    异步流式大模型客户端
-
-    使用示例：
-        client = LLMStreamClient(api_key="sk-xxx", base_url="https://api.deepseek.com/v1")
-        async for sentence in client.stream_with_sentence_splitting(
-            system_prompt="你是景区导游",
-            user_message="介绍雷峰塔",
-        ):
-            print(f"[完整句] {sentence}")
-    """
-
     def __init__(
         self,
         api_key: str,
@@ -56,7 +43,7 @@ class LLMStreamClient:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.client = AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
-        logger.info(f"LLM 客户端初始化: model={model}, base_url={base_url}")
+        logger.info(f"LLM client initialized: model={model}, base_url={base_url}")
 
     async def stream_with_sentence_splitting(
         self,
@@ -64,24 +51,12 @@ class LLMStreamClient:
         user_message: str,
         history: list[dict] | None = None,
     ) -> AsyncGenerator[str, None]:
-        """
-        流式调用 LLM 并实时进行句级切片
-
-        Args:
-            system_prompt: 系统提示词（含 RAG 注入 + 错峰指令）
-            user_message: 游客当前问题
-            history: 历史多轮对话 [{role, content}, ...]
-
-        Yields:
-            每个检测到的完整句子（含标点）
-        """
         messages = [{"role": "system", "content": system_prompt}]
         if history:
             messages.extend(history)
         messages.append({"role": "user", "content": user_message})
 
-        # ─── 句级切片状态机变量 ────────────────────────────
-        buffer = ""           # 当前缓冲区，累积字符直到碰到句边界
+        buffer = ""
         first_chunk_sent = False
 
         try:
@@ -96,49 +71,78 @@ class LLMStreamClient:
             async for chunk in stream:
                 if chunk.choices is None or len(chunk.choices) == 0:
                     continue
-
                 delta = chunk.choices[0].delta
                 if delta.content is None:
                     continue
-
                 token = delta.content
                 buffer += token
 
-                # ─── 句边界检测：一旦命中就 yield ──────────
-                if any(boundary in buffer for boundary in SENTENCE_BOUNDARIES):
-                    # 找到第一个边界位置，截断
-                    split_pos = -1
-                    split_char = ""
-                    for boundary in SENTENCE_BOUNDARIES:
-                        pos = buffer.find(boundary)
-                        if pos != -1:
-                            # 取最靠前的位置
-                            if split_pos == -1 or pos < split_pos:
-                                split_pos = pos
-                                split_char = boundary
-
-                    if split_pos >= 0:
-                        sentence = buffer[:split_pos + len(split_char)]
-                        remainder = buffer[split_pos + len(split_char):]
+                for boundary in SENTENCE_BOUNDARIES:
+                    if boundary in buffer:
+                        split_pos = buffer.find(boundary)
+                        sentence = buffer[:split_pos + len(boundary)]
+                        remainder = buffer[split_pos + len(boundary):]
                         buffer = remainder
                         if not first_chunk_sent:
                             first_chunk_sent = True
-                            logger.debug(f"🎯 首句 TTFB 达标: {sentence[:30]}...")
                         yield sentence
+                        break
 
-            # ─── 流结束：yield 缓冲区剩余内容 ─────────────
             if buffer.strip():
                 yield buffer.strip()
 
         except Exception as e:
-            logger.error(f"LLM 流式调用失败: {e}", exc_info=True)
-            # 兜底：返回一个友好提示
+            logger.error(f"LLM stream failed: {e}", exc_info=True)
             yield "抱歉，AI 服务暂时无法响应，请稍后重试。"
 
+    async def chat_with_images(
+        self,
+        system_prompt: str,
+        user_message: str,
+        images: list[str],
+        max_tokens: int = 4096,
+    ) -> str:
+        import base64 as b64_mod
+
+        content: list[dict] = [{"type": "text", "text": user_message}]
+        for img in images:
+            mime = "image/jpeg"
+            try:
+                raw = b64_mod.b64decode(img[:100])
+                if raw.startswith(b'\x89PNG'):
+                    mime = "image/png"
+                elif raw.startswith(b'\xff\xd8'):
+                    mime = "image/jpeg"
+                elif raw.startswith(b'RIFF') and raw[8:12] == b'WEBP':
+                    mime = "image/webp"
+                elif raw.startswith(b'GIF8'):
+                    mime = "image/gif"
+            except Exception:
+                pass
+            content.append({"type": "image_url", "image_url": {"url": f"data:{mime};base64,{img}"}})
+
+        try:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content},
+            ]
+
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                max_tokens=max_tokens,
+                stream=False,
+            )
+            result = response.choices[0].message.content
+            if result is None:
+                logger.warning("Vision recognition returned empty content")
+                return ""
+            return result
+        except Exception as e:
+            logger.error(f"Vision recognition failed: {e}", exc_info=True)
+            return ""
+
     async def chat_simple(self, system_prompt: str, user_message: str) -> str:
-        """
-        非流式同步调用（用于 RAG 检索等不需要流式输出的场景）
-        """
         try:
             response = await self.client.chat.completions.create(
                 model=self.model,
@@ -152,31 +156,5 @@ class LLMStreamClient:
             )
             return response.choices[0].message.content or ""
         except Exception as e:
-            logger.error(f"LLM 非流式调用失败: {e}")
+            logger.error(f"LLM simple call failed: {e}")
             return ""
-
-
-# ─── 独立测试入口 ─────────────────────────────────────────
-async def _test():
-    import os
-    from dotenv import load_dotenv
-    load_dotenv()
-
-    client = LLMStreamClient(
-        api_key=os.getenv("LLM_API_KEY", ""),
-        base_url=os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"),
-        model=os.getenv("LLM_MODEL", "deepseek-chat"),
-    )
-
-    print("=" * 60)
-    print("句级切片算法测试")
-    print("=" * 60)
-    async for s in client.stream_with_sentence_splitting(
-        system_prompt="你是西湖景区的AI导游。请用口语化的中文回答，每句话不超过30字。",
-        user_message="请介绍一下西湖十景，简单说说就好。",
-    ):
-        print(f"→ [{s}]")
-
-
-if __name__ == "__main__":
-    asyncio.run(_test())
