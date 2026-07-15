@@ -37,6 +37,10 @@ const ROUTES: Record<string, { name: string; spots: string[]; travel: 'walk' | '
 const TRAVEL_LABELS: Record<string, string> = { walk: '步行', drive: '驾车', transit: '公交' };
 const TRAVEL_COLORS: Record<string, string> = { walk: '#C43A31', drive: '#C43A31', transit: '#C43A31' };
 
+function routeImageFit(spotId: string) {
+  return (spotId === 'LS-011' ? 'contain' : 'cover') as React.CSSProperties['objectFit'];
+}
+
 function formatMeters(m: number): string {
   return m >= 1000 ? `${(m/1000).toFixed(1)}km` : `${Math.round(m)}m`;
 }
@@ -46,13 +50,15 @@ function getTravelTime(distance: number, travel: string): number {
   return Math.ceil(distance / (speeds[travel] || 5000) * 60);
 }
 
-export default function RoutePage() {
+export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const routeLinesRef = useRef<any[]>([]);
+  const spotRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [mapLoaded, setMapLoaded] = useState(false);
   const [activeRoute, setActiveRoute] = useState<string | null>(null);
+  const [expandedSpotId, setExpandedSpotId] = useState<string | null>(focusPoiId || null);
   const [routeDetail, setRouteDetail] = useState<{ segIdx: number; distance: number; time: number; path: [number,number][] }[] | null>(null);
 
   useEffect(() => {
@@ -99,9 +105,32 @@ export default function RoutePage() {
       });
       marker.on('click', () => info.open(m, pos));
       m.add(marker);
-      markersRef.current.push({marker, info});
+      markersRef.current.push({spotId: spot.id, marker, info, position: pos});
     });
   }, [mapLoaded, activeRoute]);
+
+  useEffect(() => {
+    if (!focusPoiId) return;
+    setExpandedSpotId(focusPoiId);
+  }, [focusPoiId]);
+
+  useEffect(() => {
+    if (!focusPoiId || !mapLoaded || !mapInstance.current) return;
+    const spot = SPOTS.find(s => s.id === focusPoiId);
+    if (!spot) return;
+    const m = mapInstance.current;
+    const pos: [number, number] = [spot.lng, spot.lat];
+    try {
+      m.setZoomAndCenter(18, pos, false, 500);
+    } catch {
+      try { m.setCenter(pos); m.setZoom(18); } catch {}
+    }
+    const item = markersRef.current.find(x => x.spotId === focusPoiId);
+    if (item?.info) item.info.open(m, pos);
+    window.setTimeout(() => {
+      spotRefs.current[focusPoiId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  }, [focusPoiId, mapLoaded, markersRef.current.length]);
 
   // Route drawing — three-layer fallback
   useEffect(() => {
@@ -295,19 +324,51 @@ export default function RoutePage() {
         <div>
           <div style={{fontSize:'0.8rem',fontWeight:600,color:'#8B6E57',marginBottom:6}}>全部景点</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
-            {SPOTS.map(spot => (
-              <div key={spot.id} style={{borderRadius:10,padding:'6px 8px',cursor:'pointer',display:'flex',alignItems:'center',gap:6,border:'1px solid transparent',
-                background: activeRoute && ROUTES[activeRoute].spots.includes(spot.id) ? 'rgba(180,136,100,0.1)' : 'transparent',
-                borderColor: activeRoute && ROUTES[activeRoute].spots.includes(spot.id) ? 'rgba(180,136,100,0.2)' : 'transparent',
-              }}>
-                <img src={spot.image} alt={spot.name} style={{width:32,height:32,borderRadius:8,objectFit:'cover',flexShrink:0}}
-                  onError={e => {(e.target as HTMLImageElement).style.display='none'}} />
-                <div style={{fontSize:'0.7rem',fontWeight:500,color:'#3D2C2A',lineHeight:1.2}}>
-                  <div>{spot.name}</div>
-                  <div style={{fontSize:'0.6rem',color:'rgba(61,44,42,0.35)'}}>{spot.id}</div>
+            {SPOTS.map(spot => {
+              const inRoute = !!(activeRoute && ROUTES[activeRoute].spots.includes(spot.id));
+              const expanded = expandedSpotId === spot.id;
+              const focused = focusPoiId === spot.id;
+              return (
+                <div
+                  key={spot.id}
+                  ref={el => { spotRefs.current[spot.id] = el; }}
+                  onClick={() => {
+                    setExpandedSpotId(expanded ? null : spot.id);
+                    const m = mapInstance.current;
+                    if (m) {
+                      const pos: [number, number] = [spot.lng, spot.lat];
+                      try { m.setZoomAndCenter(18, pos, false, 400); } catch { try { m.setCenter(pos); m.setZoom(18); } catch {} }
+                    }
+                  }}
+                  style={{
+                    gridColumn: expanded ? '1 / -1' : undefined,
+                    borderRadius:12,padding:expanded?'10px 10px':'6px 8px',cursor:'pointer',display:'flex',alignItems:expanded?'flex-start':'center',gap:8,border:'1px solid transparent',
+                    background: focused || expanded ? 'rgba(180,136,100,0.16)' : inRoute ? 'rgba(180,136,100,0.1)' : 'transparent',
+                    borderColor: focused || expanded ? 'rgba(180,136,100,0.34)' : inRoute ? 'rgba(180,136,100,0.2)' : 'transparent',
+                  }}
+                >
+                  <img src={spot.image} alt={spot.name} style={{width:expanded?74:32,height:expanded?58:32,borderRadius:8,objectFit:routeImageFit(spot.id),background:'#F2EBDA',flexShrink:0}}
+                    onError={e => {(e.target as HTMLImageElement).style.display='none'}} />
+                  <div style={{fontSize:'0.7rem',fontWeight:500,color:'#3D2C2A',lineHeight:1.25, flex:1, minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:6,justifyContent:'space-between'}}>
+                      <span>{spot.name}</span>
+                      {focused && <span style={{fontSize:'0.58rem',padding:'1px 6px',borderRadius:8,background:'#C43A31',color:'#fff',flexShrink:0}}>目标</span>}
+                    </div>
+                    <div style={{fontSize:'0.6rem',color:'rgba(61,44,42,0.35)'}}>{spot.id}</div>
+                    {expanded && (
+                      <div style={{marginTop:6,fontSize:'0.66rem',lineHeight:1.55,color:'rgba(61,44,42,0.56)'}}>
+                        <div>{spot.description}</div>
+                        <div style={{marginTop:4,color:'#8B6E57'}}>{spot.openingInfo}</div>
+                        <div style={{marginTop:6,display:'flex',gap:6,flexWrap:'wrap'}}>
+                          <span style={{padding:'2px 7px',borderRadius:9,background:'rgba(255,255,255,0.55)'}}>地图已定位</span>
+                          {inRoute && <span style={{padding:'2px 7px',borderRadius:9,background:'rgba(255,255,255,0.55)'}}>属于当前路线</span>}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

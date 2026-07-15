@@ -74,6 +74,10 @@ export interface DigitalHumanRequest {
   session_id: string;
   content: string;
   timestamp: number;
+  tts_voice?: string;
+  tts_rate?: string;
+  tts_pitch?: string;
+  persona_prompt?: string;
 }
 
 // NDJSON 流式行

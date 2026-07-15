@@ -22,8 +22,42 @@ const ALL_POIS_DATA: Record<string, any> = {
   'LS-016':{name:'无尽意斋',category:'历史文化',description:'赵朴初纪念馆，京式四合院复刻故居，免费禅茶品鉴。',detail:'无尽意斋坐落于灵山大佛西侧，是为纪念赵朴初先生修建的纪念馆。它仿照赵朴初北京南小栓一号故居打造，是原汁原味的京式四合院，占地600多平方米，2004年正式对外开放。"无尽意"源自佛经里的无尽意菩萨，代表悲愿绵长、济世无尽，也是赵朴初先生的书斋名号。整座庭院采用北京运来的砖木材料修建，院内设有无尽意馆、书房、佛堂和会客厅，院中安放赵朴初先生塑像。展厅陈列着珍贵照片、书法作品、文稿遗物，记录了他推动灵山大佛修建、复兴国内佛教的经历。院内禅意茶室免费提供灵山禅茶品鉴。身处清幽的院落，抬头便能望见灵山大佛。',avgStayMin:20,crowdedness:1,ticketPrice:0,openingInfo:'9:00-17:00',tips:'免费禅茶品鉴，禁止触摸书法作品和闪光灯拍照'},
 };
 
+const POI_EXTENDED: Record<string, { story: string; highlights: string[]; visit: string }> = {
+  'LS-001': { story: '这里是灵山胜境游线的序章，照壁以沉稳的青石和鎏金题字形成第一重视觉仪式感。游客从这里入园，会先感受到太湖山水与佛教文化共同铺开的开阔气象。', highlights: ['赵朴初题写“灵山胜境”', '适合拍摄景区入口纪念照', '太湖风光与照壁同框'], visit: '建议入园后先在照壁前停留5到10分钟，完成合影后沿中轴线进入五明桥方向。' },
+  'LS-002': { story: '五明桥把游客从入口区引向佛教文化主轴，桥名来自佛教“五明”学问体系。它不只是通行桥梁，也象征从日常空间进入智慧修习空间。', highlights: ['五座汉白玉桥并列', '香水海水面开阔', '五明智慧主题鲜明'], visit: '桥面平缓，适合慢行观景；清晨和傍晚光线柔和，水面倒影更明显。' },
+  'LS-003': { story: '佛足坛以佛足印作为礼敬对象，表达“佛迹所至，吉祥随行”的寓意。足印上的纹样细节丰富，适合近距离观察。', highlights: ['青铜佛足印', '32种吉祥瑞相', '祈福互动感强'], visit: '可顺路衔接菩提大道，停留时注意不要长时间占据拍照点位。' },
+  'LS-004': { story: '五智门是进入核心礼佛区的重要门户，五门六柱将“五方五佛”和“六度波罗蜜”的佛教义理转化为建筑语言。穿门而过，会形成明显的游览节奏转换。', highlights: ['汉白玉牌坊造型', '五方五佛象征', '中轴线仪式感'], visit: '适合站在门前中轴位置拍摄纵深构图，再继续前往菩提大道。' },
+  'LS-005': { story: '菩提大道用树阵和步道构成一条安静的过渡空间，象征佛陀悟道之路。两侧树荫让这里成为从热闹入口走向庄严大佛区的缓冲段。', highlights: ['约250米禅意步道', '菩提树拱廊', '四季景致变化'], visit: '建议放慢脚步游览，夏季可作为避暑休息段，雨后路面注意防滑。' },
+  'LS-006': { story: '九龙灌浴是灵山最具动态效果的景观之一，通过莲花绽放、九龙喷水和太子佛升起，再现佛陀诞生时“九龙吐水”的传说。', highlights: ['定时动态表演', '鎏金太子佛', '可接取祈福圣水'], visit: '表演前10到15分钟到场更容易找到观看位置，表演结束后人流会短时集中。' },
+  'LS-007': { story: '降魔浮雕把佛陀成道前战胜魔王波旬的故事浓缩在石刻画面中，人物、场景和线条都强调修行中的定力与觉悟。', highlights: ['花岗岩大型浮雕', '佛陀成道故事', '雕刻细节丰富'], visit: '适合边走边看，建议从左到右观察画面叙事，不必长时间停留。' },
+  'LS-008': { story: '阿育王柱借鉴古印度佛教传播中的经典符号，四狮柱头象征佛法向四方传播。它在中轴线上起到承前启后的精神标识作用。', highlights: ['整块花岗岩雕成', '四狮柱头', '佛法传播象征'], visit: '可与五智门、灵山大佛连成一组观看，理解景区中轴线的层层递进。' },
+  'LS-009': { story: '百子戏弥勒以欢喜、亲近和包容为主题，把弥勒信仰转化为亲子游客也容易理解的生活化场景。百名孩童形态各异，是景区中最轻松活泼的雕塑之一。', highlights: ['弥勒佛卧姿群雕', '百名孩童互动场景', '适合亲子拍照'], visit: '游客较多时可从侧面观察雕塑细节，拍照后继续前往祥符禅寺方向。' },
+  'LS-010': { story: '祥符禅寺承接小灵山古刹传统，是景区中更具寺院气息的空间。古井、银杏、钟声和殿宇共同构成了安静庄严的礼佛体验。', highlights: ['唐代古刹传承', '祥符禅钟', '古井银杏'], visit: '入寺保持安静，若遇钟声或法务活动，可在外围驻足聆听。' },
+  'LS-011': { story: '灵山大佛是景区精神核心，88米青铜立佛面向太湖，手印寓意施无畏与施与愿。登临佛脚区域后，空间尺度会从远观的震撼转为近距离礼敬。', highlights: ['88米露天青铜大佛', '抱佛脚体验', '俯瞰太湖景观'], visit: '体力允许可登顶抱佛脚；节假日排队时间较长，建议上午或临近闭园前错峰。' },
+  'LS-012': { story: '佛教文化博览馆位于大佛座基内，承担知识展示和礼佛体验的补充功能。这里适合在参拜大佛前后系统了解佛教造像、礼仪和灵山文化。', highlights: ['大佛座基展馆', '万佛殿', '室内文化展示'], visit: '雨天或高温时适合安排较长停留，注意关注免费讲解时段。' },
+  'LS-013': { story: '灵山梵宫以宏大的建筑体量和精细工艺展示佛教艺术，被称为东方卢浮宫。木雕、壁画、穹顶和演出共同营造出沉浸式的佛教艺术空间。', highlights: ['72000平方米建筑', '东方卢浮宫美誉', '吉祥颂演出'], visit: '建议预留至少1小时，若计划观看《吉祥颂》，先确认当天演出时间。' },
+  'LS-014': { story: '五印坛城融合藏式建筑、唐卡壁画和转经体验，强调密宗坛城的空间秩序。色彩、纹样和层层空间都很适合慢慢观看。', highlights: ['藏式坛城建筑', '手工壁画唐卡', '转经筒祈福'], visit: '进入室内后建议按动线逐层参观，转经时顺时针行进。' },
+  'LS-015': { story: '曼飞龙塔呈现南传佛教建筑风格，与景区中汉传、藏传文化空间形成对照。白塔、金顶和塔群组合让这里有明显的异域气质。', highlights: ['九塔组合白塔', '南传佛教风格', '夜间轮廓优美'], visit: '适合安排在主线游览后半段，光线充足时白塔拍照效果更好。' },
+  'LS-016': { story: '无尽意斋纪念赵朴初先生，与灵山胜境的题名和文化精神紧密相关。空间尺度不大，但更适合安静阅读、品茶和了解人物生平。', highlights: ['赵朴初纪念空间', '四合院式院落', '禅茶体验'], visit: '适合避开主景区人流后安静参观，室内拍照请避免闪光灯。' },
+};
+
+function getDetailImageFit(poiId: string) {
+  return (poiId === 'LS-011' ? 'contain' : 'cover') as React.CSSProperties['objectFit'];
+}
+
+function getDetailImagePosition(poiId: string) {
+  const map: Record<string, string> = {
+    'LS-006': 'center center',
+    'LS-010': 'center center',
+    'LS-011': 'center center',
+    'LS-013': 'center center',
+    'LS-014': 'center center',
+  };
+  return map[poiId] || 'center center';
+}
+
 // ─── 图片轮播组件 ────────────────────────────────────
-function ImageCarousel({ images, poiName }: { images: string[]; poiName: string }) {
+function ImageCarousel({ images, poiName, poiId }: { images: string[]; poiName: string; poiId: string }) {
   const [current, setCurrent] = useState(0);
   const [animDir, setAnimDir] = useState(0);
   const thumbRef = useRef<HTMLDivElement>(null);
@@ -56,7 +90,13 @@ function ImageCarousel({ images, poiName }: { images: string[]; poiName: string 
             {images.map((src, i) => (
               <div key={i} style={{ width: `${100 / total}%`, height: '100%', flexShrink: 0 }}>
                 <img src={src} alt={`${poiName} ${i + 1}`}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  style={{
+                    width: '100%', height: '100%',
+                    objectFit: getDetailImageFit(poiId),
+                    objectPosition: getDetailImagePosition(poiId),
+                    background: '#F2EBDA',
+                    display: 'block',
+                  }}
                   onError={e => { (e.target as HTMLImageElement).style.background = '#F2EBDA'; }}
                 />
               </div>
@@ -105,7 +145,11 @@ function ImageCarousel({ images, poiName }: { images: string[]; poiName: string 
             onClick={() => goTo(i)}
             onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
             style={{
-              width: 80, height: 56, borderRadius: 10, objectFit: 'cover', flexShrink: 0,
+              width: 80, height: 56, borderRadius: 10,
+              objectFit: getDetailImageFit(poiId),
+              objectPosition: getDetailImagePosition(poiId),
+              background: '#F2EBDA',
+              flexShrink: 0,
               cursor: 'pointer', opacity: i === current ? 1 : 0.4,
               border: i === current ? '2px solid #8B6E57' : '2px solid transparent',
               transition: 'all 0.25s',
@@ -117,12 +161,13 @@ function ImageCarousel({ images, poiName }: { images: string[]; poiName: string 
   );
 }
 
-export default function PoiDetailPage({ poiId, onNavigate }: { poiId: string; onNavigate?: (page: string) => void }) {
+export default function PoiDetailPage({ poiId, onNavigate }: { poiId: string; onNavigate?: (page: string, poiId?: string) => void }) {
   const poiData = ALL_POIS_DATA[poiId];
   const [showAll, setShowAll] = useState(false);
   if (!poiData) return <div className="empty-state"><span className="empty-state__text">景点不存在</span></div>;
 
   const poi = { ...poiData, poiId };
+  const extended = POI_EXTENDED[poiId];
   const images = [1, 2, 3].map(i => getPoiWebp(poiId, i)).filter(Boolean);
 
   const badge = (l: number) => {
@@ -152,6 +197,30 @@ export default function PoiDetailPage({ poiId, onNavigate }: { poiId: string; on
               </button>
             )}
           </div>
+
+          {extended && (
+            <>
+              <div style={{ borderRadius:20, padding:20, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+                <div style={{ fontSize:'0.7rem', color:'#8B6E57', marginBottom:8 }}>文化解读</div>
+                <p style={{ fontSize:'0.82rem', color:'rgba(61,44,42,0.62)', lineHeight:1.85 }}>{extended.story}</p>
+              </div>
+              <div style={{ borderRadius:20, padding:20, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+                <div style={{ fontSize:'0.7rem', color:'#8B6E57', marginBottom:10 }}>核心看点</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr', gap:8 }}>
+                  {extended.highlights.map((item, i) => (
+                    <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', fontSize:'0.78rem', color:'rgba(61,44,42,0.62)', lineHeight:1.6 }}>
+                      <span style={{ width:20, height:20, borderRadius:'50%', background:'rgba(180,136,100,0.12)', color:'#8B6E57', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.62rem', flexShrink:0 }}>{i + 1}</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ borderRadius:20, padding:20, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+                <div style={{ fontSize:'0.7rem', color:'#8B6E57', marginBottom:8 }}>游览建议</div>
+                <p style={{ fontSize:'0.8rem', color:'rgba(61,44,42,0.62)', lineHeight:1.8 }}>{extended.visit}</p>
+              </div>
+            </>
+          )}
         </div>
 
         {/* 右栏 45% — 信息卡片 */}
@@ -206,15 +275,14 @@ export default function PoiDetailPage({ poiId, onNavigate }: { poiId: string; on
           </div>
 
           <div style={{ display:'flex', gap:10 }}>
-            <button className="btn btn-primary" style={{ flex:1, padding:'10px 16px', fontSize:'0.8rem' }}>🎧 AI 讲解</button>
-            <button className="btn btn-secondary" style={{ flex:1, padding:'10px 16px', fontSize:'0.8rem' }}>📍 导航到这里</button>
+            <button className="btn btn-secondary" onClick={() => onNavigate?.('route', poiId)} style={{ flex:1, padding:'10px 16px', fontSize:'0.8rem' }}>📍 导航到这里</button>
           </div>
         </div>
       </div>
 
       {/* 底部：图片轮播 */}
       <div style={{ marginTop: 20 }}>
-        <ImageCarousel images={images} poiName={poi.name} />
+        <ImageCarousel images={images} poiName={poi.name} poiId={poiId} />
       </div>
     </div>
   );

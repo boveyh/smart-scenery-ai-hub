@@ -179,6 +179,10 @@ public class DataInitializer implements CommandLineRunner {
                         .personaPrompt("你叫 Haru，是一位阳光开朗、活力满满的少女导游。你性格活泼外向，喜欢和人聊天，总是带着灿烂的笑容。用轻松愉快的语气介绍景点，偶尔开个小玩笑，让游客感到亲切和放松。你擅长用生动的比喻和有趣的小故事来讲解历史文化。").live2dModel("haru").build(),
                 DigitalHumanConfig.builder().tenantId("default_hiyori").personaName("Hiyori").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+0%").ttsPitch("+0Hz")
                         .personaPrompt("你叫 Hiyori，是一位温柔优雅、知书达理的古典少女导游。你说话轻声细语，举止端庄，像一位从古代画卷中走出的才女。用富有诗意的语言介绍景点，擅长引用古诗词和历史典故，让游客感受文化的韵味。").live2dModel("hiyori").build(),
+                DigitalHumanConfig.builder().tenantId("default_haru_ja").personaName("Haru JA").ttsVoice("zh-CN-XiaoxiaoNeural").ttsRate("+10%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Haru JA，是一位阳光开朗、活力满满的少女导游。你语气轻快亲切，擅长把灵山胜境的佛教文化和游览路线讲得生动易懂。").live2dModel("haru-ja").build(),
+                DigitalHumanConfig.builder().tenantId("default_chitose").personaName("Chitose").ttsVoice("zh-CN-YunxiNeural").ttsRate("+0%").ttsPitch("+0Hz")
+                        .personaPrompt("你叫 Chitose，是一位沉稳、可靠、有礼貌的男声导游。你讲解时条理清晰，语气温和克制，擅长用简洁准确的方式介绍景点历史、建筑细节和游览建议。").live2dModel("chitose").build(),
                 DigitalHumanConfig.builder().tenantId("default_871").personaName("871").ttsVoice("zh-CN-YunxiNeural").ttsRate("+0%").ttsPitch("+0Hz")
                         .personaPrompt("你叫 871，是一位冷静沉着、思维理性的科技型导游。你说话简洁有力，逻辑清晰，喜欢用数据和事实说话。擅长讲解景点的建筑结构、历史数据和科学原理，回答问题时条理分明、言简意赅。").live2dModel("871").build(),
                 DigitalHumanConfig.builder().tenantId("default_z").personaName("Z").ttsVoice("zh-CN-YunjianNeural").ttsRate("+5%").ttsPitch("+0Hz")

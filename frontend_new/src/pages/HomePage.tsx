@@ -26,7 +26,22 @@ const FIVE_HOT_POIS = [
     highlight:'撞钟祈福，聆听江南第一钟', image:'/assets/scenic/lingshan/ls-010.jpg' },
 ];
 
-export default function HomePage() {
+function getImageFit(poiId: string) {
+  return (poiId === 'LS-011' ? 'contain' : 'cover') as React.CSSProperties['objectFit'];
+}
+
+function getImagePosition(poiId: string) {
+  const map: Record<string, string> = {
+    'LS-006': 'center center',
+    'LS-010': 'center center',
+    'LS-011': 'center center',
+    'LS-013': 'center center',
+    'LS-014': 'center center',
+  };
+  return map[poiId] || 'center center';
+}
+
+export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) => void }) {
   const [info, setInfo] = useState<RealtimeInfo | null>(null);
   const [weather, setWeather] = useState<{ temp: string; weather: string; humidity: string; wind: string; time: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +53,7 @@ export default function HomePage() {
         .then(r => r.json() as Promise<AmapWeather>)
         .catch(() => null),
     ]).then(([backendInfo, amapData]) => {
-      setInfo(backendInfo);
+      setInfo(backendInfo?.data ?? null);
       if (amapData?.status === '1' && amapData.lives?.length > 0) {
         const live = amapData.lives[0];
         setWeather({
@@ -150,11 +165,12 @@ export default function HomePage() {
 
       <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
         {FIVE_HOT_POIS.map((poi, idx) => (
-          <div key={poi.id} style={{
+          <div key={poi.id} onClick={() => onNavigate?.(poi.id)} style={{
             borderRadius:22, padding:0, overflow:'hidden',
             background:'rgba(255,255,255,0.55)',
             border:'1px solid rgba(180,136,100,0.10)',
             boxShadow:'0 1px 4px rgba(61,44,42,0.03)',
+            cursor:'pointer',
           }}>
             <div style={{ display:'flex' }}>
               <div style={{
@@ -163,7 +179,11 @@ export default function HomePage() {
                 padding:'8px 0',
               }}>
                 <img src={poi.image} alt={poi.name} style={{
-                  width:140, height:90, borderRadius:14, objectFit:'cover', display:'block',
+                  width:140, height:90, borderRadius:14,
+                  objectFit:getImageFit(poi.id),
+                  objectPosition:getImagePosition(poi.id),
+                  background:'#F2EBDA',
+                  display:'block',
                 }} />
                 <span style={{
                   marginTop:4, fontSize:'0.6rem', fontWeight:600, letterSpacing:1,
