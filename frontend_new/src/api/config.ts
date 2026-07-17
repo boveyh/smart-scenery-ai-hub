@@ -18,7 +18,7 @@ export const API_BASE = '/api/v1';
 export const AI_ENGINE_BASE = 'http://localhost:8000';
 
 // 高德地图天气 API — 灵山胜境位于无锡市滨湖区马山镇
-export const AMAP_WEATHER_KEY = '6f4379a49d50b370c389a365e407f49f';
+export const AMAP_WEATHER_KEY = import.meta.env.VITE_AMAP_KEY || '6f4379a49d50b370c389a365e407f49f';
 export const AMAP_WEATHER_URL = 'https://restapi.amap.com/v3/weather/weatherInfo';
 export const LINGSHAN_CITY = '无锡';
 
