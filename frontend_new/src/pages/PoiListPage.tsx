@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const ALL_POIS = [
   { poiId: 'LS-001', name: '灵山大照壁', category: '历史文化', description: '长39.8m高7m青石雕刻，赵朴初题写鎏金"灵山胜境"四字，被誉为华夏第一壁。', avgStayMin: 15, crowdedness: 2, ticketPrice: 0, image: '/assets/scenic/lingshan/ls-001.jpg' },
@@ -42,6 +43,7 @@ function getPoiImagePosition(poiId: string) {
 }
 
 export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: string) => void }) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [category, setCategory] = useState('全部');
 
   const categories = ['全部', ...new Set(ALL_POIS.map(p => p.category))];
@@ -59,14 +61,14 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
       {/* 标题栏 */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 18, paddingBottom: 14,
+        marginBottom: isMobile ? 12 : 18, paddingBottom: isMobile ? 10 : 14,
         borderBottom: '2px solid rgba(180,136,100,0.15)',
       }}>
-        <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif", display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20 }}>📍</span> 灵山胜境 · 景点列表
+        <h2 style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif", display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: isMobile ? 18 : 20 }}>📍</span> 灵山胜境 · 景点列表
         </h2>
         <span style={{
-          fontSize: '0.75rem', color: '#8B6E57', padding: '4px 12px', borderRadius: 9999,
+          fontSize: isMobile ? '0.68rem' : '0.75rem', color: '#8B6E57', padding: '4px 12px', borderRadius: 9999,
           background: 'rgba(180,136,100,0.08)',
         }}>
           共 {filtered.length} 个景点
@@ -74,17 +76,18 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
       </div>
 
       {/* 分类筛选 */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 6, marginBottom: isMobile ? 12 : 16, flexWrap: 'wrap' }}>
         {categories.map(cat => (
           <button key={cat}
             onClick={() => setCategory(cat)}
             style={{
-              padding: '5px 14px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 500,
+              padding: isMobile ? '4px 10px' : '5px 14px', borderRadius: 20, fontSize: isMobile ? '0.68rem' : '0.75rem', fontWeight: 500,
               border: category === cat ? 'none' : '1px solid rgba(180,136,100,0.12)',
               background: category === cat ? '#3D2C2A' : 'rgba(255,255,255,0.4)',
               color: category === cat ? '#F7F2E6' : '#8B6E57',
               cursor: 'pointer', transition: 'all 150ms',
               fontFamily: "'Noto Sans SC',sans-serif",
+              WebkitTapHighlightColor: 'transparent',
             }}>
             {cat === '全部' ? '🏯 全部' : `${POI_ICONS[cat] || ''} ${cat}`}
           </button>
@@ -95,20 +98,21 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
       {filtered.length === 0 ? (
         <div className="empty-state" style={{ padding: 60 }}><span className="empty-state__text">暂无该分类的景点</span></div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? 10 : 14 }}>
           {filtered.map(poi => {
             const badge = getCrowdednessBadge(poi.crowdedness);
             return (
               <div key={poi.poiId} onClick={() => onNavigate?.(poi.poiId)} style={{
-                borderRadius: 18, overflow: 'hidden',
+                borderRadius: isMobile ? 14 : 18, overflow: 'hidden',
                 background: 'rgba(255,255,255,0.55)',
                 border: '1px solid rgba(180,136,100,0.08)',
                 boxShadow: '0 1px 4px rgba(61,44,42,0.03)',
                 cursor: 'pointer', transition: 'all 200ms',
+                WebkitTapHighlightColor: 'transparent',
               }}>
                 <img src={poi.image} alt={poi.name}
                   style={{
-                    width: '100%', height: 130,
+                    width: '100%', height: isMobile ? 110 : 130,
                     objectFit: getPoiImageFit(poi.poiId),
                     objectPosition: getPoiImagePosition(poi.poiId),
                     background: '#F2EBDA',
@@ -117,9 +121,9 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
                   }}
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
-                <div style={{ padding: '12px 14px' }}>
+                <div style={{ padding: isMobile ? '10px 12px' : '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#3D2C2A' }}>{poi.name}</h3>
+                    <h3 style={{ fontSize: isMobile ? '0.8rem' : '0.85rem', fontWeight: 600, color: '#3D2C2A' }}>{poi.name}</h3>
                     <span style={{
                       fontSize: '0.6rem', padding: '2px 8px', borderRadius: 9999,
                       background: badge.bg, color: badge.text, fontWeight: 500,
@@ -141,8 +145,8 @@ export default function PoiListPage({ onNavigate }: { onNavigate?: (poiId: strin
                       }}>¥{poi.ticketPrice}</span>
                     )}
                   </div>
-                  <p style={{ fontSize: '0.72rem', color: 'rgba(61,44,42,0.5)', lineHeight: 1.6 }}>
-                    {poi.description}
+                  <p style={{ fontSize: isMobile ? '0.68rem' : '0.72rem', color: 'rgba(61,44,42,0.5)', lineHeight: 1.6 }}>
+                    {isMobile && poi.description.length > 60 ? poi.description.slice(0, 60) + '...' : poi.description}
                   </p>
                 </div>
               </div>

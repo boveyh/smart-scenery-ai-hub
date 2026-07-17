@@ -1,4 +1,5 @@
 ﻿import React, { useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import LoginPage from '@/pages/LoginPage';
 import Header from '@/components/Header';
 import HomePage from '@/pages/HomePage';
@@ -34,28 +35,30 @@ const POI_LIST = [
 ];
 
 function EntryPage({ onEnter }: { onEnter: (page: string) => void }) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
   return (
     <div style={{
       minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 32,
+      padding: isMobile ? 20 : 32,
       background: '#EDE4D3',
       backgroundImage: 'linear-gradient(90deg, rgba(61,44,42,0.72), rgba(61,44,42,0.26)), url("/assets/scenic/lingshan/ls-011.jpg")',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
       <div style={{ width: 'min(920px, 100%)', color: '#F7F2E6' }}>
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: isMobile ? 20 : 28 }}>
           <div style={{ fontSize: '0.8rem', letterSpacing: 4, color: 'rgba(247,242,230,0.72)', marginBottom: 8 }}>
             智慧景区导览平台
           </div>
-          <h1 style={{ fontSize: '2.4rem', lineHeight: 1.1, fontWeight: 700, fontFamily: "'Noto Serif SC',serif", letterSpacing: 2 }}>
+          <h1 style={{ fontSize: isMobile ? '1.6rem' : '2.4rem', lineHeight: 1.1, fontWeight: 700, fontFamily: "'Noto Serif SC',serif", letterSpacing: 2 }}>
             灵山胜境
           </h1>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isMobile ? 14 : 18 }}>
           {[
             { title: '游客端', desc: '进入导览、景点、路线、咨询和拍照识物服务', icon: '🏠', page: 'home' },
             { title: '管理员端', desc: '进入数据大屏、知识库、数字人配置和游客报告', icon: '📈', page: 'admin-dashboard' },
@@ -64,11 +67,11 @@ function EntryPage({ onEnter }: { onEnter: (page: string) => void }) {
               key={item.page}
               onClick={() => onEnter(item.page)}
               style={{
-                minHeight: 160,
+                minHeight: isMobile ? 120 : 160,
                 textAlign: 'left',
                 border: '1px solid rgba(247,242,230,0.24)',
                 borderRadius: 20,
-                padding: 24,
+                padding: isMobile ? 18 : 24,
                 background: 'rgba(247,242,230,0.14)',
                 color: '#F7F2E6',
                 backdropFilter: 'blur(14px)',
@@ -76,9 +79,9 @@ function EntryPage({ onEnter }: { onEnter: (page: string) => void }) {
                 boxShadow: '0 12px 38px rgba(0,0,0,0.18)',
               }}
             >
-              <div style={{ fontSize: 28, marginBottom: 18 }}>{item.icon}</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 8 }}>{item.title}</div>
-              <div style={{ fontSize: '0.78rem', lineHeight: 1.7, color: 'rgba(247,242,230,0.76)' }}>{item.desc}</div>
+              <div style={{ fontSize: isMobile ? 24 : 28, marginBottom: isMobile ? 12 : 18 }}>{item.icon}</div>
+              <div style={{ fontSize: isMobile ? '1rem' : '1.1rem', fontWeight: 700, marginBottom: 8 }}>{item.title}</div>
+              <div style={{ fontSize: isMobile ? '0.7rem' : '0.78rem', lineHeight: 1.7, color: 'rgba(247,242,230,0.76)' }}>{item.desc}</div>
             </button>
           ))}
         </div>
@@ -88,6 +91,7 @@ function EntryPage({ onEnter }: { onEnter: (page: string) => void }) {
 }
 
 export default function App() {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [loggedIn, setLoggedIn] = useState(() => !!localStorage.getItem('login_mode'));
   const [mode, setMode] = useState<'client' | 'admin'>(() => (localStorage.getItem('login_mode') as 'client' | 'admin') || 'client');
   const [currentPage, setCurrentPage] = useState('home');
@@ -163,15 +167,16 @@ export default function App() {
       />
       <main style={{
         flex: 1,
-        marginLeft: 220,
+        marginLeft: isMobile ? 0 : 220,
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#F7F2E6',
+        paddingBottom: isMobile ? 72 : 0,
       }}>
         <div style={{
           flex: 1,
-          padding: '20px 28px 28px',
+          padding: isMobile ? '14px 14px 14px' : '20px 28px 28px',
           maxWidth: 1360,
           width: '100%',
           margin: '0 auto',

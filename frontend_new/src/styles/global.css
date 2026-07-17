@@ -237,9 +237,73 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .empty-state__icon { font-size: 2.5rem; opacity: 0.4; }
 .empty-state__text { font-size: var(--text-base); }
 
-/* 响应式 */
+/* ===== 响应式：平板竖屏（≤768px）===== */
 @media (max-width: 768px) {
-  :root { --header-width: 180px; }
+  :root {
+    --header-width: 180px;
+    --text-xs: 0.7rem;
+    --text-sm: 0.75rem;
+    --text-base: 0.8125rem;
+    --text-md: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.1rem;
+    --text-2xl: 1.3rem;
+    --text-3xl: 1.5rem;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+    --radius-2xl: 26px;
+    --space-4: 0.875rem;
+    --space-5: 1rem;
+    --space-6: 1.25rem;
+    --space-8: 1.5rem;
+    --space-10: 2rem;
+  }
   .container { padding: 0 var(--space-3); }
   .card { padding: var(--space-4); }
+}
+
+/* ===== 响应式：手机（≤480px）===== */
+@media (max-width: 480px) {
+  :root {
+    --header-width: 0;
+    --radius: 10px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 20px;
+    --radius-btn: 20px;
+    --space-3: 0.625rem;
+    --space-4: 0.75rem;
+    --space-5: 0.875rem;
+    --space-6: 1rem;
+    --space-8: 1.25rem;
+    --space-10: 1.5rem;
+  }
+  html { font-size: 14px; }
+  body { -webkit-tap-highlight-color: transparent; }
+  .container { padding: 0 var(--space-3); }
+  .card { padding: var(--space-4); }
+
+  /* 移动端按钮最小44px触摸区域 */
+  .btn { min-height: 44px; padding: 10px 18px; }
+  .btn-sm { min-height: 36px; padding: 6px 12px; }
+
+  /* 移动端移除 hover 效果，改用 active */
+  .btn:hover { background: transparent; border-color: var(--border-strong); color: var(--text-secondary); }
+  .btn:active { background: var(--bg-hover); border-color: var(--primary); color: var(--primary-hover); }
+  .btn-primary:active { background: #4E3A37; }
+  .btn-secondary:active { background: var(--bg-hover); }
+  .card:hover { background: var(--bg-card); box-shadow: var(--shadow-sm); }
+
+  /* 移动端底部安全区 */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 12px); }
+}
+
+/* 桌面端侧边栏可见 / 移动端隐藏 */
+.desktop-only { display: inherit; }
+.mobile-only { display: none; }
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: inherit !important; }
 }

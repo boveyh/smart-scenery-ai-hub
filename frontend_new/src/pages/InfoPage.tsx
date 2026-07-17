@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { AMAP_WEATHER_KEY, AMAP_WEATHER_URL, LINGSHAN_CITY } from '@/api/config';
 
 const MOCK_ANNOUNCEMENTS = [
@@ -31,6 +32,7 @@ function badge(l: number) {
 }
 
 export default function InfoPage() {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [weather, setWeather] = useState<{ temp: string; w: string; humidity: string; wind: string; time: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,20 +52,22 @@ export default function InfoPage() {
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:18, paddingBottom:14, borderBottom:'2px solid rgba(180,136,100,0.15)' }}>
-        <h2 style={{ fontSize:'1rem', fontWeight:700, color:'#3D2C2A', fontFamily:"'Noto Serif SC',serif", display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontSize:20 }}>📊</span> 实时资讯 · 灵山胜境
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: isMobile ? 12 : 18, paddingBottom: isMobile ? 10 : 14, borderBottom:'2px solid rgba(180,136,100,0.15)' }}>
+        <h2 style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight:700, color:'#3D2C2A', fontFamily:"'Noto Serif SC',serif", display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize: isMobile ? 18 : 20 }}>📊</span> 实时资讯 · 灵山胜境
         </h2>
       </div>
 
-      <div style={{ borderRadius:24, padding:0, marginBottom:20, overflow:'hidden', background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
-        <div style={{ display:'flex' }}>
-          <div style={{ width:180, flexShrink:0, background:'linear-gradient(135deg,#3D2C2A,#4E3A37)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px 0', color:'#F7F2E6' }}>
-            <span style={{ fontSize:48 }}>{wIcon(displayWeather)}</span>
-            <div style={{ fontSize:'1.8rem', fontWeight:700, marginTop:4 }}>{weather?.temp || '28'}°C</div>
-            <div style={{ fontSize:'0.75rem', color:'rgba(215,200,180,0.7)', marginTop:2 }}>{displayWeather}</div>
+      <div style={{ borderRadius: isMobile ? 18 : 24, padding:0, marginBottom: isMobile ? 14 : 20, overflow:'hidden', background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+        <div style={{ display:'flex', flexDirection: isMobile ? 'column' : 'row' }}>
+          <div style={{ width: isMobile ? '100%' : 180, flexShrink:0, background:'linear-gradient(135deg,#3D2C2A,#4E3A37)', display:'flex', flexDirection: isMobile ? 'row' : 'column', alignItems:'center', justifyContent:'center', padding: isMobile ? '16px 24px' : '24px 0', color:'#F7F2E6', gap: isMobile ? 16 : 0 }}>
+            <span style={{ fontSize: isMobile ? 36 : 48 }}>{wIcon(displayWeather)}</span>
+            <div style={{ textAlign: isMobile ? 'left' : 'center' }}>
+              <div style={{ fontSize: isMobile ? '1.4rem' : '1.8rem', fontWeight:700 }}>{weather?.temp || '28'}°C</div>
+              <div style={{ fontSize:'0.75rem', color:'rgba(215,200,180,0.7)', marginTop:2 }}>{displayWeather}</div>
+            </div>
           </div>
-          <div style={{ flex:1, padding:'18px 20px' }}>
+          <div style={{ flex:1, padding: isMobile ? '14px 16px' : '18px 20px' }}>
             {weather && (
               <div style={{ display:'flex', gap:14, marginBottom:14, flexWrap:'wrap' }}>
                 <div style={{ padding:'8px 14px', borderRadius:12, background:'rgba(180,136,100,0.06)', textAlign:'center', minWidth:80 }}>
@@ -92,15 +96,15 @@ export default function InfoPage() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1.5fr', gap:16, marginBottom:20 }}>
-        <div style={{ borderRadius:20, padding:18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+      <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.5fr', gap: isMobile ? 12 : 16, marginBottom: isMobile ? 12 : 20 }}>
+        <div style={{ borderRadius: isMobile ? 16 : 20, padding: isMobile ? 14 : 18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
           <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#8B6E57', marginBottom:12, display:'flex', alignItems:'center', gap:6 }}>
             <span>📢</span> 景区公告
           </div>
           {MOCK_ANNOUNCEMENTS.map((ann,i) => (
             <div key={i} style={{ padding:'8px 12px', marginBottom:6, borderRadius:12, lineHeight:1.5,
               background:'rgba(245,158,11,0.06)', border:'1px solid rgba(245,158,11,0.12)',
-              fontSize:'0.7rem', color:'rgba(61,44,42,0.6)',
+              fontSize: isMobile ? '0.65rem' : '0.7rem', color:'rgba(61,44,42,0.6)',
             }}>
               <span style={{ fontWeight:600, color:'#92400e', marginRight:6 }}>#{i+1}</span>
               {ann}
@@ -108,7 +112,7 @@ export default function InfoPage() {
           ))}
         </div>
 
-        <div style={{ borderRadius:20, padding:18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+        <div style={{ borderRadius: isMobile ? 16 : 20, padding: isMobile ? 14 : 18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
           <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#8B6E57', marginBottom:12, display:'flex', alignItems:'center', gap:6 }}>
             <span>📍</span> 景点拥挤度
           </div>
@@ -120,7 +124,7 @@ export default function InfoPage() {
                   background: poi.crowdedness >= 4 ? 'rgba(239,68,68,0.06)' : 'rgba(180,136,100,0.04)',
                   border: poi.crowdedness >= 4 ? '1px solid rgba(239,68,68,0.12)' : '1px solid transparent',
                 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.72rem', fontWeight:500, color:'#3D2C2A' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, fontSize: isMobile ? '0.68rem' : '0.72rem', fontWeight:500, color:'#3D2C2A' }}>
                     {poi.name}
                     {poi.crowdedness >= 4 && <span style={{ fontSize:'0.55rem', padding:'1px 6px', borderRadius:6, background:'rgba(239,68,68,0.1)', color:'#ef4444' }}>高峰</span>}
                   </div>
@@ -134,11 +138,11 @@ export default function InfoPage() {
         </div>
       </div>
 
-      <div style={{ borderRadius:20, padding:18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
+      <div style={{ borderRadius: isMobile ? 16 : 20, padding: isMobile ? 14 : 18, background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)' }}>
         <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#8B6E57', marginBottom:10, display:'flex', alignItems:'center', gap:6 }}>
           <span>⏰</span> 错峰建议
         </div>
-        <div style={{ padding:'10px 14px', borderRadius:12, fontSize:'0.72rem', lineHeight:1.6, color:'rgba(61,44,42,0.55)',
+        <div style={{ padding:'10px 14px', borderRadius:12, fontSize: isMobile ? '0.68rem' : '0.72rem', lineHeight:1.6, color:'rgba(61,44,42,0.55)',
           background: overallCrowd >= 3 ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.06)',
         }}>
           {overallCrowd >= 3

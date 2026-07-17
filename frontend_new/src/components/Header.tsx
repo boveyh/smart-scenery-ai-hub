@@ -1,4 +1,5 @@
-﻿import React from 'react';
+﻿import React, { useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface HeaderProps {
   onNavigate: (page: string) => void;
@@ -12,11 +13,11 @@ interface HeaderProps {
 }
 
 const visitorNavItems = [
-  { id: 'home', label: '首页总览', icon: '🏠' },
-  { id: 'digital-human', label: '数字人导览', icon: '🎭' },
-  { id: 'pois', label: '景点列表', icon: '📍' },
-  { id: 'route', label: '路线规划', icon: '🗺️' },
-  { id: 'text-chat', label: '智能咨询', icon: '💬' },
+  { id: 'home', label: '首页', icon: '🏠' },
+  { id: 'digital-human', label: '数字人', icon: '🎭' },
+  { id: 'pois', label: '景点', icon: '📍' },
+  { id: 'route', label: '路线', icon: '🗺️' },
+  { id: 'text-chat', label: '咨询', icon: '💬' },
 ];
 
 const visitorSubNavItems = [
@@ -31,11 +32,171 @@ const adminNavItems = [
   { id: 'admin-report', label: '游客报告', icon: '📋' },
 ];
 
-export default function Header({
+/** 底部 TabBar - 移动端 */
+function MobileTabBar({
   onNavigate,
   currentPage,
   onLogout,
-  mode = 'client',
+  mode,
+}: {
+  onNavigate: (page: string) => void;
+  currentPage: string;
+  onLogout?: () => void;
+  mode: 'client' | 'admin';
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const isAdmin = mode === 'admin';
+  const activePage = currentPage === 'poi-detail' ? 'pois' : currentPage;
+  const items = isAdmin ? adminNavItems : visitorNavItems;
+
+  return (
+    <>
+      {/* 底部导航条 */}
+      <nav className="mobile-bottom-nav" style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 200,
+        background: 'rgba(255,255,255,0.92)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid rgba(180,136,100,0.12)',
+        display: 'flex',
+        justifyContent: 'space-around',
+        padding: '6px 0 env(safe-area-inset-bottom, 8px)',
+        paddingBottom: 'max(6px, env(safe-area-inset-bottom, 8px))',
+      }}>
+        {items.map(item => {
+          const isActive = activePage === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 2,
+                padding: '4px 6px',
+                minWidth: 52,
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ fontSize: 20, opacity: isActive ? 1 : 0.4, transition: 'opacity 0.2s' }}>
+                {item.icon}
+              </span>
+              <span style={{
+                fontSize: '0.6rem',
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#8B6E57' : 'rgba(61,44,42,0.35)',
+                transition: 'color 0.2s',
+              }}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* 更多菜单按钮 */}
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            padding: '4px 6px',
+            minWidth: 52,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ fontSize: 20 }}>⋯</span>
+          <span style={{ fontSize: '0.6rem', color: 'rgba(61,44,42,0.4)' }}>更多</span>
+        </button>
+      </nav>
+
+      {/* 更多菜单弹出层 */}
+      {menuOpen && (
+        <>
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 190,
+              background: 'rgba(0,0,0,0.2)',
+            }}
+          />
+          <div style={{
+            position: 'fixed',
+            bottom: 'calc(70px + env(safe-area-inset-bottom, 8px))',
+            left: 12, right: 12,
+            zIndex: 195,
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderRadius: 18,
+            padding: '8px 4px',
+            border: '1px solid rgba(180,136,100,0.10)',
+            boxShadow: '0 -4px 20px rgba(61,44,42,0.08)',
+          }}>
+            {visitorSubNavItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => { onNavigate(item.id); setMenuOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  width: '100%', padding: '12px 16px',
+                  border: 'none', background: 'transparent',
+                  fontSize: '0.85rem', color: '#3D2C2A',
+                  fontFamily: "'Noto Sans SC',sans-serif",
+                  cursor: 'pointer',
+                  borderRadius: 12,
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+            {onLogout && !isAdmin && (
+              <button
+                onClick={() => { onLogout(); setMenuOpen(false); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  width: '100%', padding: '12px 16px',
+                  border: 'none', background: 'transparent',
+                  fontSize: '0.85rem', color: '#ef4444',
+                  fontFamily: "'Noto Sans SC',sans-serif",
+                  cursor: 'pointer',
+                  borderRadius: 12,
+                  borderTop: '1px solid rgba(180,136,100,0.08)',
+                  marginTop: 4, paddingTop: 14,
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>🚪</span>
+                <span>退出登录</span>
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/** 桌面端侧边栏 */
+function DesktopSidebar({
+  onNavigate,
+  currentPage,
+  onLogout,
+  mode,
   tenantName,
   pois,
   currentPoiId,
@@ -83,7 +244,7 @@ export default function Header({
   };
 
   return (
-    <aside style={{
+    <aside className="desktop-sidebar" style={{
       width: 220,
       height: '100vh',
       position: 'fixed',
@@ -159,7 +320,6 @@ export default function Header({
             {visitorSubNavItems.map(page => renderNavButton(page))}
           </>
         )}
-
       </nav>
 
       <div style={{
@@ -173,11 +333,28 @@ export default function Header({
         <span>v2.0 · {isAdmin ? '管理员端' : (pois?.find(p => p.id === currentPoiId)?.name || tenantName)}</span>
         {onLogout && (
           <button onClick={onLogout}
-            style={{ background:'none', border:'none', color:'rgba(61,44,42,0.3)', cursor:'pointer', fontSize:'0.6rem', padding:0, fontFamily:'inherit' }}>
+            style={{ background: 'none', border: 'none', color: 'rgba(61,44,42,0.3)', cursor: 'pointer', fontSize: '0.6rem', padding: 0, fontFamily: 'inherit' }}>
             退出
           </button>
         )}
       </div>
     </aside>
   );
+}
+
+export default function Header(props: HeaderProps) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  if (isMobile) {
+    return (
+      <MobileTabBar
+        onNavigate={props.onNavigate}
+        currentPage={props.currentPage}
+        onLogout={props.onLogout}
+        mode={props.mode || 'client'}
+      />
+    );
+  }
+
+  return <DesktopSidebar {...props} />;
 }
