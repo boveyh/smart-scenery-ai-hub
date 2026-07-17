@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+﻿import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useDigitalHuman } from '@/hooks/useDigitalHuman';
 import { DEFAULT_TENANT_ID, AI_ENGINE_BASE } from '@/api/config';
 import Live2DStage from '@/components/Live2DStage';
@@ -669,7 +669,7 @@ export default function DigitalHumanPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif" }}>
-              灵山胜景 · {activeConfig?.personaName || '数字人导览'}
+              灵山胜境 · {activeConfig?.personaName || '数字人导览'}
             </h2>
             {activeConfig && (
               <div style={{ fontSize: '0.62rem', color: 'rgba(61,44,42,0.35)', marginTop: 1 }}>
@@ -787,7 +787,7 @@ export default function DigitalHumanPage() {
 
         {/* quick prompts */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
-          {['介绍一下灵山胜景', '九龙灌浴几点表演', '灵山大佛有多高'].map((q, i) => (
+          {['介绍一下灵山胜境', '九龙灌浴几点表演', '灵山大佛有多高'].map((q, i) => (
             <button key={i} className="btn btn-sm" style={{
               fontSize: '0.65rem', padding: '4px 10px', borderRadius: 14,
               border: '1px solid rgba(180,136,100,0.10)',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import apiClient from '@/api/client';
 import { AMAP_WEATHER_KEY, AMAP_WEATHER_URL, LINGSHAN_CITY } from '@/api/config';
 import type { RealtimeInfo } from '@/api/types';
@@ -82,7 +82,7 @@ export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) 
             <span className="badge-tag" style={{ background:'rgba(255,255,255,0.12)', color:'#D4C5B2', marginBottom:8 }}>
               国家5A级景区 · 世界佛教论坛永久会址
             </span>
-            <h1 style={{ fontSize:'1.6rem', fontWeight:700, letterSpacing:2, fontFamily:"'Noto Serif SC',serif", marginBottom:4 }}>灵山胜景</h1>
+            <h1 style={{ fontSize:'1.6rem', fontWeight:700, letterSpacing:2, fontFamily:"'Noto Serif SC',serif", marginBottom:4 }}>灵山胜境</h1>
             <p style={{ fontSize:'0.8rem', color:'rgba(215,200,180,0.7)', lineHeight:1.6, maxWidth:500 }}>
               坐落于无锡太湖之滨，占地面积约30万㎡，三山环抱，面朝太湖三万顷碧波，被誉为"东方佛国"。
             </p>

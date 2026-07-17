@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import LoginPage from '@/pages/LoginPage';
 import Header from '@/components/Header';
 import HomePage from '@/pages/HomePage';
@@ -52,7 +52,7 @@ function EntryPage({ onEnter }: { onEnter: (page: string) => void }) {
             智慧景区导览平台
           </div>
           <h1 style={{ fontSize: '2.4rem', lineHeight: 1.1, fontWeight: 700, fontFamily: "'Noto Serif SC',serif", letterSpacing: 2 }}>
-            灵山胜景
+            灵山胜境
           </h1>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18 }}>
@@ -93,6 +93,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentPoi, setCurrentPoi] = useState(POI_LIST[0]);
   const [detailPoiId, setDetailPoiId] = useState<string | null>(null);
+  const [routeFocusPoiId, setRouteFocusPoiId] = useState<string | null>(null);
   const isAdminPage = mode === 'admin';
 
   const handleLogin = (m: 'client' | 'admin') => {
@@ -108,7 +109,8 @@ export default function App() {
 
   const navigateTo = (page: string, poiId?: string) => {
     setCurrentPage(page);
-    if (poiId) setDetailPoiId(poiId);
+    if (page === 'poi-detail' && poiId) setDetailPoiId(poiId);
+    setRouteFocusPoiId(page === 'route' ? poiId ?? null : null);
   };
 
   if (!loggedIn) {
@@ -118,15 +120,15 @@ export default function App() {
   const renderPage = () => {
     if (mode === 'client') {
       switch (currentPage) {
-        case 'home': return <HomePage />;
+        case 'home': return <HomePage onNavigate={(id) => navigateTo('poi-detail', id)} />;
         case 'digital-human': return <DigitalHumanPage />;
         case 'text-chat': return <TextChatPage />;
         case 'pois': return <PoiListPage onNavigate={(id) => navigateTo('poi-detail', id)} />;
-        case 'route': return <RoutePage />;
+        case 'route': return <RoutePage focusPoiId={routeFocusPoiId} />;
         case 'vision': return <VisionPage />;
         case 'info': return <InfoPage />;
-        case 'poi-detail': return <PoiDetailPage poiId={detailPoiId || 'LS-001'} onNavigate={(page) => setCurrentPage(page)} />;
-        default: return <HomePage />;
+        case 'poi-detail': return <PoiDetailPage poiId={detailPoiId || 'LS-001'} onNavigate={navigateTo} />;
+        default: return <HomePage onNavigate={(id) => navigateTo('poi-detail', id)} />;
       }
     }
     switch (currentPage) {
@@ -151,7 +153,7 @@ export default function App() {
         currentPage={currentPage}
         onLogout={handleLogout}
         mode={mode}
-        tenantName="灵山胜景"
+        tenantName="灵山胜境"
         pois={POI_LIST}
         currentPoiId={currentPoi.id}
         onPoiChange={(id) => {
@@ -183,7 +185,7 @@ export default function App() {
           background: 'rgba(255,255,255,0.3)',
           fontFamily: 'var(--font-sans)',
         }}>
-          灵山胜景 · 智慧景区导览 &copy; {new Date().getFullYear()}
+          灵山胜境 · 智慧景区导览 &copy; {new Date().getFullYear()}
         </footer>
       </main>
     </div>
