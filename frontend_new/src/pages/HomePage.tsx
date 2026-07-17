@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import apiClient from '@/api/client';
 import { AMAP_WEATHER_KEY, AMAP_WEATHER_URL, LINGSHAN_CITY } from '@/api/config';
 import type { RealtimeInfo } from '@/api/types';
@@ -42,6 +43,7 @@ function getImagePosition(poiId: string) {
 }
 
 export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) => void }) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [info, setInfo] = useState<RealtimeInfo | null>(null);
   const [weather, setWeather] = useState<{ temp: string; weather: string; humidity: string; wind: string; time: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,32 +75,47 @@ export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) 
     <div style={{ maxWidth: 1200, margin: '0 auto' }}>
       {/* 景区身份 + 实时天气 */}
       <div style={{
-        borderRadius: 28, padding: '24px 28px', marginBottom: 20,
+        borderRadius: isMobile ? 20 : 28,
+        padding: isMobile ? '18px 18px' : '24px 28px',
+        marginBottom: isMobile ? 14 : 20,
         background: 'linear-gradient(135deg, #3D2C2A 0%, #4E3A37 100%)',
         color: '#F7F2E6',
       }}>
-        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
-          <div>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'flex-start',
+          justifyContent: 'space-between',
+        }}>
+          <div style={isMobile ? { marginBottom: 14 } : {}}>
             <span className="badge-tag" style={{ background:'rgba(255,255,255,0.12)', color:'#D4C5B2', marginBottom:8 }}>
               国家5A级景区 · 世界佛教论坛永久会址
             </span>
-            <h1 style={{ fontSize:'1.6rem', fontWeight:700, letterSpacing:2, fontFamily:"'Noto Serif SC',serif", marginBottom:4 }}>灵山胜境</h1>
-            <p style={{ fontSize:'0.8rem', color:'rgba(215,200,180,0.7)', lineHeight:1.6, maxWidth:500 }}>
+            <h1 style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 700, letterSpacing: 2, fontFamily: "'Noto Serif SC',serif", marginBottom: 4 }}>灵山胜境</h1>
+            <p style={{ fontSize: isMobile ? '0.72rem' : '0.8rem', color: 'rgba(215,200,180,0.7)', lineHeight: 1.6, maxWidth: 500 }}>
               坐落于无锡太湖之滨，占地面积约30万㎡，三山环抱，面朝太湖三万顷碧波，被誉为"东方佛国"。
             </p>
           </div>
           {weather ? (
-            <div style={{ textAlign:'right', flexShrink:0 }}>
-              <div style={{ fontSize:'0.7rem', color:'rgba(215,200,180,0.5)', marginBottom:2 }}>实时天气 · 高德气象</div>
-              <div style={{ fontSize:'1.8rem', fontWeight:700, lineHeight:1 }}>{weather.temp}°C</div>
-              <div style={{ fontSize:'0.85rem', color:'#D4C5B2', marginTop:2 }}>{weather.weather}</div>
-              <div style={{ fontSize:'0.65rem', color:'rgba(215,200,180,0.5)', marginTop:2 }}>
-                湿度{weather.humidity}% · {weather.wind}
+            <div style={{
+              textAlign: isMobile ? 'left' : 'right',
+              flexShrink: 0,
+              display: isMobile ? 'flex' : 'block',
+              alignItems: isMobile ? 'center' : undefined,
+              gap: isMobile ? 12 : undefined,
+            }}>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(215,200,180,0.5)', marginBottom: 2 }}>实时天气 · 高德气象</div>
+                <div style={{ fontSize: isMobile ? '1.4rem' : '1.8rem', fontWeight: 700, lineHeight: 1 }}>{weather.temp}°C</div>
+                <div style={{ fontSize: '0.85rem', color: '#D4C5B2', marginTop: 2 }}>{weather.weather}</div>
+                <div style={{ fontSize: '0.65rem', color: 'rgba(215,200,180,0.5)', marginTop: 2 }}>
+                  湿度{weather.humidity}% · {weather.wind}
+                </div>
               </div>
               {info && (
-                <div style={{ marginTop:6, display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end' }}>
-                  <span style={{ fontSize:'0.7rem', color:'rgba(215,200,180,0.6)' }}>拥挤度</span>
-                  <div style={{ height:6, width:80, borderRadius:3, background:'rgba(255,255,255,0.15)', overflow:'hidden' }}>
+                <div style={{ marginTop: isMobile ? 0 : 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: '0.7rem', color: 'rgba(215,200,180,0.6)' }}>拥挤度</span>
+                  <div style={{ height: 6, width: 80, borderRadius: 3, background: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
                     <div style={{
                       width:`${(info.crowdednessLevel / 5) * 100}%`, height:'100%', borderRadius:3,
                       background: info.crowdednessLevel <= 2 ? '#22c55e' : info.crowdednessLevel <= 3 ? '#f59e0b' : '#ef4444',
@@ -108,13 +125,13 @@ export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) 
               )}
             </div>
           ) : info ? (
-            <div style={{ textAlign:'right', flexShrink:0 }}>
-              <div style={{ fontSize:'0.75rem', color:'rgba(215,200,180,0.5)', marginBottom:4 }}>当前景区</div>
-              <div style={{ fontSize:'1.8rem', fontWeight:700, lineHeight:1 }}>{info.temperature}°C</div>
-              <div style={{ fontSize:'0.85rem', color:'#D4C5B2', marginTop:2 }}>{info.weather}</div>
-              <div style={{ marginTop:6, display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end' }}>
-                <span style={{ fontSize:'0.7rem', color:'rgba(215,200,180,0.6)' }}>拥挤度</span>
-                <div style={{ height:6, width:80, borderRadius:3, background:'rgba(255,255,255,0.15)', overflow:'hidden' }}>
+            <div style={{ textAlign: isMobile ? 'left' : 'right', flexShrink: 0 }}>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(215,200,180,0.5)', marginBottom: 4 }}>当前景区</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1 }}>{info.temperature}°C</div>
+              <div style={{ fontSize: '0.85rem', color: '#D4C5B2', marginTop: 2 }}>{info.weather}</div>
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
+                <span style={{ fontSize: '0.7rem', color: 'rgba(215,200,180,0.6)' }}>拥挤度</span>
+                <div style={{ height: 6, width: 80, borderRadius: 3, background: 'rgba(255,255,255,0.15)', overflow: 'hidden' }}>
                   <div style={{
                     width:`${(info.crowdednessLevel / 5) * 100}%`, height:'100%', borderRadius:3,
                     background: info.crowdednessLevel <= 2 ? '#22c55e' : info.crowdednessLevel <= 3 ? '#f59e0b' : '#ef4444',
@@ -126,9 +143,9 @@ export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) 
         </div>
         {info && (info.announcements ?? []).length > 0 && (
           <div style={{
-            marginTop:14, padding:'8px 14px', borderRadius:12,
-            background:'rgba(255,255,255,0.06)', fontSize:'0.75rem', color:'#D4C5B2',
-            display:'flex', alignItems:'center', gap:8,
+            marginTop: 14, padding: '8px 14px', borderRadius: 12,
+            background: 'rgba(255,255,255,0.06)', fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#D4C5B2',
+            display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span>📢</span> {(info.announcements ?? []).join('；')}
           </div>
@@ -136,79 +153,88 @@ export default function HomePage({ onNavigate }: { onNavigate?: (poiId: string) 
       </div>
 
       {/* 游览建议 + 门票信息 */}
-      <div style={{ display:'flex', gap:14, marginBottom:24 }}>
+      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 10 : 14, marginBottom: isMobile ? 18 : 24 }}>
         {[
           { icon:'💡', title:'游览建议', text:'建议时长 4-6 小时 · 上午9点前入园避开人流 · 穿舒适运动鞋 · 带好相机记录美景' },
           { icon:'🎫', title:'门票信息', text:'成人票210元 · 网购联票（含观光车）225元 · 半价票105元' },
         ].map((c,i) => (
           <div key={i} style={{
-            flex:1, borderRadius:20, padding:'14px 18px',
-            background:'rgba(255,255,255,0.55)', border:'1px solid rgba(180,136,100,0.10)',
-            display:'flex', alignItems:'center', gap:14,
+            flex: 1, borderRadius: isMobile ? 16 : 20,
+            padding: isMobile ? '12px 14px' : '14px 18px',
+            background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(180,136,100,0.10)',
+            display: 'flex', alignItems: 'center', gap: 14,
           }}>
-            <span style={{ fontSize:24 }}>{c.icon}</span>
+            <span style={{ fontSize: isMobile ? 20 : 24 }}>{c.icon}</span>
             <div>
-              <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#8B6E57', marginBottom:2 }}>{c.title}</div>
-              <div style={{ fontSize:'0.72rem', color:'rgba(61,44,42,0.5)', lineHeight:1.5 }}>{c.text}</div>
+              <div style={{ fontSize: isMobile ? '0.75rem' : '0.8rem', fontWeight: 600, color: '#8B6E57', marginBottom: 2 }}>{c.title}</div>
+              <div style={{ fontSize: isMobile ? '0.68rem' : '0.72rem', color: 'rgba(61,44,42,0.5)', lineHeight: 1.5 }}>{c.text}</div>
             </div>
           </div>
         ))}
       </div>
 
       {/* 核心景点推荐 */}
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-        <h2 style={{ fontSize:'1rem', fontWeight:700, color:'#3D2C2A', fontFamily:"'Noto Serif SC',serif", letterSpacing:1, display:'flex', alignItems:'center', gap:8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <h2 style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif", letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span>⭐</span> 核心景点推荐
         </h2>
-        <span style={{ fontSize:'0.7rem', color:'rgba(61,44,42,0.4)' }}>5大必游景点</span>
+        <span style={{ fontSize: '0.7rem', color: 'rgba(61,44,42,0.4)' }}>5大必游景点</span>
       </div>
 
-      <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 14 }}>
         {FIVE_HOT_POIS.map((poi, idx) => (
           <div key={poi.id} onClick={() => onNavigate?.(poi.id)} style={{
-            borderRadius:22, padding:0, overflow:'hidden',
-            background:'rgba(255,255,255,0.55)',
-            border:'1px solid rgba(180,136,100,0.10)',
-            boxShadow:'0 1px 4px rgba(61,44,42,0.03)',
-            cursor:'pointer',
+            borderRadius: isMobile ? 16 : 22, padding: 0, overflow: 'hidden',
+            background: 'rgba(255,255,255,0.55)',
+            border: '1px solid rgba(180,136,100,0.10)',
+            boxShadow: '0 1px 4px rgba(61,44,42,0.03)',
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
           }}>
-            <div style={{ display:'flex' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
               <div style={{
-                width:160, flexShrink:0,
-                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-                padding:'8px 0',
+                width: isMobile ? '100%' : 160,
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: isMobile ? 'row' : 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: isMobile ? '8px 12px' : '8px 0',
+                gap: isMobile ? 8 : 0,
               }}>
                 <img src={poi.image} alt={poi.name} style={{
-                  width:140, height:90, borderRadius:14,
-                  objectFit:getImageFit(poi.id),
-                  objectPosition:getImagePosition(poi.id),
-                  background:'#F2EBDA',
-                  display:'block',
+                  width: isMobile ? 80 : 140,
+                  height: isMobile ? 56 : 90,
+                  borderRadius: isMobile ? 10 : 14,
+                  objectFit: getImageFit(poi.id),
+                  objectPosition: getImagePosition(poi.id),
+                  background: '#F2EBDA',
+                  display: 'block',
                 }} />
                 <span style={{
-                  marginTop:4, fontSize:'0.6rem', fontWeight:600, letterSpacing:1,
+                  fontSize: '0.6rem', fontWeight: 600, letterSpacing: 1,
                   color: idx === 0 ? '#8B6E57' : 'rgba(61,44,42,0.4)',
                 }}>#{idx + 1} 推荐</span>
               </div>
-              <div style={{ flex:1, padding:'16px 18px' }}>
-                <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:6 }}>
+              <div style={{ flex: 1, padding: isMobile ? '10px 14px 14px' : '16px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
                   <div>
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <h3 style={{ fontSize:'1rem', fontWeight:700, color:'#3D2C2A', fontFamily:"'Noto Serif SC',serif" }}>{poi.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                      <h3 style={{ fontSize: isMobile ? '0.9rem' : '1rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif" }}>{poi.name}</h3>
                       <span className="badge" style={{
-                        background:'rgba(180,136,100,0.12)', color:'#8B6E57',
-                        fontSize:'0.6rem', padding:'2px 8px',
+                        background: 'rgba(180,136,100,0.12)', color: '#8B6E57',
+                        fontSize: '0.6rem', padding: '2px 8px',
                       }}>{poi.badge}</span>
                     </div>
-                    <div style={{ fontSize:'0.75rem', color:'rgba(61,44,42,0.45)', marginTop:2 }}>{poi.subtitle}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(61,44,42,0.45)', marginTop: 2 }}>{poi.subtitle}</div>
                   </div>
                 </div>
-                <p style={{ fontSize:'0.78rem', color:'rgba(61,44,42,0.55)', lineHeight:1.7, marginBottom:8 }}>
-                  {poi.desc}
+                <p style={{ fontSize: isMobile ? '0.72rem' : '0.78rem', color: 'rgba(61,44,42,0.55)', lineHeight: 1.7, marginBottom: 8 }}>
+                  {isMobile && poi.desc.length > 80 ? poi.desc.slice(0, 80) + '...' : poi.desc}
                 </p>
-                <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                  <span style={{ fontSize:'0.65rem', color:'#B88864' }}>✨</span>
-                  <span style={{ fontSize:'0.72rem', color:'#8B6E57', fontWeight:500 }}>{poi.highlight}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: '0.65rem', color: '#B88864' }}>✨</span>
+                  <span style={{ fontSize: '0.72rem', color: '#8B6E57', fontWeight: 500 }}>{poi.highlight}</span>
                 </div>
               </div>
             </div>

@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const BG_IMAGES = [
   '/assets/scenic/lingshan-webp/aerial-lingshan.jpg',
@@ -14,6 +15,7 @@ const BG_IMAGES = [
 ];
 
 export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'admin') => void }) {
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [bgIndex, setBgIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState(1);
   const [fadeIn, setFadeIn] = useState(false);
@@ -58,7 +60,9 @@ export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'adm
         position: 'absolute',
         inset: 0,
         zIndex: 3,
-        background: 'linear-gradient(90deg, rgba(24,18,15,0.12), rgba(24,18,15,0.02) 45%, rgba(24,18,15,0.3))',
+        background: isMobile
+          ? 'linear-gradient(180deg, rgba(24,18,15,0.08), rgba(24,18,15,0.45))'
+          : 'linear-gradient(90deg, rgba(24,18,15,0.12), rgba(24,18,15,0.02) 45%, rgba(24,18,15,0.3))',
       }} />
 
       {/* 入口选择面板 */}
@@ -68,13 +72,13 @@ export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'adm
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: '40px clamp(24px, 4vw, 56px) 40px 40px',
+        justifyContent: isMobile ? 'center' : 'flex-end',
+        padding: isMobile ? '24px 16px' : '40px clamp(24px, 4vw, 56px) 40px 40px',
       }}>
         <div style={{
           width: 'min(360px, 92vw)',
-          borderRadius: 32,
-          padding: '40px 36px',
+          borderRadius: isMobile ? 24 : 32,
+          padding: isMobile ? '32px 24px' : '40px 36px',
           background: 'rgba(255,255,255,0.28)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
@@ -82,23 +86,24 @@ export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'adm
           boxShadow: '0 20px 70px rgba(24,18,15,0.28)',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🏔️</div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif", letterSpacing: 3, marginBottom: 4 }}>
+          <div style={{ fontSize: isMobile ? 40 : 48, marginBottom: 12 }}>🏔️</div>
+          <h1 style={{ fontSize: isMobile ? '1.3rem' : '1.5rem', fontWeight: 700, color: '#3D2C2A', fontFamily: "'Noto Serif SC',serif", letterSpacing: 3, marginBottom: 4 }}>
             灵山胜境
           </h1>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(61,44,42,0.45)', marginBottom: 28 }}>智慧景区导览系统</p>
+          <p style={{ fontSize: '0.8rem', color: 'rgba(61,44,42,0.45)', marginBottom: isMobile ? 22 : 28 }}>智慧景区导览系统</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button onClick={() => onLogin('client')} style={{
-              display: 'flex', alignItems: 'center', gap: 14, padding: '16px 22px',
+              display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '14px 18px' : '16px 22px',
               borderRadius: 20, border: '1px solid rgba(255,255,255,0.3)',
               background: 'rgba(255,255,255,0.24)', cursor: 'pointer',
               transition: 'all 0.2s', textAlign: 'left', width: '100%',
+              WebkitTapHighlightColor: 'transparent',
             }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
+              onMouseEnter={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
+              onMouseLeave={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
             >
-              <span style={{ fontSize: 28 }}>🎒</span>
+              <span style={{ fontSize: isMobile ? 24 : 28 }}>🎒</span>
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#3D2C2A' }}>游客入口</div>
                 <div style={{ fontSize: '0.68rem', color: 'rgba(61,44,42,0.4)', marginTop: 2 }}>景区导览 · AI 讲解 · 路线规划 · 智能咨询</div>
@@ -106,15 +111,16 @@ export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'adm
             </button>
 
             <button onClick={() => onLogin('admin')} style={{
-              display: 'flex', alignItems: 'center', gap: 14, padding: '16px 22px',
+              display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '14px 18px' : '16px 22px',
               borderRadius: 20, border: '1px solid rgba(255,255,255,0.3)',
               background: 'rgba(255,255,255,0.24)', cursor: 'pointer',
               transition: 'all 0.2s', textAlign: 'left', width: '100%',
+              WebkitTapHighlightColor: 'transparent',
             }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
+              onMouseEnter={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
+              onMouseLeave={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
             >
-              <span style={{ fontSize: 28 }}>🔧</span>
+              <span style={{ fontSize: isMobile ? 24 : 28 }}>🔧</span>
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#3D2C2A' }}>管理员入口</div>
                 <div style={{ fontSize: '0.68rem', color: 'rgba(61,44,42,0.4)', marginTop: 2 }}>数据大屏 · 知识库管理 · 数字人配置 · 游客报告</div>
