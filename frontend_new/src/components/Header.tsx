@@ -39,7 +39,6 @@ export default function Header({
   tenantName,
   pois,
   currentPoiId,
-  onPoiChange,
 }: HeaderProps) {
   const isAdmin = mode === 'admin';
   const activePage = currentPage === 'poi-detail' ? 'pois' : currentPage;
@@ -116,31 +115,27 @@ export default function Header({
         </div>
       </div>
 
-      {!isAdmin && pois && onPoiChange && (
+      {!isAdmin && (
         <div style={{
           padding: '12px 14px',
           borderBottom: '1px solid rgba(180,136,100,0.08)',
         }}>
-          <select
-            value={currentPoiId}
-            onChange={e => onPoiChange(e.target.value)}
+          <div
+            aria-label="景区标语"
             style={{
               width: '100%',
-              padding: '7px 10px',
-              borderRadius: 14,
-              border: '1px solid rgba(180,136,100,0.12)',
-              background: 'rgba(255,255,255,0.6)',
-              fontSize: '0.75rem',
-              color: '#3D2C2A',
-              fontFamily: "'Noto Sans SC',sans-serif",
-              outline: 'none',
-              cursor: 'pointer',
+              padding: '4px 0',
+              fontSize: '1rem',
+              color: '#6F4E37',
+              fontFamily: "'STXingkai','华文行楷','KaiTi','楷体',serif",
+              letterSpacing: 1,
+              lineHeight: 1.2,
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
             }}
           >
-            {pois.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+            一念入山水，万象皆导览
+          </div>
         </div>
       )}
 
