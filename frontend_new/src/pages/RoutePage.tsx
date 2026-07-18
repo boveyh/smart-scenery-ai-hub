@@ -149,7 +149,8 @@ export default function RoutePage({ focusPoiId }: { focusPoiId?: string | null }
         if (status === 'complete' && result.routes?.length > 0) {
           const rt = result.routes[0]; distance = rt.distance || 0; time = Math.ceil(rt.time / 60);
           (rt.steps || []).forEach((step: any) => {
-            const road = step.path || ''; road.split(';').forEach((p: string) => { const [lng, lat] = p.split(',').map(Number); if (!isNaN(lng)) path.push([lng, lat]); });
+            const raw = step.path || step.road || '';
+            if (typeof raw === 'string') { raw.split(';').forEach((p: string) => { const [lng, lat] = p.split(',').map(Number); if (!isNaN(lng)) path.push([lng, lat]); }); }
           });
         }
         if (path.length < 2) { distance = calcGeoDistance(fromCoord, toCoord); time = getTravelTime(distance, route.travel); path = generateFallbackPath(fromCoord, toCoord); }
