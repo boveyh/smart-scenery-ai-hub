@@ -110,22 +110,23 @@ export default function LoginPage({ onLogin }: { onLogin: (mode: 'client' | 'adm
               </div>
             </button>
 
+            {!isMobile && (
             <button onClick={() => onLogin('admin')} style={{
-              display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '14px 18px' : '16px 22px',
+              display: 'flex', alignItems: 'center', gap: 14, padding: '16px 22px',
               borderRadius: 20, border: '1px solid rgba(255,255,255,0.3)',
               background: 'rgba(255,255,255,0.24)', cursor: 'pointer',
               transition: 'all 0.2s', textAlign: 'left', width: '100%',
-              WebkitTapHighlightColor: 'transparent',
             }}
-              onMouseEnter={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
-              onMouseLeave={isMobile ? undefined : e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.38)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.5)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.24)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.3)'; }}
             >
-              <span style={{ fontSize: isMobile ? 24 : 28 }}>🔧</span>
+              <span style={{ fontSize: 28 }}>🔧</span>
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#3D2C2A' }}>管理员入口</div>
                 <div style={{ fontSize: '0.68rem', color: 'rgba(61,44,42,0.4)', marginTop: 2 }}>数据大屏 · 知识库管理 · 数字人配置 · 游客报告</div>
               </div>
             </button>
+            )}
           </div>
         </div>
       </div>

@@ -181,9 +181,9 @@ export default function DigitalHumanPage() {
   const live2dHeight = isMobile ? '420px' : '100%';
 
   return (
-    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 20, height: isMobile ? 'auto' : 'calc(100vh - 130px)' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 12 : 20, height: isMobile ? 'calc(100vh - 72px)' : 'calc(100vh - 130px)' }}>
       {/* Live2D canvas */}
-      <div style={{ flex: isMobile ? 'none' : '0 0 55%', display:'flex', flexDirection:'column', gap: 10 }}>
+      <div style={{ flex: isMobile ? '0 0 auto' : '0 0 55%', display:'flex', flexDirection:'column', gap: 10, height: isMobile ? '360px' : undefined }}>
         <div style={{
           flex:1, borderRadius: isMobile ? 20 : 28, overflow:'hidden', position:'relative',
           background: 'linear-gradient(145deg,#F2EBDA 0%,#F7F2E6 100%)',
